@@ -46,7 +46,7 @@ abstract class Util
     }
 
     /**
-     * Increase a counter nonce, starting with big-endian
+     * Increase a counter nonce, starting with the LSB (big-endian)
      *
      * @param string $nonce
      * @return string
