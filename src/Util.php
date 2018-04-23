@@ -13,7 +13,7 @@ use ParagonIE\CipherSweet\Exception\CryptoOperationException;
 abstract class Util
 {
     /**
-     * Userland polfill for AES-256-CTR, using AES-256-ECH
+     * Userland polfill for AES-256-CTR, using AES-256-ECB
      *
      * @param string $plaintext
      * @param string $key
