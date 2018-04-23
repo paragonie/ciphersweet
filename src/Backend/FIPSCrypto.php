@@ -367,9 +367,6 @@ class FIPSCrypto implements BackendInterface
     /**
      * Encrypt/decrypt AES-256-CTR.
      *
-     * @todo Polyfill this using AES-ECB if it's not available in ext/openssl.
-     *       This is a rare condition, but one that should be handled.
-     *
      * @param string $plaintext
      * @param string $key
      * @param string $nonce
@@ -380,9 +377,12 @@ class FIPSCrypto implements BackendInterface
     private static function aes256ctr($plaintext, $key, $nonce)
     {
         if (!\in_array('aes-256-ctr', \openssl_get_cipher_methods(), true)) {
-            throw new CryptoOperationException(
-                'AES-256-CTR not provided by OpenSSL'
-            );
+            if (!\in_array('aes-256-ecb', \openssl_get_cipher_methods(), true)) {
+                throw new CryptoOperationException(
+                    'AES-256 not provided by OpenSSL'
+                );
+            }
+            return Util::aes256ctr($plaintext, $key, $nonce);
         }
         $ciphertext = \openssl_encrypt(
             $plaintext,

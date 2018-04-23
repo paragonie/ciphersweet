@@ -13,6 +13,59 @@ use ParagonIE\CipherSweet\Exception\CryptoOperationException;
 abstract class Util
 {
     /**
+     * Userland polfill for AES-256-CTR, using AES-256-ECH
+     *
+     * @param string $plaintext
+     * @param string $key
+     * @param string $nonce
+     * @return string
+     */
+    public static function aes256ctr($plaintext, $key, $nonce)
+    {
+        if (empty($plaintext)) {
+            return '';
+        }
+        $length = Binary::safeStrlen($plaintext);
+        /** @var int $numBlocks */
+        $numBlocks = (($length - 1) >> 4) + 1;
+        $stream = '';
+        for ($i = 0; $i < $numBlocks; ++$i) {
+            $stream .= $nonce;
+            $nonce = self::ctrNonceIncrease($nonce);
+        }
+        /** @var string $xor */
+        $xor = \openssl_encrypt(
+            $stream,
+            'aes-256-ecb',
+            $key,
+            OPENSSL_RAW_DATA
+        );
+        return (string) (
+            $plaintext ^ Binary::safeSubstr($xor, 0, $length)
+        );
+    }
+
+    /**
+     * Increase a counter nonce, starting with big-endian
+     *
+     * @param string $nonce
+     * @return string
+     */
+    public static function ctrNonceIncrease($nonce)
+    {
+        $pieces = \unpack('C*', $nonce);
+        $c = 0;
+        ++$pieces[16];
+        for ($i = 16; $i > 0; --$i) {
+            $pieces[$i] += $c;
+            $c = $pieces[$i] >> 8;
+            $pieces[$i] &= 0xff;
+        }
+        \array_unshift($pieces, \str_repeat('C', 16));
+        return \call_user_func_array('pack', $pieces);
+    }
+
+    /**
      * @param SymmetricKey $key
      * @param string|null $salt
      * @param string $info
