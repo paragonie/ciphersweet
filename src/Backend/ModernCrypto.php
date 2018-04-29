@@ -277,7 +277,7 @@ class ModernCrypto implements BackendInterface
             Util::pack([$fieldName, $indexName]),
             SodiumCompat::crypto_generichash($tableName, '', 16)
         );
-        return Base32::encodeUnpadded($hash);
+        return \rtrim(Base32::encode($hash), '=');
     }
 
     /**
