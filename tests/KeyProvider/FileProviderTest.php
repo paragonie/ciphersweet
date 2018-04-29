@@ -26,7 +26,7 @@ class FileProviderTest extends TestCase
      */
     public function setUp()
     {
-        $this->prefix = Base32::encodeUnpadded(random_bytes(16));
+        $this->prefix = \rtrim(Base32::encode(random_bytes(16)), '=');
 
         $symmetric = \random_bytes(32);
         \file_put_contents(
