@@ -53,6 +53,7 @@ abstract class Util
      */
     public static function ctrNonceIncrease($nonce)
     {
+        /** @var array<int, int> $pieces */
         $pieces = \unpack('C*', $nonce);
         $c = 0;
         ++$pieces[16];
@@ -62,7 +63,7 @@ abstract class Util
             $pieces[$i] &= 0xff;
         }
         \array_unshift($pieces, \str_repeat('C', 16));
-        return \call_user_func_array('pack', $pieces);
+        return (string) \call_user_func_array('pack', $pieces);
     }
 
     /**

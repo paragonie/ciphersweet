@@ -36,11 +36,12 @@ class ArrayProvider implements KeyProviderInterface
     /**
      * @var string
      */
-    private $publicKey;
+    private $publicKey = '';
+
     /**
      * @var string
      */
-    private $secretKey;
+    private $secretKey = '';
 
     /**
      * ArrayProvider constructor.
