@@ -208,6 +208,12 @@ class EncryptedFieldTest extends TestCase
      */
     public function getExampleField(CipherSweet $backend, $longer = false)
     {
+        $fast = (
+            $backend instanceof ModernCrypto
+                &&
+            !\ParagonIE_Sodium_Compat::crypto_pwhash_is_available()
+        );
+
         return (new EncryptedField($backend, 'contacts', 'ssn'))
             // Add a blind index for the "last 4 of SSN":
             ->addBlindIndex(
@@ -217,7 +223,8 @@ class EncryptedFieldTest extends TestCase
                     // List of Transforms:
                     [new LastFourDigits()],
                     // Output length (bytes)
-                    $longer ? 8 : 2
+                    $longer ? 8 : 2,
+                    $fast
                 )
             )
             ->addBlindIndex(
@@ -227,7 +234,8 @@ class EncryptedFieldTest extends TestCase
                     // List of Transforms:
                     [new LastFourDigits()],
                     // Output length (bytes)
-                    $longer ? 8 : 2
+                    $longer ? 8 : 2,
+                    $fast
                 )
             )
             // Add a blind index for the full SSN:
@@ -235,7 +243,8 @@ class EncryptedFieldTest extends TestCase
                 new BlindIndex(
                     'contact_ssn',
                     [],
-                    $longer ? 16 : 4
+                    $longer ? 16 : 4,
+                    $fast
                 )
             );
     }
