@@ -163,8 +163,53 @@ class EncryptedFieldTest extends TestCase
      * @throws BlindIndexNotFoundException
      * @throws CryptoOperationException
      */
+    public function testFIPSBlindIndexFast()
+    {
+        $ssn = $this->getExampleField($this->fipsEngine, false, true);
+
+        $this->assertEquals(
+            ['type' => 'idlzpypmia6qu', 'value' => '8951'],
+            $ssn->getBlindIndex('111-11-1111', 'contact_ssn_last_four')
+        );
+        $this->assertEquals(
+            ['type' => 'idlzpypmia6qu', 'value' => 'b6f2'],
+            $ssn->getBlindIndex('111-11-2222', 'contact_ssn_last_four')
+        );
+        $this->assertEquals(
+            ['type' => 'idlzpypmia6qu', 'value' => '13b5'],
+            $ssn->getBlindIndex('123-45-6788', 'contact_ssn_last_four')
+        );
+        $this->assertEquals(
+            ['type' => 'idlzpypmia6qu', 'value' => 'e2e3'],
+            $ssn->getBlindIndex('123-45-6789', 'contact_ssn_last_four')
+        );
+        $this->assertEquals(
+            ['type' => 'stfodrsbpd4ls', 'value' => '256e1182'],
+            $ssn->getBlindIndex('invalid guess 123', 'contact_ssn')
+        );
+        $this->assertEquals(
+            ['type' => 'stfodrsbpd4ls', 'value' => 'd2a774dc'],
+            $ssn->getBlindIndex('123-45-6789', 'contact_ssn')
+        );
+
+        $random = $this->getExampleField($this->fipsRandom, true, true);
+        $this->assertNotEquals(
+            ['type' => 'stfodrsbpd4ls', 'value' => 'ee10e07b213a922075a6ada22514528c'],
+            $random->getBlindIndex('123-45-6789', 'contact_ssn')
+        );
+    }
+
+    /**
+     * @throws BlindIndexNameCollisionException
+     * @throws BlindIndexNotFoundException
+     * @throws CryptoOperationException
+     */
     public function testModernBlindIndex()
     {
+        if (!\ParagonIE_Sodium_Compat::crypto_pwhash_is_available()) {
+            $this->markTestSkipped('libsodium not installed');
+            return;
+        }
         $ssn = $this->getExampleField($this->naclEngine);
         $this->assertEquals(
             ['type' => '3dywyifwujcu2', 'value' => 'f50e'],
@@ -197,23 +242,57 @@ class EncryptedFieldTest extends TestCase
             $random->getBlindIndex('123-45-6789', 'contact_ssn')
         );
     }
+    /**
+     * @throws BlindIndexNameCollisionException
+     * @throws BlindIndexNotFoundException
+     * @throws CryptoOperationException
+     */
+    public function testModernBlindIndexFast()
+    {
+        $ssn = $this->getExampleField($this->naclEngine, false, true);
+        $this->assertEquals(
+            ['type' => '3dywyifwujcu2', 'value' => 'b102'],
+            $ssn->getBlindIndex('111-11-1111', 'contact_ssn_last_four')
+        );
+        $this->assertEquals(
+            ['type' => '3dywyifwujcu2', 'value' => '7eb7'],
+            $ssn->getBlindIndex('111-11-2222', 'contact_ssn_last_four')
+        );
+        $this->assertEquals(
+            ['type' => '3dywyifwujcu2', 'value' => 'fe8c'],
+            $ssn->getBlindIndex('123-45-6788', 'contact_ssn_last_four')
+        );
+        $this->assertEquals(
+            ['type' => '3dywyifwujcu2', 'value' => '04e4'],
+            $ssn->getBlindIndex('123-45-6789', 'contact_ssn_last_four')
+        );
+        $this->assertEquals(
+            ['type' => '2iztg3wbd7j5a', 'value' => 'b6fd11a1'],
+            $ssn->getBlindIndex('invalid guess 123', 'contact_ssn')
+        );
+        $this->assertEquals(
+            ['type' => '2iztg3wbd7j5a', 'value' => '30c7cc68'],
+            $ssn->getBlindIndex('123-45-6789', 'contact_ssn')
+        );
+
+        $random = $this->getExampleField($this->naclRandom, true, true);
+        $this->assertNotEquals(
+            ['type' => '2iztg3wbd7j5a', 'value' => '499db5085e715c2f167c1e2c02f1c80f'],
+            $random->getBlindIndex('123-45-6789', 'contact_ssn')
+        );
+    }
 
     /**
      * @param CipherSweet $backend
      * @param bool $longer
+     * @param bool $fast
      *
      * @return EncryptedField
      * @throws BlindIndexNameCollisionException
      * @throws CryptoOperationException
      */
-    public function getExampleField(CipherSweet $backend, $longer = false)
+    public function getExampleField(CipherSweet $backend, $longer = false, $fast = false)
     {
-        $fast = (
-            $backend instanceof ModernCrypto
-                &&
-            !\ParagonIE_Sodium_Compat::crypto_pwhash_is_available()
-        );
-
         return (new EncryptedField($backend, 'contacts', 'ssn'))
             // Add a blind index for the "last 4 of SSN":
             ->addBlindIndex(
