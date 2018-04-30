@@ -3,7 +3,7 @@
 The following example uses [Latitude](https://github.com/shadowhand/latitude)
 and [EasyDB](https://github.com/paragonie/easydb) (required PHP 7.1+):
 
-```
+```php
 <?php
 use ParagonIE\CipherSweet\BlindIndex;
 use ParagonIE\CipherSweet\CipherSweet;
