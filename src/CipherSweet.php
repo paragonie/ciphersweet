@@ -1,7 +1,9 @@
 <?php
 namespace ParagonIE\CipherSweet;
 
+use ParagonIE\CipherSweet\Backend\FIPSCrypto;
 use ParagonIE\CipherSweet\Backend\Key\SymmetricKey;
+use ParagonIE\CipherSweet\Backend\ModernCrypto;
 use ParagonIE\CipherSweet\Contract\BackendInterface;
 use ParagonIE\CipherSweet\Contract\KeyProviderInterface;
 use ParagonIE\CipherSweet\Exception\CryptoOperationException;
@@ -119,5 +121,30 @@ final class CipherSweet
                 self::DS_FENC . $fieldName
             )
         );
+    }
+
+    /**
+     * Return the default backend for a given environment. Note that the
+     * stability of the result of this static method should not be depended on.
+     *
+     * @return BackendInterface
+     */
+    public static function getDefaultBackend()
+    {
+        if (PHP_VERSION_ID >= 70200) {
+            return new ModernCrypto();
+        }
+        if (PHP_VERSION_ID >= 70000 && \extension_loaded('sodium')) {
+            return new ModernCrypto();
+        }
+        if (PHP_VERSION_ID >= 70000 && \extension_loaded('libsodium')) {
+            // This is a little weird but OK
+            return new ModernCrypto();
+        }
+        if (PHP_VERSION_ID < 70000 && \extension_loaded('libsodium')) {
+            return new ModernCrypto();
+        }
+        // FIPS mode will always work... but it only uses FIPS algorithms.
+        return new FIPSCrypto();
     }
 }

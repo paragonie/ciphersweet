@@ -4,6 +4,7 @@ namespace ParagonIE\CipherSweet\Tests;
 use ParagonIE\CipherSweet\Backend\FIPSCrypto;
 use ParagonIE\CipherSweet\Backend\ModernCrypto;
 use ParagonIE\CipherSweet\CipherSweet;
+use ParagonIE\CipherSweet\Contract\BackendInterface;
 use ParagonIE\CipherSweet\KeyProvider\ArrayProvider;
 use ParagonIE\ConstantTime\Hex;
 use PHPUnit\Framework\TestCase;
@@ -14,6 +15,13 @@ use PHPUnit\Framework\TestCase;
  */
 class CipherSweetTest extends TestCase
 {
+    public function testDefaultBackend()
+    {
+        $this->assertInstanceOf(
+            BackendInterface::class,
+            CipherSweet::getDefaultBackend()
+        );
+    }
 
     /**
      * @throws \ParagonIE\CipherSweet\Exception\ArrayKeyException
