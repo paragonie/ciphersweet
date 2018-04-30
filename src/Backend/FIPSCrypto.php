@@ -341,7 +341,7 @@ class FIPSCrypto implements BackendInterface
             $tableName,
             true
         );
-        return \rtrim(Base32::encode(Binary::safeSubstr($hash, 0, 8)), '=');
+        return Base32::encodeUnpadded(Binary::safeSubstr($hash, 0, 8));
     }
 
     /**
