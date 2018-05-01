@@ -131,9 +131,6 @@ final class CipherSweet
      */
     public static function getDefaultBackend()
     {
-        if (PHP_VERSION_ID >= 70200) {
-            return new ModernCrypto();
-        }
         if (PHP_VERSION_ID >= 70000 && \extension_loaded('sodium')) {
             return new ModernCrypto();
         }

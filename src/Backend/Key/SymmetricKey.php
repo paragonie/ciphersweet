@@ -41,9 +41,7 @@ class SymmetricKey
      */
     public function __destruct()
     {
-        if (PHP_VERSION_ID >= 70200) {
-            \sodium_memzero($this->keyMaterial);
-        } elseif (PHP_VERSION_ID >= 70000 && \extension_loaded('sodium')) {
+        if (\extension_loaded('sodium')) {
             \sodium_memzero($this->keyMaterial);
         } elseif (\extension_loaded('libsodium')) {
             \Sodium\memzero($this->keyMaterial);

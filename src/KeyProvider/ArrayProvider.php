@@ -67,9 +67,7 @@ class ArrayProvider implements KeyProviderInterface
      */
     public function __destruct()
     {
-        if (PHP_VERSION_ID >= 70200) {
-            \sodium_memzero($this->rootSymmetricKey);
-        } elseif (PHP_VERSION_ID >= 70000 && \extension_loaded('sodium')) {
+        if (\extension_loaded('sodium')) {
             \sodium_memzero($this->rootSymmetricKey);
         } elseif (\extension_loaded('libsodium')) {
             \Sodium\memzero($this->rootSymmetricKey);
