@@ -20,6 +20,10 @@ server to be running on separate cloud instances / virtual machines.
 
 **Requires PHP 5.5+**, although 7.2 is recommended for better performance.
 
+CipherSweet is available under the very permissive [ISC License](https://github.com/paragonie/ciphersweet/blob/master/LICENSE)
+which allows you to use CipherSweet in any of your PHP projects, commercial
+or noncommercial, open source or proprietary, at no cost to you.
+
 ## CipherSweet Features at a Glance
 
 * Encryption that targets the 256-bit security level
@@ -57,3 +61,8 @@ composer require paragonie/ciphersweet
 
 Please refer to **[the documentation](https://github.com/paragonie/ciphersweet/tree/master/docs)**
 to learn how to use CipherSweet.
+
+## Integration Support
+
+Please feel free to [create an issue](https://github.com/paragonie/ciphersweet/issues/new)
+if you'd like to integrate CipherSweet with your software.
