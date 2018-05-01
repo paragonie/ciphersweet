@@ -47,7 +47,7 @@ class SymmetricKey
             \Sodium\memzero($this->keyMaterial);
         } else {
             // Worst-case scenario: Best-ditch effort to wipe memory
-            $m = \str_repeat("\xff", Binary::safeStrlen($this->keyMaterial));
+            $m = \str_repeat("\xff", (int) Binary::safeStrlen($this->keyMaterial));
             $this->keyMaterial ^= ($this->keyMaterial ^ $m);
             unset($this->keyMaterial);
         }

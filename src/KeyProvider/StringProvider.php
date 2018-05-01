@@ -58,7 +58,7 @@ class StringProvider implements KeyProviderInterface
             \Sodium\memzero($this->rootSymmetricKey);
         } else {
             // Worst-case scenario: Best-ditch effort to wipe memory
-            $m = \str_repeat("\xff", Binary::safeStrlen($this->rootSymmetricKey));
+            $m = \str_repeat("\xff", (int) Binary::safeStrlen($this->rootSymmetricKey));
             $this->rootSymmetricKey ^= ($this->rootSymmetricKey ^ $m);
             unset($this->rootSymmetricKey);
         }
