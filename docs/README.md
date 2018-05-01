@@ -27,7 +27,7 @@ After you choose your backend, you'll need a KeyProvider. We provide a few
 out-of-the-box, but we also provide an interface that can be used to integrate
 with any key management service in your code.
 
-The simplest example of this is the `ArrayProvider`:
+The simplest example of this is the `StringProvider`:
 
 ```php
 <?php
