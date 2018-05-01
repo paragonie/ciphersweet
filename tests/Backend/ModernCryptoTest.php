@@ -28,38 +28,4 @@ class ModernCryptoTest extends TestCase
 
         $this->assertSame($message, $decrypted);
     }
-
-    /**
-     * @throws \Exception
-     */
-    public function testPublicEncrypt()
-    {
-        $nacl = new ModernCrypto();
-        $randomProvider = new RandomProvider($nacl);
-
-        $privateKey = $randomProvider->getSecretKey();
-        $publicKey = $privateKey->getPublicKey();
-
-        $message = 'This is just a test message';
-        $cipher = $nacl->publicEncrypt($message, $publicKey);
-        $decrypted = $nacl->privateDecrypt($cipher, $privateKey);
-
-        $this->assertSame($message, $decrypted);
-    }
-
-    /**
-     * @throws \Exception
-     */
-    public function testSign()
-    {
-        $nacl = new ModernCrypto();
-        $randomProvider = new RandomProvider($nacl);
-
-        $privateKey = $randomProvider->getSecretKey();
-        $publicKey = $privateKey->getPublicKey();
-
-        $message = 'This is just a test message';
-        $signature = $nacl->sign($message, $privateKey);
-        $this->assertTrue($nacl->verify($message, $publicKey, $signature));
-    }
 }

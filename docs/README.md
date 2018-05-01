@@ -33,16 +33,12 @@ The simplest example of this is the `ArrayProvider`:
 <?php
 use ParagonIE\ConstantTime\Hex;
 use ParagonIE\CipherSweet\Backend\ModernCrypto;
-use ParagonIE\CipherSweet\KeyProvider\ArrayProvider;
+use ParagonIE\CipherSweet\KeyProvider\StringProvider;
 
 $ciphers = new ModernCrypto();
-$provider = new ArrayProvider(
+$provider = new StringProvider(
     $ciphers,
-    [
-        ArrayProvider::INDEX_SYMMETRIC_KEY => Hex::decode(
-            '4e1c44f87b4cdf21808762970b356891db180a9dd9850e7baf2a79ff3ab8a2fc'
-        )
-    ]
+    '4e1c44f87b4cdf21808762970b356891db180a9dd9850e7baf2a79ff3ab8a2fc'
 );
 ```
 
@@ -56,16 +52,12 @@ Building on the previous code example:
 use ParagonIE\ConstantTime\Hex;
 use ParagonIE\CipherSweet\Backend\ModernCrypto;
 use ParagonIE\CipherSweet\CipherSweet;
-use ParagonIE\CipherSweet\KeyProvider\ArrayProvider;
+use ParagonIE\CipherSweet\KeyProvider\StringProvider;
 
 $ciphers = new ModernCrypto();
-$provider = new ArrayProvider(
+$provider = new StringProvider(
     $ciphers,
-    [
-        ArrayProvider::INDEX_SYMMETRIC_KEY => Hex::decode(
-            '4e1c44f87b4cdf21808762970b356891db180a9dd9850e7baf2a79ff3ab8a2fc'
-        )
-    ]
+    '4e1c44f87b4cdf21808762970b356891db180a9dd9850e7baf2a79ff3ab8a2fc'
 );
 
 $engine = new CipherSweet($provider);

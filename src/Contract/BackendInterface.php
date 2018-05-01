@@ -1,8 +1,6 @@
 <?php
 namespace ParagonIE\CipherSweet\Contract;
 
-use ParagonIE\CipherSweet\Backend\Key\AsymmetricPublicKey;
-use ParagonIE\CipherSweet\Backend\Key\AsymmetricSecretKey;
 use ParagonIE\CipherSweet\Backend\Key\SymmetricKey;
 
 /**
@@ -24,37 +22,6 @@ interface BackendInterface
      * @return string
      */
     public function decrypt($ciphertext, SymmetricKey $key);
-
-    /**
-     * @param string $message
-     * @param AsymmetricPublicKey $publicKey
-     * @return string
-     */
-    public function publicEncrypt($message, AsymmetricPublicKey $publicKey);
-
-    /**
-     * @param string $message
-     * @param AsymmetricSecretKey $secretKey
-     *
-     * @return string
-     */
-    public function privateDecrypt($message, AsymmetricSecretKey $secretKey);
-
-    /**
-     * @param string $message
-     * @param AsymmetricSecretKey $secretKey
-     *
-     * @return string
-     */
-    public function sign($message, AsymmetricSecretKey $secretKey);
-
-    /**
-     * @param string $message
-     * @param AsymmetricPublicKey $publicKey
-     * @param string $signature
-     * @return bool
-     */
-    public function verify($message, AsymmetricPublicKey $publicKey, $signature);
 
     /**
      * @param string $plaintext
@@ -82,10 +49,4 @@ interface BackendInterface
      * @return string
      */
     public function getIndexTypeColumn($tableName, $fieldName, $indexName);
-
-    /**
-     * @param AsymmetricSecretKey $secretKey
-     * @return AsymmetricPublicKey
-     */
-    public function getPublicKeyFromSecretKey(AsymmetricSecretKey $secretKey);
 }

@@ -1,56 +1,41 @@
 <?php
-
 namespace ParagonIE\CipherSweet\KeyProvider;
 
-use ParagonIE\ConstantTime\Base64UrlSafe;
-use ParagonIE\ConstantTime\Binary;
-use ParagonIE\ConstantTime\Hex;
 use ParagonIE\CipherSweet\Backend\Key\SymmetricKey;
 use ParagonIE\CipherSweet\Contract\BackendInterface;
 use ParagonIE\CipherSweet\Contract\KeyProviderInterface;
-use ParagonIE\CipherSweet\Exception\ArrayKeyException;
 use ParagonIE\CipherSweet\Exception\CryptoOperationException;
+use ParagonIE\ConstantTime\Base64UrlSafe;
+use ParagonIE\ConstantTime\Binary;
+use ParagonIE\ConstantTime\Hex;
 
 /**
- * Class ArrayProvider
+ * Class StringProvider
  * @package ParagonIE\CipherSweet\KeyProvider
  */
-class ArrayProvider implements KeyProviderInterface
+class StringProvider implements KeyProviderInterface
 {
-    const INDEX_SYMMETRIC_KEY = 'symmetric-key';
-
     /**
-     * @var BackendInterface
+     * @var BackendInterface $backend
      */
     private $backend;
 
     /**
-     * @var string
+     * @var string $rootSymmetricKey
      */
     private $rootSymmetricKey;
 
     /**
-     * ArrayProvider constructor.
+     * StringProvider constructor.
      *
      * @param BackendInterface $backend
-     * @param array<string, string> $config
+     * @param string $rawKey
      *
-     * @throws ArrayKeyException
      * @throws CryptoOperationException
      */
-    public function __construct(BackendInterface $backend, array $config = [])
+    public function __construct(BackendInterface $backend, $rawKey = '')
     {
-        if (!isset($config[self::INDEX_SYMMETRIC_KEY])) {
-            throw new ArrayKeyException(
-                'Expected key "' .
-                    self::INDEX_SYMMETRIC_KEY .
-                    '" to be defined on array.'
-            );
-        }
         $this->backend = $backend;
-
-        /** @var string $rawKey */
-        $rawKey = $config[self::INDEX_SYMMETRIC_KEY];
         if (Binary::safeStrlen($rawKey) === 64) {
             $this->rootSymmetricKey = Hex::decode($rawKey);
         } elseif (Binary::safeStrlen($rawKey) === 44) {
