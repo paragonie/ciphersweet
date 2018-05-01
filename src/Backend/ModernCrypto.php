@@ -88,6 +88,9 @@ class ModernCrypto implements BackendInterface
      */
     public function blindIndexFast($plaintext, SymmetricKey $key, $bitLength = null)
     {
+        if (\is_null($bitLength)) {
+            $bitLength = 256;
+        }
         if ($bitLength > 512) {
             throw new \SodiumException('Output length is too high');
         }
@@ -131,8 +134,11 @@ class ModernCrypto implements BackendInterface
                 $memLimit = (int) $config['memlimit'];
             }
         }
+        if (\is_null($bitLength)) {
+            $bitLength = 256;
+        }
         /** @var int $pwHashLength */
-        $pwHashLength = \is_null($bitLength) ? 16 : ($bitLength >> 3);
+        $pwHashLength = $bitLength >> 3;
         if ($pwHashLength < 16) {
             $pwHashLength = 16;
         }
