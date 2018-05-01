@@ -31,7 +31,6 @@
   },
   "require": {
     "php": "^5.5|^7",
-    "phpseclib/phpseclib": "^2",
     "paragonie/constant_time_encoding": "^1.0.4|^2",
     "paragonie/sodium_compat": "^1.4"
   },

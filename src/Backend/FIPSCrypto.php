@@ -4,15 +4,12 @@ namespace ParagonIE\CipherSweet\Backend;
 use ParagonIE\ConstantTime\Base32;
 use ParagonIE\ConstantTime\Base64UrlSafe;
 use ParagonIE\ConstantTime\Binary;
-use ParagonIE\CipherSweet\Backend\Key\AsymmetricPublicKey;
-use ParagonIE\CipherSweet\Backend\Key\AsymmetricSecretKey;
 use ParagonIE\CipherSweet\Contract\BackendInterface;
 use ParagonIE\CipherSweet\Backend\Key\SymmetricKey;
 use ParagonIE\CipherSweet\Exception\CryptoOperationException;
 use ParagonIE\CipherSweet\Exception\InvalidCiphertextException;
 use ParagonIE\CipherSweet\Util;
 use ParagonIE_Sodium_Core_Util as SodiumUtil;
-use phpseclib\Crypt\RSA;
 
 /**
  * Class FIPSCrypto
@@ -122,145 +119,6 @@ class FIPSCrypto implements BackendInterface
     }
 
     /**
-     * Encrypt a message against an RSA public key, using KEM+DEM.
-     *
-     * KEM+DEM construction explained:
-     *
-     * 1. Generate a random 256-bit value.
-     * 2. Encrypt the random key using the RSA public key.
-     *    - Algorithm: RSAES-OAEP with MGF1+SHA384 and e = 65537
-     * 3. Next, calculate the message key from the random key and its RSA
-     *    ciphertext, using HMAC
-     * 4. Encrypt the message (see: encrypt() above) with the message key
-     *    (step 3).
-     * 5. Send the outputs of Steps 2 and 4 together.
-     *
-     * KEM+DEM analysis:
-     *
-     * Only someone in possession of the correct RSA private key will be able
-     * to recover the random 256-bit value (step 1), which is needed with the
-     * public RSA ciphertext to calculate the message key (step 3).
-     *
-     * Any attempts to perform a chosen-ciphertext attack will result in an
-     * unpredictably random AES key, which will fail to decrypt the message.
-     *
-     * This construction is an insurance policy in case RSAES-OAEP's security
-     * proof doesn't hold up to advances in side-channel cryptanalysis.
-     *
-     * @param string $message
-     * @param AsymmetricPublicKey $publicKey
-     * @return string
-     * @throws CryptoOperationException
-     */
-    public function publicEncrypt($message, AsymmetricPublicKey $publicKey)
-    {
-        // KEM+DEM Step 1:
-        $randomKey = \random_bytes(32);
-
-        // KEM+DEM Step 2:
-        $rsa = self::getRsa();
-        $rsa->loadKey($publicKey->getRawKey());
-        /** @var string|bool $rsaCiphertext */
-        $rsaCiphertext = $rsa->encrypt($randomKey);
-        if (!\is_string($rsaCiphertext)) {
-            throw new CryptoOperationException('Could not encrypt ephemeral key');
-        }
-
-        // KEM+DEM Step 3:
-        $key256 = \hash_hmac('sha256', $rsaCiphertext, $randomKey, true);
-        $ephemeral = new SymmetricKey($this, $key256);
-
-        // KEM+DEM Step 4:
-        $ciphertext = $this->encrypt($message, $ephemeral);
-
-        // KEM+DEM Step 5:
-        return $ciphertext . ':' . Base64UrlSafe::encode($rsaCiphertext);
-    }
-
-    /**
-     * Decrypt a message against an RSA public key, using KEM+DEM.
-     *
-     * See publicEncrypt() above for an explanation of the KEM+DEM
-     * construction.
-     *
-     * @param string $message
-     * @param AsymmetricSecretKey $secretKey
-     *
-     * @return string
-     * @throws CryptoOperationException
-     * @throws InvalidCiphertextException
-     * @throws \SodiumException
-     */
-    public function privateDecrypt($message, AsymmetricSecretKey $secretKey)
-    {
-        $pieces = explode(':', $message);
-        if (\count($pieces) !== 3) {
-            throw new InvalidCiphertextException(
-                'Message truncated or invalid'
-            );
-        }
-        $rsaCiphertext = Base64UrlSafe::decode($pieces[2]);
-        $ciphertext = $pieces[0] . ':' . $pieces[1];
-
-        $rsa = self::getRsa();
-        $rsa->loadKey($secretKey->getRawKey());
-        /** @var string|bool $randomKey */
-        $randomKey = $rsa->decrypt($rsaCiphertext);
-        if (!\is_string($randomKey)) {
-            throw new CryptoOperationException(
-                'Could not encrypt ephemeral key'
-            );
-        }
-
-        // Redo KEM+DEM encryption step 3 to calculate the message key:
-        $key256 = \hash_hmac('sha256', $rsaCiphertext, $randomKey, true);
-        $ephemeral = new SymmetricKey($this, $key256);
-
-        // Decrypt the message, using symmetric encryption:s
-        return $this->decrypt($ciphertext, $ephemeral);
-    }
-
-    /**
-     * Sign a message using RSASSA-PSS with SHA384 and MGF1+SHA384, e = 65537.
-     *
-     * @param string $message
-     * @param AsymmetricSecretKey $secretKey
-     *
-     * @return string
-     */
-    public function sign($message, AsymmetricSecretKey $secretKey)
-    {
-        $rsa = self::getRsa();
-        $rsa->loadKey($secretKey->getRawKey());
-        return self::MAGIC_HEADER . Base64UrlSafe::encode($rsa->sign($message));
-    }
-
-    /**
-     * Verify a message signature that was signed using RSASSA-PSS with SHA384
-     * and MGF1+SHA384, e = 65537.
-     *
-     * @param string $message
-     * @param AsymmetricPublicKey $publicKey
-     * @param string $signature
-     * @return bool
-     *
-     * @throws InvalidCiphertextException
-     * @throws \SodiumException
-     */
-    public function verify($message, AsymmetricPublicKey $publicKey, $signature)
-    {
-        $header = Binary::safeSubstr($signature, 0, 5);
-        if (!SodiumUtil::hashEquals($header, self::MAGIC_HEADER)) {
-            throw new InvalidCiphertextException('Invalid signature header.');
-        }
-        $decoded = Base64UrlSafe::decode(Binary::safeSubstr($signature, 5));
-
-        $rsa = self::getRsa();
-        $rsa->loadKey($publicKey->getRawKey());
-        return $rsa->verify($message, $decoded);
-    }
-
-    /**
      * Perform a fast blind index. Ideal for high-entropy inputs.
      * Algorithm: PBKDF2-SHA384 with only 1 iteration.
      *
@@ -345,26 +203,6 @@ class FIPSCrypto implements BackendInterface
     }
 
     /**
-     * Get the RSA public key for a given RSA secret key.
-     *
-     * @param AsymmetricSecretKey $secretKey
-     *
-     * @return AsymmetricPublicKey
-     */
-    public function getPublicKeyFromSecretKey(AsymmetricSecretKey $secretKey)
-    {
-        $keyMaterial = $secretKey->getRawKey();
-        $res = \openssl_pkey_get_private($keyMaterial);
-        /** @var array<string, string> $pubkey */
-        $pubkey = \openssl_pkey_get_details($res);
-        $public = \rtrim(
-            \str_replace("\n", "\r\n", $pubkey['key']),
-            "\r\n"
-        );
-        return new AsymmetricPublicKey($this, $public);
-    }
-
-    /**
      * Encrypt/decrypt AES-256-CTR.
      *
      * @param string $plaintext
@@ -396,25 +234,5 @@ class FIPSCrypto implements BackendInterface
         }
 
         return $ciphertext;
-    }
-
-    /**
-     * Get the PHPSecLib RSA provider
-     *
-     * Hard-coded:
-     *
-     * - RSAES-OAEP with MGF1+SHA384, e = 65537
-     * - RSASSA-PSS with MGF1+SHA384 and SHA384, e = 65537
-     *
-     * @return RSA
-     */
-    public static function getRsa()
-    {
-        $rsa = new RSA();
-        $rsa->setHash('sha384');
-        $rsa->setMGFHash('sha384');
-        $rsa->setEncryptionMode(RSA::ENCRYPTION_OAEP);
-        $rsa->setSignatureMode(RSA::SIGNATURE_PSS);
-        return $rsa;
     }
 }

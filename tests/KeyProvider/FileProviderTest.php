@@ -33,24 +33,11 @@ class FileProviderTest extends TestCase
             __DIR__ . '/files/' . $this->prefix . '.symmetric',
             $symmetric
         );
-        $keypair = \ParagonIE_Sodium_Compat::crypto_sign_keypair();
-
-        \file_put_contents(
-            __DIR__ . '/files/' . $this->prefix . '.secret',
-            \ParagonIE_Sodium_Compat::crypto_sign_secretkey($keypair)
-        );
-
-        \file_put_contents(
-            __DIR__ . '/files/' . $this->prefix . '.public',
-            \ParagonIE_Sodium_Compat::crypto_sign_publickey($keypair)
-        );
     }
 
     public function tearDown()
     {
         \unlink(__DIR__ . '/files/' . $this->prefix . '.symmetric');
-        \unlink(__DIR__ . '/files/' . $this->prefix . '.secret');
-        \unlink(__DIR__ . '/files/' . $this->prefix . '.public');
         parent::tearDown();
     }
 
@@ -62,19 +49,9 @@ class FileProviderTest extends TestCase
         $backend = new ModernCrypto();
         $provider = new FileProvider(
             $backend,
-            __DIR__ . '/files/' . $this->prefix . '.symmetric',
-            __DIR__ . '/files/' . $this->prefix . '.secret',
-            __DIR__ . '/files/' . $this->prefix . '.public'
+            __DIR__ . '/files/' . $this->prefix . '.symmetric'
         );
 
         $this->assertInstanceOf(SymmetricKey::class, $provider->getSymmetricKey());
-        $this->assertInstanceOf(AsymmetricSecretKey::class, $provider->getSecretKey());
-        $this->assertInstanceOf(AsymmetricPublicKey::class, $provider->getPublicKey());
-
-        // Since these two were part of the same keypair, this should work:
-        $this->assertSame(
-            Hex::encode($provider->getPublicKey()->getRawKey()),
-            Hex::encode($provider->getSecretKey()->getPublicKey()->getRawKey())
-        );
     }
 }

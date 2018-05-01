@@ -5,8 +5,6 @@ namespace ParagonIE\CipherSweet\KeyProvider;
 use ParagonIE\ConstantTime\Base64UrlSafe;
 use ParagonIE\ConstantTime\Binary;
 use ParagonIE\ConstantTime\Hex;
-use ParagonIE\CipherSweet\Backend\Key\AsymmetricPublicKey;
-use ParagonIE\CipherSweet\Backend\Key\AsymmetricSecretKey;
 use ParagonIE\CipherSweet\Backend\Key\SymmetricKey;
 use ParagonIE\CipherSweet\Contract\BackendInterface;
 use ParagonIE\CipherSweet\Contract\KeyProviderInterface;
@@ -20,8 +18,6 @@ use ParagonIE\CipherSweet\Exception\CryptoOperationException;
 class ArrayProvider implements KeyProviderInterface
 {
     const INDEX_SYMMETRIC_KEY = 'symmetric-key';
-    const INDEX_ASYMMETRIC_PUBLICKEY = 'asymmetric-public-key';
-    const INDEX_ASYMMETRIC_SECRETKEY = 'asymmetric-secret-key';
 
     /**
      * @var BackendInterface
@@ -32,16 +28,6 @@ class ArrayProvider implements KeyProviderInterface
      * @var string
      */
     private $rootSymmetricKey;
-
-    /**
-     * @var string
-     */
-    private $publicKey = '';
-
-    /**
-     * @var string
-     */
-    private $secretKey = '';
 
     /**
      * ArrayProvider constructor.
@@ -74,13 +60,6 @@ class ArrayProvider implements KeyProviderInterface
         } else {
             throw new CryptoOperationException('Invalid key size');
         }
-
-        if (isset($config[self::INDEX_ASYMMETRIC_PUBLICKEY])) {
-            $this->publicKey = (string) $config[self::INDEX_ASYMMETRIC_PUBLICKEY];
-        }
-        if (isset($config[self::INDEX_ASYMMETRIC_SECRETKEY])) {
-            $this->secretKey = (string) $config[self::INDEX_ASYMMETRIC_SECRETKEY];
-        }
     }
 
     /**
@@ -92,26 +71,10 @@ class ArrayProvider implements KeyProviderInterface
     }
 
     /**
-     * @return AsymmetricPublicKey
-     */
-    public function getPublicKey()
-    {
-        return new AsymmetricPublicKey($this->backend, $this->publicKey);
-    }
-
-    /**
      * @return SymmetricKey
      */
     public function getSymmetricKey()
     {
         return new SymmetricKey($this->backend, $this->rootSymmetricKey);
-    }
-
-    /**
-     * @return AsymmetricSecretKey
-     */
-    public function getSecretKey()
-    {
-        return new AsymmetricSecretKey($this->backend, $this->secretKey);
     }
 }
