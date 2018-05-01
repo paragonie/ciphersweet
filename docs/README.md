@@ -104,8 +104,8 @@ $ssn = (new EncryptedField($engine, 'contacts', 'ssn'))
             'contact_ssn_last_four',
             // List of Transforms: 
             [new LastFourDigits()],
-            // Output length (bytes)
-            2
+            // Bloom filter size (bits)
+            16
         )
     )
     // Add a blind index for the full SSN:
@@ -113,7 +113,7 @@ $ssn = (new EncryptedField($engine, 'contacts', 'ssn'))
         new BlindIndex(
             'contact_ssn', 
             [],
-            4
+            32
         )
     );
 
@@ -185,8 +185,8 @@ $ssn = (new EncryptedField($engine, 'contacts', 'ssn'))
             'contact_ssn_last_four',
             // List of Transforms: 
             [new LastFourDigits()],
-            // Output length (bytes)
-            2
+            // Bloom filter size (bits)
+            16
         )
     )
     // Add a blind index for the full SSN:
@@ -194,7 +194,7 @@ $ssn = (new EncryptedField($engine, 'contacts', 'ssn'))
         new BlindIndex(
             'contact_ssn', 
             [],
-            4
+            32
         )
     );
 
