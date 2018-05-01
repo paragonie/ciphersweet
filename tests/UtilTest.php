@@ -2,6 +2,7 @@
 namespace ParagonIE\CipherSweet\Tests;
 
 use ParagonIE\CipherSweet\Util;
+use ParagonIE\ConstantTime\Binary;
 use ParagonIE\ConstantTime\Hex;
 use PHPUnit\Framework\TestCase;
 
@@ -38,57 +39,41 @@ class UtilTest extends TestCase
     public function testBitMask()
     {
         $testCases = [
-            [
-                'ffffffffffffffffffffffffffffffff',
-                16,
-                'ffff'
-            ],
-            [
-                'ffffffffffffffffffffffffffffffff',
-                17,
-                'ffff01'
-            ],
-            [
-                'ffffffffffffffffffffffffffffffff',
-                18,
-                'ffff03'
-            ],
-            [
-                'ffffffffffffffffffffffffffffffff',
-                19,
-                'ffff07'
-            ],
-            [
-                'ffffffffffffffffffffffffffffffff',
-                20,
-                'ffff0f'
-            ],
-            [
-                'ffffffffffffffffffffffffffffffff',
-                21,
-                'ffff1f'
-            ],
-            [
-                'ffffffffffffffffffffffffffffffff',
-                22,
-                'ffff3f'
-            ],
-            [
-                'ffffffffffffffffffffffffffffffff',
-                23,
-                'ffff7f'
-            ],
-            [
-                'ffffffffffffffffffffffffffffffff',
-                24,
-                'ffffff'
-            ]
+            ['ff', 4, 'f0', '0f'],
+            ['ff', 9, 'ff00', 'ff00'],
+            ['ffffffff', 16, 'ffff', 'ffff'],
+            ['ffffffff', 17, 'ffff80', 'ffff01'],
+            ['ffffffff', 18, 'ffffc0', 'ffff03'],
+            ['ffffffff', 19, 'ffffe0', 'ffff07'],
+            ['ffffffff', 20, 'fffff0', 'ffff0f'],
+            ['ffffffff', 21, 'fffff8', 'ffff1f' ],
+            ['ffffffff', 22, 'fffffc', 'ffff3f'],
+            ['ffffffff', 23, 'fffffe', 'ffff7f'],
+            ['ffffffff', 24, 'ffffff', 'ffffff'],
+            ['ffffffff', 32, 'ffffffff', 'ffffffff'],
+            ['ffffffff', 64, 'ffffffff00000000', 'ffffffff00000000'],
+            ['55f6778c', 11, '55e0', '5506'],
+            ['55f6778c', 12, '55f0', '5506'],
+            ['55f6778c', 13, '55f0', '5516'],
+            ['55f6778c', 14, '55f4', '5536'],
+            ['55f6778c', 15, '55f6', '5576'],
+            ['55f6778c', 16, '55f6', '55f6'],
+            ['55f6778c', 17, '55f600', '55f601'],
+            ['55f6778c', 32, '55f6778c', '55f6778c']
         ];
         foreach ($testCases as $testCase) {
-            list ($input, $size, $output) = $testCase;
+            list ($input, $size, $output, $outputRight) = $testCase;
             $this->assertSame(
                 $output,
-                Hex::encode(Util::andMask(Hex::decode($input), $size))
+                Hex::encode(
+                    Util::andMask(Hex::decode($input), $size)
+                )
+            );
+            $this->assertSame(
+                $outputRight,
+                Hex::encode(
+                    Util::andMask(Hex::decode($input), $size, true)
+                )
             );
         }
 
