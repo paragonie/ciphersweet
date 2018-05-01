@@ -61,6 +61,11 @@ class FIPSCrypto implements BackendInterface
             $macKey,
             true
         );
+        try {
+            \ParagonIE_Sodium_Compat::memzero($encKey);
+            \ParagonIE_Sodium_Compat::memzero($macKey);
+        } catch (\SodiumException $ex) {
+        }
 
         return self::MAGIC_HEADER . Base64UrlSafe::encode(
             $hkdfSalt . $ctrNonce . $mac . $ciphertext
@@ -115,7 +120,13 @@ class FIPSCrypto implements BackendInterface
         }
 
         // If we're here, it's time to decrypt:
-        return self::aes256ctr($ciphertext, $encKey, $ctrNonce);
+        $plaintext = self::aes256ctr($ciphertext, $encKey, $ctrNonce);
+        try {
+            \ParagonIE_Sodium_Compat::memzero($encKey);
+            \ParagonIE_Sodium_Compat::memzero($macKey);
+        } catch (\SodiumException $ex) {
+        }
+        return $plaintext;
     }
 
     /**
