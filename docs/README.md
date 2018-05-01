@@ -35,9 +35,8 @@ use ParagonIE\ConstantTime\Hex;
 use ParagonIE\CipherSweet\Backend\ModernCrypto;
 use ParagonIE\CipherSweet\KeyProvider\StringProvider;
 
-$ciphers = new ModernCrypto();
 $provider = new StringProvider(
-    $ciphers,
+    new ModernCrypto(),
     '4e1c44f87b4cdf21808762970b356891db180a9dd9850e7baf2a79ff3ab8a2fc'
 );
 ```
@@ -54,20 +53,29 @@ use ParagonIE\CipherSweet\Backend\ModernCrypto;
 use ParagonIE\CipherSweet\CipherSweet;
 use ParagonIE\CipherSweet\KeyProvider\StringProvider;
 
-$ciphers = new ModernCrypto();
 $provider = new StringProvider(
-    $ciphers,
+    new ModernCrypto(),
     '4e1c44f87b4cdf21808762970b356891db180a9dd9850e7baf2a79ff3ab8a2fc'
 );
 
 $engine = new CipherSweet($provider);
 ```
 
-If you're using FIPSCrypto, pass it as the second argument to the `CipherSweet`
-constructor:
+If you're using FIPSCrypto instead of ModernCrypto, you just need to pass
+it once to the `KeyProvider` and the rest is handled for you.
 
 ```
-$engine = new CipherSweet($provider, $fips);
+<?php
+use ParagonIE\ConstantTime\Hex;
+use ParagonIE\CipherSweet\Backend\ModernCrypto;
+use ParagonIE\CipherSweet\CipherSweet;
+use ParagonIE\CipherSweet\KeyProvider\StringProvider;
+
+$provider = new StringProvider(
+    new FIPSCrypto(),
+    '4e1c44f87b4cdf21808762970b356891db180a9dd9850e7baf2a79ff3ab8a2fc'
+);
+$engine = new CipherSweet($provider);
 ```
 
 ## Basic CipherSweet Usage
