@@ -5,6 +5,7 @@ namespace ParagonIE\CipherSweet;
 use ParagonIE\ConstantTime\Binary;
 use ParagonIE\CipherSweet\Backend\Key\SymmetricKey;
 use ParagonIE\CipherSweet\Exception\CryptoOperationException;
+use ParagonIE_Sodium_Core_Util as SodiumUtil;
 
 /**
  * Class Util
@@ -43,6 +44,26 @@ abstract class Util
         return (string) (
             $plaintext ^ Binary::safeSubstr($xor, 0, $length)
         );
+    }
+
+    /**
+     * @param string $input
+     * @param int $bits
+     * @return string
+     *
+     * @throws \SodiumException
+     */
+    public static function andMask($input, $bits)
+    {
+        $bytes = $bits >> 3;
+        $string = Binary::safeSubstr($input, 0, $bytes);
+        $leftOver = ($bits - ($bytes << 3));
+        if ($leftOver > 0) {
+            $mask = (1 << $leftOver) - 1;
+            $int = SodiumUtil::chrToInt($input[$bytes]);
+            $string .= SodiumUtil::intToChr($int & $mask);
+        }
+        return $string;
     }
 
     /**

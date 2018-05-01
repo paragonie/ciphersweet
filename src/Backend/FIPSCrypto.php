@@ -124,26 +124,28 @@ class FIPSCrypto implements BackendInterface
      *
      * @param string $plaintext
      * @param SymmetricKey $key
-     * @param int|null $outputLength
+     * @param int|null $bitLength
      *
      * @return string
+     * @throws \SodiumException
      */
     public function blindIndexFast(
         $plaintext,
         SymmetricKey $key,
-        $outputLength = null
+        $bitLength = null
     ) {
-        if (\is_null($outputLength)) {
-            $outputLength = 32;
+        if (\is_null($bitLength)) {
+            $bitLength = 256;
         }
-        return \hash_pbkdf2(
+        $output = \hash_pbkdf2(
             'sha384',
             $plaintext,
             $key->getRawKey(),
             1,
-            $outputLength,
+            ($bitLength >> 3),
             true
         );
+        return Util::andMask($output, $bitLength);
     }
 
     /**
@@ -152,19 +154,20 @@ class FIPSCrypto implements BackendInterface
      *
      * @param string $plaintext
      * @param SymmetricKey $key
-     * @param int|null $outputLength
+     * @param int|null $bitLength
      * @param array $config
      *
      * @return string
+     * @throws \SodiumException
      */
     public function blindIndexSlow(
         $plaintext,
         SymmetricKey $key,
-        $outputLength = null,
+        $bitLength = null,
         array $config = []
     ) {
-        if (\is_null($outputLength)) {
-            $outputLength = 32;
+        if (\is_null($bitLength)) {
+            $bitLength = 256;
         }
         $iterations = 50000;
         if (isset($config['iterations'])) {
@@ -172,15 +175,15 @@ class FIPSCrypto implements BackendInterface
                 $iterations = (int) $config['iterations'];
             }
         }
-
-        return \hash_pbkdf2(
+        $output = \hash_pbkdf2(
             'sha384',
             $plaintext,
             $key->getRawKey(),
             $iterations,
-            $outputLength,
+            ($bitLength >> 3),
             true
         );
+        return Util::andMask($output, $bitLength);
     }
 
     /**

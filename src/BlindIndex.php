@@ -27,7 +27,7 @@ class BlindIndex
     /**
      * @var int $outputLength
      */
-    protected $outputLength = 32;
+    protected $filterBits = 256;
 
     /**
      * @var array<int, TransformationInterface> $transformations
@@ -39,20 +39,20 @@ class BlindIndex
      *
      * @param string $name
      * @param array<int, TransformationInterface> $transformations
-     * @param int $outputLength
+     * @param int $filterBits
      * @param bool $fastHash
      * @param array $hashConfig
      */
     public function __construct(
         $name,
         array $transformations = [],
-        $outputLength = 32,
+        $filterBits = 256,
         $fastHash = false,
         array $hashConfig = []
     ) {
         $this->name = $name;
         $this->transformations = $transformations;
-        $this->outputLength = $outputLength;
+        $this->filterBits = $filterBits;
         $this->fastHash = $fastHash;
         $this->hashConfig = $hashConfig;
     }
@@ -94,9 +94,9 @@ class BlindIndex
     /**
      * @return int
      */
-    public function getOutputLength()
+    public function getFilterBitLength()
     {
-        return $this->outputLength;
+        return $this->filterBits;
     }
 
     /**

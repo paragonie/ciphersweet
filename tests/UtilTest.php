@@ -32,6 +32,69 @@ class UtilTest extends TestCase
         }
     }
 
+    /**
+     * @throws \SodiumException
+     */
+    public function testBitMask()
+    {
+        $testCases = [
+            [
+                'ffffffffffffffffffffffffffffffff',
+                16,
+                'ffff'
+            ],
+            [
+                'ffffffffffffffffffffffffffffffff',
+                17,
+                'ffff01'
+            ],
+            [
+                'ffffffffffffffffffffffffffffffff',
+                18,
+                'ffff03'
+            ],
+            [
+                'ffffffffffffffffffffffffffffffff',
+                19,
+                'ffff07'
+            ],
+            [
+                'ffffffffffffffffffffffffffffffff',
+                20,
+                'ffff0f'
+            ],
+            [
+                'ffffffffffffffffffffffffffffffff',
+                21,
+                'ffff1f'
+            ],
+            [
+                'ffffffffffffffffffffffffffffffff',
+                22,
+                'ffff3f'
+            ],
+            [
+                'ffffffffffffffffffffffffffffffff',
+                23,
+                'ffff7f'
+            ],
+            [
+                'ffffffffffffffffffffffffffffffff',
+                24,
+                'ffffff'
+            ]
+        ];
+        foreach ($testCases as $testCase) {
+            list ($input, $size, $output) = $testCase;
+            $this->assertSame(
+                $output,
+                Hex::encode(Util::andMask(Hex::decode($input), $size))
+            );
+        }
+
+        // bitMask
+    }
+
     public function testCtrNonceIncrease()
     {
         $testCases = [

@@ -302,7 +302,7 @@ class EncryptedFieldTest extends TestCase
                     // List of Transforms:
                     [new LastFourDigits()],
                     // Output length (bytes)
-                    $longer ? 8 : 2,
+                    $longer ? 64 : 16,
                     $fast
                 )
             )
@@ -313,7 +313,7 @@ class EncryptedFieldTest extends TestCase
                     // List of Transforms:
                     [new LastFourDigits()],
                     // Output length (bytes)
-                    $longer ? 8 : 2,
+                    $longer ? 64 : 16,
                     $fast
                 )
             )
@@ -322,7 +322,7 @@ class EncryptedFieldTest extends TestCase
                 new BlindIndex(
                     'contact_ssn',
                     [],
-                    $longer ? 16 : 4,
+                    $longer ? 128 : 32,
                     $fast
                 )
             );

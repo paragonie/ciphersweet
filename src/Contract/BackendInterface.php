@@ -26,21 +26,21 @@ interface BackendInterface
     /**
      * @param string $plaintext
      * @param SymmetricKey $key
-     * @param int|null $outputLength
+     * @param int|null $bitLength
      *
      * @return string
      */
-    public function blindIndexFast($plaintext, SymmetricKey $key, $outputLength = null);
+    public function blindIndexFast($plaintext, SymmetricKey $key, $bitLength = null);
 
     /**
      * @param string $plaintext
      * @param SymmetricKey $key
-     * @param int|null $outputLength
+     * @param int|null $bitLength
      * @param array $config
      *
      * @return string
      */
-    public function blindIndexSlow($plaintext, SymmetricKey $key, $outputLength = null, array $config = []);
+    public function blindIndexSlow($plaintext, SymmetricKey $key, $bitLength = null, array $config = []);
 
     /**
      * @param string $tableName
