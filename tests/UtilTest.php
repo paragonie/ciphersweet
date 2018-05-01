@@ -2,7 +2,6 @@
 namespace ParagonIE\CipherSweet\Tests;
 
 use ParagonIE\CipherSweet\Util;
-use ParagonIE\ConstantTime\Binary;
 use ParagonIE\ConstantTime\Hex;
 use PHPUnit\Framework\TestCase;
 
@@ -76,8 +75,6 @@ class UtilTest extends TestCase
                 )
             );
         }
-
-        // bitMask
     }
 
     public function testCtrNonceIncrease()
