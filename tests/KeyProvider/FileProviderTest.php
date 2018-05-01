@@ -1,13 +1,10 @@
 <?php
 namespace ParagonIE\CipherSweet\Tests\KeyProvider;
 
-use ParagonIE\CipherSweet\Backend\Key\AsymmetricPublicKey;
-use ParagonIE\CipherSweet\Backend\Key\AsymmetricSecretKey;
 use ParagonIE\CipherSweet\Backend\Key\SymmetricKey;
 use ParagonIE\CipherSweet\Backend\ModernCrypto;
 use ParagonIE\CipherSweet\KeyProvider\FileProvider;
 use ParagonIE\ConstantTime\Base32;
-use ParagonIE\ConstantTime\Hex;
 use PHPUnit\Framework\TestCase;
 
 /**
