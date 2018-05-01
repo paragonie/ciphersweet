@@ -14,7 +14,7 @@ use ParagonIE_Sodium_Core_Util as SodiumUtil;
 abstract class Util
 {
     /**
-     * Userland polfill for AES-256-CTR, using AES-256-ECB
+     * Userland polyfill for AES-256-CTR, using AES-256-ECB
      *
      * @param string $plaintext
      * @param string $key
