@@ -81,30 +81,42 @@ class ModernCrypto implements BackendInterface
     /**
      * @param string $plaintext
      * @param SymmetricKey $key
-     * @param int|null $outputLength
+     * @param int|null $bitLength
      *
      * @return string
      * @throws \SodiumException
      */
-    public function blindIndexFast($plaintext, SymmetricKey $key, $outputLength = null)
+    public function blindIndexFast($plaintext, SymmetricKey $key, $bitLength = null)
     {
+        if (\is_null($bitLength)) {
+            $bitLength = 256;
+        }
+        if ($bitLength > 512) {
+            throw new \SodiumException('Output length is too high');
+        }
+        if ($bitLength > 256) {
+            $hashLength = $bitLength >> 3;
+        } else {
+            $hashLength = 32;
+        }
         $hash = SodiumCompat::crypto_generichash(
             $plaintext,
-            $key->getRawKey()
+            $key->getRawKey(),
+            $hashLength
         );
-        return Binary::safeSubstr($hash, 0, $outputLength);
+        return Util::andMask($hash, $bitLength);
     }
 
     /**
      * @param string $plaintext
      * @param SymmetricKey $key
-     * @param int|null $outputLength
+     * @param int|null $bitLength
      * @param array $config
      *
      * @return string
      * @throws \SodiumException
      */
-    public function blindIndexSlow($plaintext, SymmetricKey $key, $outputLength = null, array $config = [])
+    public function blindIndexSlow($plaintext, SymmetricKey $key, $bitLength = null, array $config = [])
     {
         if (!SodiumCompat::crypto_pwhash_is_available()) {
             throw new \SodiumException('Not using the native libsodium bindings');
@@ -122,8 +134,11 @@ class ModernCrypto implements BackendInterface
                 $memLimit = (int) $config['memlimit'];
             }
         }
+        if (\is_null($bitLength)) {
+            $bitLength = 256;
+        }
         /** @var int $pwHashLength */
-        $pwHashLength = \is_null($outputLength) ? 16 : $outputLength;
+        $pwHashLength = $bitLength >> 3;
         if ($pwHashLength < 16) {
             $pwHashLength = 16;
         }
@@ -139,7 +154,7 @@ class ModernCrypto implements BackendInterface
             $memLimit,
             SodiumCompat::CRYPTO_PWHASH_ALG_ARGON2ID13
         );
-        return Binary::safeSubstr($hash, 0, $outputLength);
+        return Util::andMask($hash, $bitLength);
     }
 
     /**

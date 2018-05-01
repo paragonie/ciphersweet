@@ -5,6 +5,7 @@ namespace ParagonIE\CipherSweet;
 use ParagonIE\ConstantTime\Binary;
 use ParagonIE\CipherSweet\Backend\Key\SymmetricKey;
 use ParagonIE\CipherSweet\Exception\CryptoOperationException;
+use ParagonIE_Sodium_Core_Util as SodiumUtil;
 
 /**
  * Class Util
@@ -43,6 +44,37 @@ abstract class Util
         return (string) (
             $plaintext ^ Binary::safeSubstr($xor, 0, $length)
         );
+    }
+
+    /**
+     * @param string $input
+     * @param int $bits
+     * @param bool $bitwiseLeft
+     * @return string
+     *
+     * @throws \SodiumException
+     */
+    public static function andMask($input, $bits, $bitwiseLeft = false)
+    {
+        $bytes = $bits >> 3;
+        $length = Binary::safeStrlen($input);
+        if ($bytes >= $length) {
+            $input .= \str_repeat("\0", ($bytes - $length) + 1);
+        }
+        $string = Binary::safeSubstr($input, 0, $bytes);
+        $leftOver = ($bits - ($bytes << 3));
+        if ($leftOver > 0) {
+            $mask = (1 << $leftOver) - 1;
+            if (!$bitwiseLeft) {
+                // https://stackoverflow.com/a/2602885
+                $mask = ($mask & 0xF0) >> 4 | ($mask & 0x0F) << 4;
+                $mask = ($mask & 0xCC) >> 2 | ($mask & 0x33) << 2;
+                $mask = ($mask & 0xAA) >> 1 | ($mask & 0x55) << 1;
+            }
+            $int = SodiumUtil::chrToInt($input[$bytes]);
+            $string .= SodiumUtil::intToChr($int & $mask);
+        }
+        return $string;
     }
 
     /**

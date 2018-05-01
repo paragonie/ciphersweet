@@ -228,13 +228,13 @@ class EncryptedField
             return $Backend->blindIndexFast(
                 $plaintext,
                 $subKey,
-                $index->getOutputLength()
+                $index->getFilterBitLength()
             );
         }
         return $Backend->blindIndexSlow(
             $plaintext,
             $subKey,
-            $index->getOutputLength(),
+            $index->getFilterBitLength(),
             $index->getHashConfig()
         );
     }
