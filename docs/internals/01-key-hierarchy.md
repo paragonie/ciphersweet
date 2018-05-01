@@ -1,4 +1,4 @@
 # Key Hierarchy in CipherSweet
 
-![Key Hierarchy](01-key-hierarchy.svg)
+![Key Hierarchy](https://cdn.rawgit.com/paragonie/ciphersweet/internals/docs/internals/01-key-heirarchy.svg)
 
