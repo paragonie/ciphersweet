@@ -10,7 +10,7 @@ sourced from third-party key management services) into:
 
 At a super high-level, the picture looks like this:
 
-![Key Hierarchy](https://cdn.rawgit.com/paragonie/ciphersweet/internals/docs/internals/01-key-heirarchy.svg)
+![Key Hierarchy](https://cdn.rawgit.com/paragonie/ciphersweet/master/docs/internals/01-key-heirarchy.svg)
 
 Where:
 
