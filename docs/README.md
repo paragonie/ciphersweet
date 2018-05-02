@@ -27,7 +27,8 @@ After you choose your backend, you'll need a KeyProvider. We provide a few
 out-of-the-box, but we also provide an interface that can be used to integrate
 with any key management service in your code.
 
-The simplest example of this is the `StringProvider`:
+The simplest example of this is the `StringProvider`, which accepts a
+string containing your encryption key:
 
 ```php
 <?php
@@ -39,6 +40,21 @@ $provider = new StringProvider(
     new ModernCrypto(),
     '4e1c44f87b4cdf21808762970b356891db180a9dd9850e7baf2a79ff3ab8a2fc'
 );
+```
+
+You can pass a raw binary string, hex-encoded string, or
+base64url-encoded string to the second parameter of the `StringProvider`
+constructor, provided the decoded key is 256 bits.
+
+Attempting to pass a key of an invalid size (i.e. not 256-bit) will
+result in a `CryptoOperationException` being thrown. The recommended
+way to generate a key is:
+
+```php
+<?php
+use ParagonIE\ConstantTime\Hex;
+
+var_dump(Hex::encode(random_bytes(32)));
 ```
 
 ### Start Your Engines
