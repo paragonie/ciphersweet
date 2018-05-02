@@ -38,6 +38,7 @@ use ParagonIE\CipherSweet\KeyProvider\StringProvider;
 
 $provider = new StringProvider(
     new ModernCrypto(),
+    // Example key, chosen randomly, hex-encoded:
     '4e1c44f87b4cdf21808762970b356891db180a9dd9850e7baf2a79ff3ab8a2fc'
 );
 ```
@@ -71,6 +72,7 @@ use ParagonIE\CipherSweet\KeyProvider\StringProvider;
 
 $provider = new StringProvider(
     new ModernCrypto(),
+    // Example key, chosen randomly, hex-encoded:
     '4e1c44f87b4cdf21808762970b356891db180a9dd9850e7baf2a79ff3ab8a2fc'
 );
 
@@ -89,6 +91,7 @@ use ParagonIE\CipherSweet\KeyProvider\StringProvider;
 
 $provider = new StringProvider(
     new FIPSCrypto(),
+    // Example key, chosen randomly, hex-encoded:
     '4e1c44f87b4cdf21808762970b356891db180a9dd9850e7baf2a79ff3ab8a2fc'
 );
 $engine = new CipherSweet($provider);
