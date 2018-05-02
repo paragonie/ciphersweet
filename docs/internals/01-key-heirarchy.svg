@@ -24,6 +24,15 @@ Copyright 2018 Paragon Initiative Enterprises
         stroke-width: 2;
         fill: none;
     }
+    .arrowhead {
+        stroke: #000;
+        fill: #000;
+        stroke-width: 1;
+    }
+    .arrowmini {
+        stroke-width: 0;
+        fill: #000;
+    }
     .box-text {
         color: #000;
         font-size: 14pt;
@@ -48,13 +57,16 @@ Copyright 2018 Paragon Initiative Enterprises
     }
 
 </style>
-    <rect x="0" y="0" height="190" width="350" fill="#fff"></rect>
-    <g transform="matrix(1,0,0,1,10,10)" id="key-provider">
+    <rect x="0" y="0" height="190" width="350" fill="#fff" />
+    <g transform="translate(10 10)" id="key-provider">
         <rect x="0" y="0" class="box" width="130" height="32" />
         <text x="15" y="22" class="box-text">KeyProvider</text>
     </g>
     <line x1="140" x2="180" y1="26" y2="26" class="line" />
-    <g transform="matrix(1,0,0,1,180,10)" id="symmetric-key">
+    <g transform="translate(172 21)" class="arrowhead">
+        <polygon points="2,5, 0,0, 7,5, 0,10" />
+    </g>
+    <g transform="translate(180 10)" id="symmetric-key">
         <rect x="0" y="0" rx="10" ry="10" class="box rounded-borders" width="160" height="32" />
         <text x="15" y="22" class="box-text">Symmetric Key</text>
     </g>
@@ -65,37 +77,67 @@ Copyright 2018 Paragon Initiative Enterprises
         <line x1="89" x2="251" y1="72" y2="72" class="line" />
         <path d="M 80 82 q 0 -10 10 -10" class="line" />
         <line x1="80" x2="80" y1="80" y2="90" class="line" />
+        <g transform="matrix(0,1,-1,0, 85, 82)" class="arrowhead">
+            <polygon points="2,5, 0,0, 7,5, 0,10" />
+        </g>
+        <g transform="matrix(0,1,-1,0, 265, 82)" class="arrowhead">
+            <polygon points="2,5, 0,0, 7,5, 0,10" />
+        </g>
     </g>
-    <g transform="matrix(1,0,0,1,40,90)" id="hkdf-1">
+    <g transform="translate(40 90)" id="hkdf-1">
         <rect x="0" y="0" class="box" width="80" height="32" />
         <text x="15" y="22" class="box-text">HKDF</text>
     </g>
-    <g transform="matrix(1,0,0,1,220,90)" id="hkdf-2">
+    <g transform="translate(220 90)" id="hkdf-2">
         <rect x="0" y="0" class="box" width="80" height="32" />
         <text x="15" y="22" class="box-text">HKDF</text>
     </g>
 
     <g>
         <text x="12" y="110" class="small-text">C1</text>
-        <line x1="30" x2="40" y1="106" y2="106" class="thin-line" />
-        <text x="312" y="110" class="small-text">C2</text>
-        <line x1="300" x2="310" y1="106" y2="106" class="thin-line" />
+        <line x1="28" x2="40" y1="106" y2="106" class="thin-line" />
+        <text x="314" y="110" class="small-text">C2</text>
+        <line x1="300" x2="312" y1="106" y2="106" class="thin-line" />
+        <g transform="matrix(1,0,0,1, 33.3, 102.167)" class="arrowmini">
+            <polygon points="3,4, 0,0, 7,4, 0,8" />
+        </g>
+        <g transform="matrix(-1,0,0,1, 307.3, 102.167)" class="arrowmini">
+            <polygon points="3,4, 0,0, 7,4, 0,8" />
+        </g>
         <text x="140" y="100" class="small-text">TableName</text>
         <text x="142" y="118" class="small-text">FieldName</text>
         <line x1="120" x2="138" y1="96" y2="96" class="thin-line" />
         <line x1="204" x2="220" y1="96" y2="96" class="thin-line" />
         <line x1="120" x2="138" y1="114" y2="114" class="thin-line" />
         <line x1="204" x2="220" y1="114" y2="114" class="thin-line" />
+        <g transform="matrix(-1,0,0,1, 128, 92)" class="arrowmini">
+            <polygon points="3,4, 0,0, 7,4, 0,8" />
+        </g>
+        <g transform="matrix(-1,0,0,1, 128, 110)" class="arrowmini">
+            <polygon points="3,4, 0,0, 7,4, 0,8" />
+        </g>
+        <g transform="matrix(1,0,0,1, 213, 92)" class="arrowmini">
+            <polygon points="3,4, 0,0, 7,4, 0,8" />
+        </g>
+        <g transform="matrix(1,0,0,1, 213, 110)" class="arrowmini">
+            <polygon points="3,4, 0,0, 7,4, 0,8" />
+        </g>
     </g>
 
     <line x1="80" x2="80" y1="122" y2="150" class="line" />
     <line x1="260" x2="260" y1="122" y2="150" class="line" />
+        <g transform="matrix(0,1,-1,0, 85, 141)" class="arrowhead">
+            <polygon points="2,5, 0,0, 7,5, 0,10" />
+        </g>
+        <g transform="matrix(0,1,-1,0, 265, 141)" class="arrowhead">
+            <polygon points="2,5, 0,0, 7,5, 0,10" />
+        </g>
 
-    <g transform="matrix(1,0,0,1,10,150)" id="enc-key">
+    <g transform="translate(10 150)" id="enc-key">
         <rect x="0" y="0" class="box" width="150" height="32" />
         <text x="15" y="22" class="box-text">Field Enc. Key</text>
     </g>
-    <g transform="matrix(1,0,0,1,190,150)" id="idx-key">
+    <g transform="translate(190 150)" id="idx-key">
         <rect x="0" y="0" class="box" width="150" height="32" />
         <text x="15" y="22" class="box-text">Index Root Key</text>
     </g>
