@@ -59,7 +59,7 @@ composer require paragonie/ciphersweet
 Please refer to **[the documentation](https://github.com/paragonie/ciphersweet/tree/master/docs)**
 to learn how to use CipherSweet.
 
-## Integration Support
+### Integration Support
 
 Please feel free to [create an issue](https://github.com/paragonie/ciphersweet/issues/new)
 if you'd like to integrate CipherSweet with your software.
