@@ -13,3 +13,6 @@ third-party software security assessments.
   encrypted in CipherSweet. Knowledge of the Key Hierarchy is a
   pre-requisite to understanding the security consequences of this
   feature.
+* [Blind Indexing](04-blind-index.md) explains how blind indexes are
+  constructed. Knowledge of the Key Hierarchy is a pre-requisite to
+  understanding the security consequences of this feature.
