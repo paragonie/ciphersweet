@@ -26,7 +26,7 @@ matrix:
 
 install:
     - composer self-update
-    - if [[ $USE_PSALM -eq 1 ]]; then composer require --dev "vimeo/psalm:1.1.1"; fi
+    - if [[ $USE_PSALM -eq 1 ]]; then composer require --dev "vimeo/psalm:1.1.3"; fi
     - composer update
 
 script:

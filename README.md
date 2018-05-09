@@ -9,16 +9,13 @@
 **CipherSweet** is a backend library developed by [Paragon Initiative Enterprises](https://paragonie.com)
 for implementing [searchable field-level encryption](https://paragonie.com/blog/2017/05/building-searchable-encrypted-databases-with-php-and-sql).
 
-CipherSweet was originally intend for use in in [SuiteCRM](https://github.com/salesagility/SuiteCRM)
-and related products, although there is nothing preventing its use in other products.
+**Requires PHP 5.5+**, although 7.2 is recommended for better performance.
 
 Before adding searchable encryption support to your project, make sure you understand
 the [appropriate threat model](https://adamcaudill.com/2016/07/20/threat-modeling-for-applications/)
 for your use case. At a minimum, you will want your application and database
 server to be running on separate cloud instances / virtual machines.
 (Even better: Separate bare-metal hardware.)
-
-**Requires PHP 5.5+**, although 7.2 is recommended for better performance.
 
 CipherSweet is available under the very permissive [ISC License](https://github.com/paragonie/ciphersweet/blob/master/LICENSE)
 which allows you to use CipherSweet in any of your PHP projects, commercial
@@ -66,3 +63,15 @@ to learn how to use CipherSweet.
 
 Please feel free to [create an issue](https://github.com/paragonie/ciphersweet/issues/new)
 if you'd like to integrate CipherSweet with your software.
+
+## Why "CipherSweet"?
+
+CipherSweet was originally intend for use in in [SuiteCRM](https://github.com/salesagility/SuiteCRM)
+(a fork of the SugarCRM Community Edition) and related products, although
+there is nothing preventing its use in other products.
+
+Therefore, we opted for a pun on "ciphersuite" that pays homage to the
+open source heritage of the project we designed this library for.
+
+If the wordplay is too heavy, feel free to juxtapose the two component
+nouns and call it "SweetCipher" in spoken conversation.
