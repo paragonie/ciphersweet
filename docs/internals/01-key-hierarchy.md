@@ -17,7 +17,7 @@ Where:
 * C1 is the byte `0xB4` repeated 32 times.
 * C2 is the byte `0x7E` repeated 32 times.
 
-The constants C1 and C2 were chosen to have a Hamming distance of 4
+The constants C1 and C2 were chosen to have a Hamming distance of 32*4 = 128b
 between them, and are used to achieve domain separation for secure
 key splitting.
 
