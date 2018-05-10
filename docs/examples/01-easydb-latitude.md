@@ -21,7 +21,7 @@ $ssnField = (new EncryptedField($engine, 'contacts', 'ssn'))
         new BlindIndex(
             // Name (used in key splitting):
             'contact_ssn_last_four',
-            // List of Transforms: 
+            // List of Transforms:
             [new LastFourDigits()],
             // Bloom filter size (bits)
             16
@@ -30,7 +30,7 @@ $ssnField = (new EncryptedField($engine, 'contacts', 'ssn'))
     // Add a blind index for the full SSN:
     ->addBlindIndex(
         new BlindIndex(
-            'contact_ssn', 
+            'contact_ssn',
             [],
             32
         )
@@ -44,7 +44,7 @@ $contactInfo = [
 ];
 
 # INSERTING A NEW RECORD:
-/** 
+/**
  * @var string $ciphertext
  * @var array<string, string> $indexes
  */
@@ -75,7 +75,7 @@ $query = $factory
 $results = $db->safeQuery($query->sql(), $query->params());
 foreach ($results as $row) {
     $decryptedSSN = $ssnField->decryptValue($row['ssn']);
-    if (\hash_equals($contactInfo['ssn'], $decryptedSSN))) {
+    if (\hash_equals($contactInfo['ssn'], $decryptedSSN)) {
         // Found record:
         var_dump([
             'name' => $row['name'],
