@@ -111,11 +111,11 @@ $entityManager = EntityManager::create($dbParams, $config);
 $createTableQuery = '
 CREATE TABLE IF NOT EXISTS contacts (
     id int(10) unsigned NOT NULL AUTO_INCREMENT,
-    name varchar(40) NOT NULL,
-    email varchar(40) NOT NULL,
+    name varchar(50) NOT NULL,
+    email varchar(32) NOT NULL,
     ssn text NOT NULL,
-    ssn_idx varchar(40) NOT NULL,
-    ssn_last_four_idx varchar(4) NOT NULL,
+    ssn_idx text NOT NULL,
+    ssn_last_four_idx text NOT NULL,
     PRIMARY KEY (id)
 ) ENGINE=InnoDB;
 ';
