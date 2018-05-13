@@ -28,8 +28,8 @@ or define your own, using the [KeyProviderInterface](https://github.com/paragoni
 
 That's all there is to it.
 
-Don't do something crazy like try to use a human-memorizable password as
-an encryption key without key-stretching (i.e. `sodium_crypto_pwhash()`).
+**Don't do something crazy like try to use a human-memorizable password as
+an encryption key without key-stretching (i.e. `sodium_crypto_pwhash()`).**
 
 This library tries to side-step common mistakes, but if you go out of
 your way to do something insecure, it cannot save you from the
