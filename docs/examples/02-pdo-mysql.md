@@ -1,6 +1,8 @@
 # Example: Getting Data Into and Out of the Database
 
 The following example uses the PDO extension using the MySQL driver.
+This example uses a hard-coded key. Click [here](04-key-generation) to
+learn the proper way to generate a key.
 
 ```php
 <?php
