@@ -10,6 +10,7 @@ use ParagonIE\CipherSweet\EncryptedField;
 use ParagonIE\CipherSweet\Transformation\LastFourDigits;
 use ParagonIE\CipherSweet\KeyProvider\StringProvider;
 use ParagonIE\CipherSweet\Backend\ModernCrypto;
+use ParagonIE\ConstantTime\Hex;
 
 $pdo = new PDO(
     'mysql:host=127.0.0.1:3306;dbname=testdb;charset=utf8',
@@ -39,7 +40,7 @@ $pdo->query($createTableQuery);
 $provider = new StringProvider(
     new ModernCrypto(),
     // Example key, chosen randomly, hex-encoded:
-    '4e1c44f87b4cdf21808762970b356891db180a9dd9850e7baf2a79ff3ab8a2fc'
+    Hex::encode(random_bytes(32))
 );
 
 /** @var CipherSweet $engine */
