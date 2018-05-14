@@ -8,7 +8,11 @@ namespace ParagonIE\CipherSweet\Contract;
 interface TransformationInterface
 {
     /**
-     * @param string $input
+     * Implementations can define their own prototypes, but
+     * this should almost always operate on a string, and must
+     * always return a string.
+     *
+     * @param mixed $input
      * @return string
      */
     public function __invoke($input);
