@@ -1,6 +1,6 @@
 <phpunit>
     <testsuites>
-        <testsuite name="Discretion">
+        <testsuite name="CipherSweet Minimal Test Suite">
             <directory>tests</directory>
         </testsuite>
     </testsuites>
