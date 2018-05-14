@@ -182,9 +182,9 @@ abstract class Util
      */
     public static function pack(array $pieces)
     {
-        $output = \ParagonIE_Sodium_Core_Util::store32_le(\count($pieces));
+        $output = SodiumUtil::store32_le(\count($pieces));
         foreach ($pieces as $piece) {
-            $output .= \ParagonIE_Sodium_Core_Util::store64_le(
+            $output .= SodiumUtil::store64_le(
                 Binary::safeStrlen($piece)
             );
             $output .= $piece;
