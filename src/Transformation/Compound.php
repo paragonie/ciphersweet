@@ -21,7 +21,7 @@ class Compound implements TransformationInterface
         if (!\is_array($input)) {
             throw new \TypeError('Compound Transformation expects an array');
         }
-        return (string) $this->processArray($input);
+        return (string) \json_encode($this->processArray($input));
     }
 
     /**
@@ -49,6 +49,10 @@ class Compound implements TransformationInterface
         }
 
         $array = [];
+        /**
+         * @var string|int $key
+         * @var array|string|int|bool|null|float $value
+         */
         foreach ($input as $key => $value) {
             if (\is_array($value)) {
                 $array[$key] = $this->processArray($value, $layer + 1);
@@ -65,10 +69,6 @@ class Compound implements TransformationInterface
             $array[$key] = $value;
         }
 
-        if ($layer === 0) {
-            return \json_encode($array);
-        } else {
-            return $array;
-        }
+        return $array;
     }
 }
