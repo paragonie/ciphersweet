@@ -18,6 +18,7 @@ abstract class Util
      *
      * @param bool|null $bool
      * @return string
+     * @psalm-suppress RedundantConditionGivenDocblockType
      */
     public static function boolToChr($bool)
     {
