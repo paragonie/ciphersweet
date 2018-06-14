@@ -14,6 +14,55 @@ use ParagonIE_Sodium_Core_Util as SodiumUtil;
 abstract class Util
 {
     /**
+     * Convert a nullable boolean to a string with a length of 1.
+     *
+     * @param bool|null $bool
+     * @return string
+     */
+    public static function boolToChr($bool)
+    {
+        if (\is_null($bool)) {
+            $int = 0;
+        } elseif (\is_bool($bool)) {
+            $int = $bool ? 2 : 1;
+        } else {
+            throw new \TypeError('Only TRUE, FALSE, or NULL allowed');
+        }
+        /** @var string $string */
+        $string = \pack('C', $int);
+
+        return $string;
+    }
+
+    /**
+     * Convert a string with a length of 1 to a nullable boolean.
+     *
+     * @param string $string
+     * @return bool|null
+     */
+    public static function chrToBool($string)
+    {
+        if (Binary::safeStrlen($string) !== 1) {
+            throw new \OutOfRangeException(
+                'String is not 1 length long'
+            );
+        }
+        /** @var array<int, int> $unpacked */
+        $unpacked = \unpack('C', $string);
+        switch ($unpacked[1]) {
+            case 0:
+                return null;
+            case 1:
+                return false;
+            case 2:
+                return true;
+        }
+        throw new \InvalidArgumentException(
+            'Internal integer is not 0, 1, or 2'
+        );
+    }
+
+    /**
      * Userland polyfill for AES-256-CTR, using AES-256-ECB
      *
      * @param string $plaintext

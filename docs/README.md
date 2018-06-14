@@ -273,3 +273,8 @@ to decrypt the results.
 
 See also: the **[examples](https://github.com/paragonie/ciphersweet/tree/master/docs/examples)**
 directory.
+
+## Solutions for Common Problems with Searchable Encryption
+
+See also: the **[solutions](https://github.com/paragonie/ciphersweet/tree/master/docs/solutions)**
+directory.
