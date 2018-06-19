@@ -128,6 +128,43 @@ abstract class Util
     }
 
     /**
+     * @param float $float
+     * @return string
+     *
+     * @throws \SodiumException
+     */
+    public static function floatToString($float)
+    {
+        SodiumUtil::declareScalarType($float, 'float');
+        /** @var bool|null $wrongEndian */
+        static $wrongEndian = null;
+
+        if (PHP_VERSION_ID >= 70015 && PHP_VERSION_ID !== 70100) {
+            // PHP >= 7.0.15 or >= 7.1.1
+            return (string) \pack('e', $float);
+        } else {
+            if (\is_null($wrongEndian)) {
+                $wrongEndian = self::getWrongEndianness();
+            }
+            /** @var string $packed */
+            $packed = (string) \pack('d', $float);
+            if ($wrongEndian) {
+                return \strrev($packed);
+            }
+            return $packed;
+        }
+    }
+
+    /**
+     * @param int $int
+     * @return string
+     */
+    public static function intToString($int)
+    {
+        return SodiumUtil::store64_le($int);
+    }
+
+    /**
      * Increase a counter nonce, starting with the LSB (big-endian)
      *
      * @param string $nonce
@@ -240,5 +277,58 @@ abstract class Util
             $output .= $piece;
         }
         return $output;
+    }
+
+    /**
+     * @param string $string
+     * @return int
+     * @throws \SodiumException
+     */
+    public static function stringToInt($string)
+    {
+        return SodiumUtil::load64_le($string);
+    }
+
+    /**
+     * @param string $string
+     * @return float
+     *
+     * @throws \SodiumException
+     */
+    public static function stringToFloat($string)
+    {
+        SodiumUtil::declareScalarType($string, 'string');
+        /** @var bool|null $wrongEndian */
+        static $wrongEndian = null;
+
+        if (PHP_VERSION_ID >= 70015 && PHP_VERSION_ID !== 70100) {
+            // PHP >= 7.0.15 or >= 7.1.1
+            /** @var array{1: float} $unpacked */
+            $unpacked = \unpack('e', (string) $string);
+            return (float) $unpacked[1];
+        } else {
+            if (\is_null($wrongEndian)) {
+                $wrongEndian = self::getWrongEndianness();
+            }
+            if ($wrongEndian) {
+                $string = \strrev((string) $string);
+            }
+            $unpacked = \unpack('d', (string) $string);
+            return (float) $unpacked[1];
+        }
+    }
+
+    /**
+     * @return bool|null
+     */
+    private static final function getWrongEndianness()
+    {
+        $x = \pack('d', 1.618);
+        if ($x === "\x17\xd9\xce\xf7\x53\xe3\xf9\x3f") {
+            return false;
+        } elseif ($x === "\x3f\xf9\xe3\x53\xf7\xce\xd9\x17") {
+            return true;
+        }
+        return null;
     }
 }

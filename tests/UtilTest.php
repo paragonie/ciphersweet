@@ -118,6 +118,45 @@ class UtilTest extends TestCase
         }
     }
 
+    /**
+     * @throws \Exception
+     * @throws \SodiumException
+     */
+    public function testFloatConversion()
+    {
+        $float = M_PI;
+
+        $this->assertEquals(
+            \number_format($float, 15),
+            \number_format(Util::stringToFloat(Util::floatToString($float)), 15)
+        );
+
+        // for ($i = 0; $i < 10000; ++$i) {
+        $left = (float) \random_int(1, PHP_INT_MAX - 1);
+        $right = (float) \random_int(2, PHP_INT_MAX >> 4);
+        $float = $left / $right;
+
+        $this->assertEquals(
+            \number_format($float, 9),
+            \number_format(Util::stringToFloat(Util::floatToString($float)), 9),
+            '[' . $left . ', ' . $right . '] division'
+        );
+        // }
+    }
+
+    /**
+     * @throws \Exception
+     * @throws \SodiumException
+     */
+    public function testIntConversion()
+    {
+        $int = \random_int(1, PHP_INT_MAX - 1);
+        $this->assertSame(
+            $int,
+            Util::stringToInt(Util::intToString($int))
+        );
+    }
+
     public function testCtrNonceIncrease()
     {
         $testCases = [
