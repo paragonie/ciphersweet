@@ -211,9 +211,9 @@ class EncryptedField
             );
         }
 
-        $Backend = $this->engine->getBackend();
+        $backend = $this->engine->getBackend();
         $subKey = new SymmetricKey(
-            $Backend,
+            $backend,
             \hash_hmac(
                 'sha256',
                 Util::pack([$this->tableName, $this->fieldName, $name]),
@@ -225,13 +225,13 @@ class EncryptedField
         /** @var BlindIndex $index */
         $index = $this->blindIndexes[$name];
         if ($index->getFastHash()) {
-            return $Backend->blindIndexFast(
+            return $backend->blindIndexFast(
                 $plaintext,
                 $subKey,
                 $index->getFilterBitLength()
             );
         }
-        return $Backend->blindIndexSlow(
+        return $backend->blindIndexSlow(
             $plaintext,
             $subKey,
             $index->getFilterBitLength(),
