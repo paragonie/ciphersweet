@@ -77,6 +77,47 @@ class UtilTest extends TestCase
         }
     }
 
+    /**
+     * @covers Util::chrToBool()
+     * @covers Util::boolToChr()
+     */
+    public function testBoolToChr()
+    {
+        $this->assertSame("\x02", Util::boolToChr(true));
+        $this->assertSame("\x01", Util::boolToChr(false));
+        $this->assertSame("\x00", Util::boolToChr(null));
+
+        try {
+            Util::boolToChr(1);
+            $this->fail('Invalid type was accepted');
+        } catch (\TypeError $ex) {
+        }
+        try {
+            Util::boolToChr(0);
+            $this->fail('Invalid type was accepted');
+        } catch (\TypeError $ex) {
+        }
+        try {
+            Util::boolToChr('');
+            $this->fail('Invalid type was accepted');
+        } catch (\TypeError $ex) {
+        }
+
+        $this->assertSame(null, Util::chrToBool(Util::boolToChr(null)));
+        $this->assertSame(false, Util::chrToBool(Util::boolToChr(false)));
+        $this->assertSame(true, Util::chrToBool(Util::boolToChr(true)));
+        try {
+            Util::chrToBool('');
+            $this->fail('Invalid length was accepted');
+        } catch (\OutOfRangeException $ex) {
+        }
+        try {
+            Util::chrToBool("\x03");
+            $this->fail('Invalid argument was accepted');
+        } catch (\InvalidArgumentException $ex) {
+        }
+    }
+
     public function testCtrNonceIncrease()
     {
         $testCases = [
