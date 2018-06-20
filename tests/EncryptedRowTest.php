@@ -125,15 +125,10 @@ class EncryptedRowTest extends TestCase
             'hivstatus' => true
         ];
         $eF = $this->getExampleRow($this->fipsEngine, true);
-        $eM = $this->getExampleRow($this->naclEngine, true);
 
         $indexes = $eF->getAllBlindIndexes($row);
         $this->assertEquals('abd9497d226601a2', $indexes[0]['value']);
         $this->assertEquals('9c3d53214ab71d7f', $indexes[1]['value']);
-
-        $indexes = $eM->getAllBlindIndexes($row);
-        $this->assertEquals('805815e4a43f6fd9', $indexes[0]['value']);
-        $this->assertEquals('1b8c1e1f8e122bd3', $indexes[1]['value']);
     }
 
     /**
@@ -168,7 +163,6 @@ class EncryptedRowTest extends TestCase
     public function testPrepareForStorage()
     {
         $eF = $this->getExampleRow($this->fipsRandom, true);
-        $eM = $this->getExampleRow($this->naclRandom, true);
 
         $rows = [
             [
@@ -196,16 +190,14 @@ class EncryptedRowTest extends TestCase
                 'hivstatus' => true
             ]
         ];
-        foreach ([$eM, $eF] as $engine) {
-            foreach ($rows as $row) {
-                list($store, $indexes) = $engine->prepareRowForStorage($row);
-                $this->assertTrue(\is_array($store));
-                $this->assertTrue(\is_string($store['ssn']));
-                $this->assertTrue(\is_string($store['hivstatus']));
-                $this->assertNotSame($row['ssn'], $store['ssn']);
-                $this->assertNotSame($row['hivstatus'], $store['hivstatus']);
-                $this->assertTrue(\is_array($indexes));
-            }
+        foreach ($rows as $row) {
+            list($store, $indexes) = $eF->prepareRowForStorage($row);
+            $this->assertTrue(\is_array($store));
+            $this->assertTrue(\is_string($store['ssn']));
+            $this->assertTrue(\is_string($store['hivstatus']));
+            $this->assertNotSame($row['ssn'], $store['ssn']);
+            $this->assertNotSame($row['hivstatus'], $store['hivstatus']);
+            $this->assertTrue(\is_array($indexes));
         }
     }
 
