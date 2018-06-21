@@ -127,8 +127,8 @@ class EncryptedRowTest extends TestCase
         $eF = $this->getExampleRow($this->fipsEngine, true);
 
         $indexes = $eF->getAllBlindIndexes($row);
-        $this->assertEquals('abd9497d226601a2', $indexes[0]['value']);
-        $this->assertEquals('9c3d53214ab71d7f', $indexes[1]['value']);
+        $this->assertEquals('abd9497d226601a2', $indexes['contact_ssn_last_four']['value']);
+        $this->assertEquals('9c3d53214ab71d7f', $indexes['contact_ssnlast4_hivstatus']['value']);
     }
 
     /**

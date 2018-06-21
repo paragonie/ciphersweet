@@ -170,7 +170,7 @@ class EncryptedRow
      * object, calculated from the input array.
      *
      * @param array $row
-     * @return array<int, array<string, string>>
+     * @return array<string, array<string, string>>
      *
      * @throws ArrayKeyException
      * @throws Exception\CryptoOperationException
@@ -180,12 +180,17 @@ class EncryptedRow
     {
         $return = [];
         foreach ($this->blindIndexes as $column => $blindIndexes) {
+            /** @var BlindIndex $blindIndex */
             foreach ($blindIndexes as $blindIndex) {
-                $return[] = $this->calcBlindIndex($row, $column, $blindIndex);
+                $return[$blindIndex->getName()] = $this->calcBlindIndex($row, $column, $blindIndex);
             }
         }
+        /**
+         * @var string $name
+         * @var CompoundIndex $compoundIndex
+         */
         foreach ($this->compoundIndexes as $name => $compoundIndex) {
-            $return[] = $this->calcCompoundIndex($row, $compoundIndex);
+            $return[$name] = $this->calcCompoundIndex($row, $compoundIndex);
         }
         return $return;
     }
@@ -266,7 +271,7 @@ class EncryptedRow
      * Calling encryptRow() and getAllBlindIndexes() is equivalent.
      *
      * @param array<string, int|float|string|bool|null> $row
-     * @return array{0: array<string, string>, 1: array<int, array<string, string>>}
+     * @return array{0: array<string, string>, 1: array<string, array<string, string>>}
      *
      * @throws ArrayKeyException
      * @throws Exception\CryptoOperationException
