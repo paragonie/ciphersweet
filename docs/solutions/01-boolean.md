@@ -20,7 +20,59 @@ minimize data leaks.
 
 ### EncryptedRow
 
+The simplest solution is to use `EncryptedRow` instead of `EncryptedField`.
 
+Instead of operating on naked string data, `EncryptedRow` operates on a
+one-dimensional associative array. Fields will be encrypted in-place and
+compound blind indexes (i.e. a blind index constructed of multiple fields
+at once) are much easier to use.
+
+For example:
+
+```php
+<?php
+use ParagonIE\CipherSweet\Backend\FIPSCrypto;
+use ParagonIE\CipherSweet\Backend\ModernCrypto;
+use ParagonIE\CipherSweet\BlindIndex;
+use ParagonIE\CipherSweet\CipherSweet;
+use ParagonIE\CipherSweet\CompoundIndex;
+use ParagonIE\CipherSweet\EncryptedRow;
+use ParagonIE\CipherSweet\Transformation\LastFourDigits;
+
+/** @var CipherSweet $engine */
+
+// Define two fields (one text, one boolean) that will be encrypted
+$row = (new EncryptedRow($engine, 'contacts'))
+    ->addTextField('ssn')
+    ->addBooleanField('hivstatus');
+
+// Add a normal Blind Index on one field:
+$row->addBlindIndex(
+    'ssn',
+    new BlindIndex(
+        'contact_ssn_last_four',
+        [new LastFourDigits()],
+        32 // 32 bits = 4 bytes
+    )
+);
+
+// Create/add a compound blind index on multiple fields:
+$row->addCompoundIndex(
+    (
+        new CompoundIndex(
+            'contact_ssnlast4_hivstatus',
+            ['ssn', 'hivstatus'],
+            32, // 32 bits = 4 bytes
+            true // fast hash
+        )
+    )->addTransform('ssn', new LastFourDigits())
+);
+```
+
+In the above example, since the `contact_ssnlast4_hivstatus` blind index
+depends on the last 4 digits of the contact's social security number AND
+the boolean hivstatus field, it has a keyspace larger than 1 bit, and
+thus leaks less information via hash collisions.
 
 ### EncryptedField
 

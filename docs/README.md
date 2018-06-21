@@ -102,6 +102,8 @@ $engine = new CipherSweet($provider);
 Once you have an engine in play, you can start defining encrypted fields and
 defining one or more **blind index** to be used for fast search operations.
 
+### EncryptedField
+
 This will primarily involve the `EncryptedField` class (as well as one or more
 instances of `BlindIndex`), mostly:
 
@@ -263,6 +265,93 @@ array(2) {
 }
 */
 ```
+
+### EncryptedRow
+
+An alternative approach for datasets with multiple encrypted rows and/or
+[encrypted boolean fields](https://github.com/paragonie/ciphersweet/blob/master/docs/solutions/01-boolean.md)
+is the `EncryptedRow` API, which looks like this:
+
+```php
+<?php
+use ParagonIE\CipherSweet\BlindIndex;
+use ParagonIE\CipherSweet\CipherSweet;
+use ParagonIE\CipherSweet\CompoundIndex;
+use ParagonIE\CipherSweet\EncryptedRow;
+use ParagonIE\CipherSweet\Transformation\LastFourDigits;
+
+/** @var CipherSweet $engine */
+// Define two fields (one text, one boolean) that will be encrypted
+$row = (new EncryptedRow($engine, 'contacts'))
+    ->addTextField('ssn')
+    ->addBooleanField('hivstatus');
+
+// Add a normal Blind Index on one field:
+$row->addBlindIndex(
+    'ssn',
+    new BlindIndex(
+        'contact_ssn_last_four',
+        [new LastFourDigits()],
+        32 // 32 bits = 4 bytes
+    )
+);
+
+// Create/add a compound blind index on multiple fields:
+$row->addCompoundIndex(
+    (
+        new CompoundIndex(
+            'contact_ssnlast4_hivstatus',
+            ['ssn', 'hivstatus'],
+            32, // 32 bits = 4 bytes
+            true // fast hash
+        )
+    )->addTransform('ssn', new LastFourDigits())
+);
+
+// Notice: You're passing an entire array at once, not a string
+$prepared = $row->prepareRowForStorage([
+    'extraneous' => true,
+    'ssn' => '123-45-6789',
+    'hivstatus' => false
+]);
+
+var_dump($prepared);
+/*
+array(2) {
+  [0]=>
+  array(3) {
+    ["extraneous"]=>
+    bool(true)
+    ["ssn"]=>
+    string(73) "nacl:wVMElYqnHrGB4hU118MTuANZXWHZjbsd0uK2N0Exz72mrV8sLrI_oU94vgsWlWJc84-u"
+    ["hivstatus"]=>
+    string(61) "nacl:ctWDJBn-NgeWc2mqEWfakvxkG7qCmIKfPpnA7jXHdbZ2CPgnZF0Yzwg="
+  }
+  [1]=>
+  array(2) {
+    ["contact_ssn_last_four"]=>
+    array(2) {
+      ["type"]=>
+      string(13) "3dywyifwujcu2"
+      ["value"]=>
+      string(8) "805815e4"
+    }
+    ["contact_ssnlast4_hivstatus"]=>
+    array(2) {
+      ["type"]=>
+      string(13) "nqtcc56kcf4qg"
+      ["value"]=>
+      string(8) "cbfd03c0"
+    }
+  }
+}
+*/
+```
+
+With the `EncryptedRow` API, you can encrypt a subset of all of the fields
+in a row, and create compound blind indexes based on multiple pieces of
+data in the dataset rather than a single field, without writing a ton of
+glue code.
 
 ## Using CipherSweet with a Database 
 
