@@ -56,6 +56,8 @@ class EncryptedRow
     }
 
     /**
+     * Define a field that will be encrypted.
+     *
      * @param string $fieldName
      * @param string $type
      * @return self
@@ -67,6 +69,8 @@ class EncryptedRow
     }
 
     /**
+     * Define a boolean field that will be encrypted. Nullable.
+     *
      * @param string $fieldName
      * @return self
      */
@@ -76,6 +80,8 @@ class EncryptedRow
     }
 
     /**
+     * Define a floating point number (decimal) field that will be encrypted.
+     *
      * @param string $fieldName
      * @return self
      */
@@ -85,6 +91,8 @@ class EncryptedRow
     }
 
     /**
+     * Define an integer field that will be encrypted.
+     *
      * @param string $fieldName
      * @return self
      */
@@ -94,6 +102,8 @@ class EncryptedRow
     }
 
     /**
+     * Define a text field that will be encrypted.
+     *
      * @param string $fieldName
      * @return self
      */
@@ -103,6 +113,8 @@ class EncryptedRow
     }
 
     /**
+     * Add a normal blind index to this EncryptedRow object.
+     *
      * @param string $column
      * @param BlindIndex $index
      * @return self
@@ -114,6 +126,8 @@ class EncryptedRow
     }
 
     /**
+     * Add a compound blind index to this EncryptedRow object.
+     *
      * @param CompoundIndex $index
      * @return self
      */
@@ -124,6 +138,8 @@ class EncryptedRow
     }
 
     /**
+     * Create a compound blind index then add it to this EncryptedRow object.
+     *
      * @param string $name
      * @param array<int, string> $columns
      * @param int $filterBits
@@ -150,6 +166,121 @@ class EncryptedRow
     }
 
     /**
+     * Get all of the blind indexes and compound indexes defined for this
+     * object, calculated from the input array.
+     *
+     * @param array $row
+     * @return array<int, array<string, string>>
+     *
+     * @throws ArrayKeyException
+     * @throws Exception\CryptoOperationException
+     * @throws \SodiumException
+     */
+    public function getAllBlindIndexes(array $row)
+    {
+        $return = [];
+        foreach ($this->blindIndexes as $column => $blindIndexes) {
+            foreach ($blindIndexes as $blindIndex) {
+                $return[] = $this->calcBlindIndex($row, $column, $blindIndex);
+            }
+        }
+        foreach ($this->compoundIndexes as $name => $compoundIndex) {
+            $return[] = $this->calcCompoundIndex($row, $compoundIndex);
+        }
+        return $return;
+    }
+
+    /**
+     * Decrypt all of the appropriate fields in the given array.
+     *
+     * If any columns are defined in this object to be decrypted, the value
+     * will be decrypted in-place in the returned array.
+     *
+     * @param array<string, string> $row
+     * @return array<string, string|int|float|bool|null>
+     * @throws Exception\CryptoOperationException
+     * @throws \SodiumException
+     */
+    public function decryptRow(array $row)
+    {
+        $return = $row;
+        foreach ($this->fieldsToEncrypt as $field => $type) {
+            $key = $this->engine->getFieldSymmetricKey(
+                $this->tableName,
+                $field
+            );
+            $plaintext = $this
+                ->engine
+                ->getBackend()
+                ->decrypt($row[$field], $key);
+            $return[$field] = $this->convertFromString($plaintext, $type);
+        }
+        return $return;
+    }
+
+    /**
+     * Encrypt any of the appropriate fields in the given array.
+     *
+     * If any columns are defined in this object to be encrypted, the value
+     * will be encrypted in-place in the returned array.
+     *
+     * @param array<string, string|int|float|bool|null> $row
+     *
+     * @return array<string, string>
+     * @throws ArrayKeyException
+     * @throws Exception\CryptoOperationException
+     * @throws \SodiumException
+     */
+    public function encryptRow(array $row)
+    {
+        $return = $row;
+        foreach ($this->fieldsToEncrypt as $field => $type) {
+            if (!\array_key_exists($field, $row)) {
+                throw new ArrayKeyException(
+                    'Expected value for column ' . $field. ' on array, nothing given.'
+                );
+            }
+            /** @var string $plaintext */
+            $plaintext = $this->convertToString($row[$field], $type);
+            $key = $this->engine->getFieldSymmetricKey(
+                $this->tableName,
+                $field
+            );
+            $return[$field] = $this
+                ->engine
+                ->getBackend()
+                ->encrypt($plaintext, $key);
+        }
+        /** @var array<string, string> $return */
+        return $return;
+    }
+
+    /**
+     * Process an entire row, which means:
+     *
+     * 1. If any columns are defined in this object to be encrypted, the value
+     *    will be encrypted in-place in the first array.
+     * 2. Blind indexes and compound indexes are calculated and stored in the
+     *    second array.
+     *
+     * Calling encryptRow() and getAllBlindIndexes() is equivalent.
+     *
+     * @param array<string, int|float|string|bool|null> $row
+     * @return array{0: array<string, string>, 1: array<int, array<string, string>>}
+     *
+     * @throws ArrayKeyException
+     * @throws Exception\CryptoOperationException
+     * @throws \SodiumException
+     */
+    public function prepareRowForStorage(array $row)
+    {
+        return [
+            $this->encryptRow($row),
+            $this->getAllBlindIndexes($row)
+        ];
+    }
+
+    /**
      * @param array $row
      * @param string $column
      * @param BlindIndex $index
@@ -159,7 +290,7 @@ class EncryptedRow
      * @throws Exception\CryptoOperationException
      * @throws \SodiumException
      */
-    public function calcBlindIndex(array $row, $column, BlindIndex $index)
+    protected function calcBlindIndex(array $row, $column, BlindIndex $index)
     {
         $name = $index->getName();
         $key = $this->engine->getBlindIndexRootKey(
@@ -193,7 +324,7 @@ class EncryptedRow
      * @return array<string, string>
      * @throws Exception\CryptoOperationException
      */
-    public function calcCompoundIndex(array $row, CompoundIndex $index)
+    protected function calcCompoundIndex(array $row, CompoundIndex $index)
     {
         $name = $index->getName();
         $key = $this->engine->getBlindIndexRootKey(
@@ -230,7 +361,7 @@ class EncryptedRow
      * @throws ArrayKeyException
      * @throws \SodiumException
      */
-    public function calcBlindIndexRaw(
+    protected function calcBlindIndexRaw(
         array $row,
         $column,
         BlindIndex $index,
@@ -297,7 +428,7 @@ class EncryptedRow
      * @throws \Exception
      * @throws Exception\CryptoOperationException
      */
-    public function calcCompoundIndexRaw(
+    protected function calcCompoundIndexRaw(
         array $row,
         CompoundIndex $index,
         SymmetricKey $key = null
@@ -346,83 +477,6 @@ class EncryptedRow
     }
 
     /**
-     * @param array $row
-     * @return array<int, array<string, string>>
-     *
-     * @throws ArrayKeyException
-     * @throws Exception\CryptoOperationException
-     * @throws \SodiumException
-     */
-    public function getAllBlindIndexes(array $row)
-    {
-        $return = [];
-        foreach ($this->blindIndexes as $column => $blindIndexes) {
-            foreach ($blindIndexes as $blindIndex) {
-                $return[] = $this->calcBlindIndex($row, $column, $blindIndex);
-            }
-        }
-        foreach ($this->compoundIndexes as $name => $compoundIndex) {
-            $return[] = $this->calcCompoundIndex($row, $compoundIndex);
-        }
-        return $return;
-    }
-
-    /**
-     * @param array<string, string> $row
-     * @return array<string, string|int|float|bool|null>
-     * @throws Exception\CryptoOperationException
-     * @throws \SodiumException
-     */
-    public function decryptRow(array $row)
-    {
-        $return = $row;
-        foreach ($this->fieldsToEncrypt as $field => $type) {
-            $key = $this->engine->getFieldSymmetricKey(
-                $this->tableName,
-                $field
-            );
-            $plaintext = $this
-                ->engine
-                ->getBackend()
-                ->decrypt($row[$field], $key);
-            $return[$field] = $this->convertFromString($plaintext, $type);
-        }
-        return $return;
-    }
-
-    /**
-     * @param array<string, string|int|float|bool|null> $row
-     *
-     * @return array<string, string>
-     * @throws ArrayKeyException
-     * @throws Exception\CryptoOperationException
-     * @throws \SodiumException
-     */
-    public function encryptRow(array $row)
-    {
-        $return = $row;
-        foreach ($this->fieldsToEncrypt as $field => $type) {
-            if (!\array_key_exists($field, $row)) {
-                throw new ArrayKeyException(
-                    'Expected value for column ' . $field. ' on array, nothing given.'
-                );
-            }
-            /** @var string $plaintext */
-            $plaintext = $this->convertToString($row[$field], $type);
-            $key = $this->engine->getFieldSymmetricKey(
-                $this->tableName,
-                $field
-            );
-            $return[$field] = $this
-                ->engine
-                ->getBackend()
-                ->encrypt($plaintext, $key);
-        }
-        /** @var array<string, string> $return */
-        return $return;
-    }
-
-    /**
      * @param string $data
      * @param string $type
      * @return int|string|float|bool|null
@@ -441,7 +495,16 @@ class EncryptedRow
                 return (string) $data;
         }
     }
+
     /**
+     * Convert multiple data types to a string prior to encryption.
+     *
+     * The main goals here are:
+     *
+     * 1. Convert several data types to a string.
+     * 2. Leak no information about the original value in the
+     *    output string length.
+     *
      * @param int|string|float|bool|null $data
      * @param string $type
      * @return string
@@ -450,39 +513,27 @@ class EncryptedRow
     protected function convertToString($data, $type)
     {
         switch ($type) {
+            // Will return a 1-byte string:
             case self::TYPE_BOOLEAN:
                 if (!\is_null($data) && !\is_bool($data)) {
                     $data = !empty($data);
                 }
                 return Util::boolToChr($data);
+            // Will return a fixed-length string:
             case self::TYPE_FLOAT:
                 if (!\is_float($data)) {
                     throw new \TypeError('Expected a float');
                 }
                 return Util::floatToString($data);
+            // Will return a fixed-length string:
             case self::TYPE_INT:
                 if (!\is_int($data)) {
                     throw new \TypeError('Expected an integer');
                 }
                 return Util::intToString($data);
+            // Will return the original string, untouched:
             default:
                 return (string) $data;
         }
-    }
-
-    /**
-     * @param array<string, int|float|string|bool|null> $row
-     * @return array{0: array<string, string>, 1: array<int, array<string, string>>}
-     *
-     * @throws ArrayKeyException
-     * @throws Exception\CryptoOperationException
-     * @throws \SodiumException
-     */
-    public function prepareRowForStorage(array $row)
-    {
-        return [
-            $this->encryptRow($row),
-            $this->getAllBlindIndexes($row)
-        ];
     }
 }
