@@ -18,12 +18,21 @@ minimize data leaks.
 
 ## CipherSweet Features for Protecting Boolean Fields
 
-### Util::boolToChr() and Util::chrToBool()
+### EncryptedRow
+
+
+
+### EncryptedField
+
+Safely storing boolean fields with the `EncryptedField` API, rather than
+the `EncryptedRow` API, is possible but requires a bit more glue code.
+
+#### Util::boolToChr() and Util::chrToBool()
 
 CipherSweet provides a congruent method for compacting a nullable boolean
 into one character
 
-### The Compound Transformation
+#### The Compound Transformation
 
 The first rule for protect boolean fields is to **never create a blind index
 on a boolean field in isolation.**
@@ -31,7 +40,7 @@ on a boolean field in isolation.**
 Instead, consider using the `Compound` transformation to combine
 multiple values together.
 
-### Example Snippet
+#### Example Snippet
 
 This code assumes an abstract `$dbh` object that supports an API that
 looks like this:
