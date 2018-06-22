@@ -116,10 +116,16 @@ class ModernCrypto implements BackendInterface
      * @return string
      * @throws \SodiumException
      */
-    public function blindIndexSlow($plaintext, SymmetricKey $key, $bitLength = null, array $config = [])
-    {
+    public function blindIndexSlow(
+        $plaintext,
+        SymmetricKey $key,
+        $bitLength = null,
+        array $config = []
+    ) {
         if (!SodiumCompat::crypto_pwhash_is_available()) {
-            throw new \SodiumException('Not using the native libsodium bindings');
+            throw new \SodiumException(
+                'Not using the native libsodium bindings'
+            );
         }
         $opsLimit = SodiumCompat::CRYPTO_PWHASH_OPSLIMIT_INTERACTIVE;
         $memLimit = SodiumCompat::CRYPTO_PWHASH_MEMLIMIT_INTERACTIVE;
