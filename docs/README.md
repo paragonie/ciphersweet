@@ -66,7 +66,7 @@ Building on the previous code example:
 ```php
 <?php
 use ParagonIE\ConstantTime\Hex;
-use ParagonIE\CipherSweet\Backend\ModernCrypto;
+use ParagonIE\CipherSweet\Backend\FIPSCrypto;
 use ParagonIE\CipherSweet\CipherSweet;
 use ParagonIE\CipherSweet\KeyProvider\StringProvider;
 
