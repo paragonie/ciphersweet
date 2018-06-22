@@ -1,5 +1,4 @@
 <?php
-
 namespace ParagonIE\CipherSweet\KeyProvider;
 
 use ParagonIE\ConstantTime\Base64UrlSafe;

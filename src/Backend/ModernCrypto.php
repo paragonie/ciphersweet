@@ -86,8 +86,11 @@ class ModernCrypto implements BackendInterface
      * @return string
      * @throws \SodiumException
      */
-    public function blindIndexFast($plaintext, SymmetricKey $key, $bitLength = null)
-    {
+    public function blindIndexFast(
+        $plaintext,
+        SymmetricKey $key,
+        $bitLength = null
+    ) {
         if (\is_null($bitLength)) {
             $bitLength = 256;
         }
@@ -131,12 +134,12 @@ class ModernCrypto implements BackendInterface
         $memLimit = SodiumCompat::CRYPTO_PWHASH_MEMLIMIT_INTERACTIVE;
 
         if (isset($config['opslimit'])) {
-            if ($config['opslimit'] > SodiumCompat::CRYPTO_PWHASH_OPSLIMIT_INTERACTIVE) {
+            if ($config['opslimit'] > $opsLimit) {
                 $opsLimit = (int) $config['opslimit'];
             }
         }
         if (isset($config['memlimit'])) {
-            if ($config['memlimit'] > SodiumCompat::CRYPTO_PWHASH_MEMLIMIT_INTERACTIVE) {
+            if ($config['memlimit'] > $memLimit) {
                 $memLimit = (int) $config['memlimit'];
             }
         }

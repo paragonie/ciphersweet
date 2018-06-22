@@ -30,7 +30,11 @@ interface BackendInterface
      *
      * @return string
      */
-    public function blindIndexFast($plaintext, SymmetricKey $key, $bitLength = null);
+    public function blindIndexFast(
+        $plaintext,
+        SymmetricKey $key,
+        $bitLength = null
+    );
 
     /**
      * @param string $plaintext
@@ -40,7 +44,12 @@ interface BackendInterface
      *
      * @return string
      */
-    public function blindIndexSlow($plaintext, SymmetricKey $key, $bitLength = null, array $config = []);
+    public function blindIndexSlow(
+        $plaintext,
+        SymmetricKey $key,
+        $bitLength = null,
+        array $config = []
+    );
 
     /**
      * @param string $tableName
