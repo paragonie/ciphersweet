@@ -182,7 +182,11 @@ class EncryptedRow
         foreach ($this->blindIndexes as $column => $blindIndexes) {
             /** @var BlindIndex $blindIndex */
             foreach ($blindIndexes as $blindIndex) {
-                $return[$blindIndex->getName()] = $this->calcBlindIndex($row, $column, $blindIndex);
+                $return[$blindIndex->getName()] = $this->calcBlindIndex(
+                    $row,
+                    $column,
+                    $blindIndex
+                );
             }
         }
         /**
@@ -242,7 +246,9 @@ class EncryptedRow
         foreach ($this->fieldsToEncrypt as $field => $type) {
             if (!\array_key_exists($field, $row)) {
                 throw new ArrayKeyException(
-                    'Expected value for column ' . $field. ' on array, nothing given.'
+                    'Expected value for column ' .
+                        $field .
+                    ' on array, nothing given.'
                 );
             }
             /** @var string $plaintext */
