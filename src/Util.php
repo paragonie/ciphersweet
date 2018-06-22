@@ -214,7 +214,13 @@ abstract class Util
              * @psalm-suppress UndefinedFunction
              * This is wrapped in an is_callable() check.
              */
-            return (string) \hash_hkdf($hash, $ikm, $length, $info, (string) $salt);
+            return (string) \hash_hkdf(
+                $hash,
+                $ikm,
+                $length,
+                $info,
+                (string) $salt
+            );
         }
 
         $digest_length = Binary::safeStrlen(
@@ -242,11 +248,11 @@ abstract class Util
         // T(0) = ''
         $t          = '';
         $last_block = '';
-        for ($block_index = 1; Binary::safeStrlen($t) < $length; ++$block_index) {
+        for ($blockIndex = 1; Binary::safeStrlen($t) < $length; ++$blockIndex) {
             // T(i) = HMAC-Hash(PRK, T(i-1) | info | 0x??)
             $last_block = \hash_hmac(
                 $hash,
-                $last_block . $info . \chr($block_index),
+                $last_block . $info . \pack('C', $blockIndex),
                 $prk,
                 true
             );
