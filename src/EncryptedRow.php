@@ -411,7 +411,9 @@ class EncryptedRow
         $unconverted = $row[$column];
 
         /** @var string $plaintext */
-        $plaintext = $this->convertToString($unconverted, $fieldType);
+        $plaintext = $index->getTransformed(
+            $this->convertToString($unconverted, $fieldType)
+        );
 
         /** @var BlindIndex $index */
         $index = $this->blindIndexes[$column][$name];
