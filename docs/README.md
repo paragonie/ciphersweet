@@ -32,7 +32,6 @@ string containing your encryption key:
 
 ```php
 <?php
-use ParagonIE\ConstantTime\Hex;
 use ParagonIE\CipherSweet\Backend\ModernCrypto;
 use ParagonIE\CipherSweet\KeyProvider\StringProvider;
 
@@ -65,8 +64,7 @@ Building on the previous code example:
 
 ```php
 <?php
-use ParagonIE\ConstantTime\Hex;
-use ParagonIE\CipherSweet\Backend\FIPSCrypto;
+use ParagonIE\CipherSweet\Backend\ModernCrypto;
 use ParagonIE\CipherSweet\CipherSweet;
 use ParagonIE\CipherSweet\KeyProvider\StringProvider;
 
@@ -84,8 +82,7 @@ it once to the `KeyProvider` and the rest is handled for you.
 
 ```php
 <?php
-use ParagonIE\ConstantTime\Hex;
-use ParagonIE\CipherSweet\Backend\ModernCrypto;
+use ParagonIE\CipherSweet\Backend\FIPSCrypto;
 use ParagonIE\CipherSweet\CipherSweet;
 use ParagonIE\CipherSweet\KeyProvider\StringProvider;
 

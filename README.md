@@ -42,6 +42,9 @@ or noncommercial, open source or proprietary, at no cost to you.
   with minimal data leakage. 
   * Each blind index on each column uses a distinct key from your encryption key
     and each other blind index key.
+  * This doesn't allow for `LIKE` operators or regular expression searching, but
+    it does allow you to index transformations (e.g. substrings) of the plaintext,
+    hashed under a distinct key.
 * **Adaptability.** CipherSweet has a database- and product-agnostic design, so
   it should be easy to write an adapter to use CipherSweet in any PHP-based
   software.
