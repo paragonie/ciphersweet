@@ -8,5 +8,6 @@
 
     <issueHandlers>
         <MoreSpecificImplementedParamType errorLevel="suppress" /><!-- this is fine -->
+        <RedundantConditionGivenDocblockType errorLevel="info" /><!-- we're being explicit -->
     </issueHandlers>
 </psalm>
