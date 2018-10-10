@@ -178,7 +178,7 @@ array(2) {
     ["type"]=>
     string(13) "3dywyifwujcu2"
     ["value"]=>
-    string(4) "8058"
+    string(4) "2acb"
   }
   ["contact_ssn"]=>
   array(2) {
@@ -238,7 +238,7 @@ array(2) {
   ["type"]=>
   string(13) "3dywyifwujcu2"
   ["value"]=>
-  string(4) "8058"
+  string(4) "2acb"
 }
 */
 
@@ -250,7 +250,7 @@ array(2) {
     ["type"]=>
     string(13) "3dywyifwujcu2"
     ["value"]=>
-    string(4) "8058"
+    string(4) "2acb"
   }
   ["contact_ssn"]=>
   array(2) {
@@ -331,7 +331,7 @@ array(2) {
       ["type"]=>
       string(13) "3dywyifwujcu2"
       ["value"]=>
-      string(8) "805815e4"
+      string(8) "2acbcd1c"
     }
     ["contact_ssnlast4_hivstatus"]=>
     array(2) {

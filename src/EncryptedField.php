@@ -226,13 +226,13 @@ class EncryptedField
         $index = $this->blindIndexes[$name];
         if ($index->getFastHash()) {
             return $backend->blindIndexFast(
-                $plaintext,
+                $index->getTransformed($plaintext),
                 $subKey,
                 $index->getFilterBitLength()
             );
         }
         return $backend->blindIndexSlow(
-            $plaintext,
+            $index->getTransformed($plaintext),
             $subKey,
             $index->getFilterBitLength(),
             $index->getHashConfig()
