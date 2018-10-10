@@ -127,19 +127,19 @@ class EncryptedFieldTest extends TestCase
         $ssn = $this->getExampleField($this->fipsEngine);
 
         $this->assertEquals(
-            ['type' => 'idlzpypmia6qu', 'value' => 'f7bb'],
+            ['type' => 'idlzpypmia6qu', 'value' => '334b'],
             $ssn->getBlindIndex('111-11-1111', 'contact_ssn_last_four')
         );
         $this->assertEquals(
-            ['type' => 'idlzpypmia6qu', 'value' => '38dc'],
+            ['type' => 'idlzpypmia6qu', 'value' => '7947'],
             $ssn->getBlindIndex('111-11-2222', 'contact_ssn_last_four')
         );
         $this->assertEquals(
-            ['type' => 'idlzpypmia6qu', 'value' => 'e6c4'],
+            ['type' => 'idlzpypmia6qu', 'value' => 'd5ac'],
             $ssn->getBlindIndex('123-45-6788', 'contact_ssn_last_four')
         );
         $this->assertEquals(
-            ['type' => 'idlzpypmia6qu', 'value' => 'abd9'],
+            ['type' => 'idlzpypmia6qu', 'value' => 'a88e'],
             $ssn->getBlindIndex('123-45-6789', 'contact_ssn_last_four')
         );
         $this->assertEquals(
@@ -168,19 +168,19 @@ class EncryptedFieldTest extends TestCase
         $ssn = $this->getExampleField($this->fipsEngine, false, true);
 
         $this->assertEquals(
-            ['type' => 'idlzpypmia6qu', 'value' => '8951'],
+            ['type' => 'idlzpypmia6qu', 'value' => '924b'],
             $ssn->getBlindIndex('111-11-1111', 'contact_ssn_last_four')
         );
         $this->assertEquals(
-            ['type' => 'idlzpypmia6qu', 'value' => 'b6f2'],
+            ['type' => 'idlzpypmia6qu', 'value' => 'be3b'],
             $ssn->getBlindIndex('111-11-2222', 'contact_ssn_last_four')
         );
         $this->assertEquals(
-            ['type' => 'idlzpypmia6qu', 'value' => '13b5'],
+            ['type' => 'idlzpypmia6qu', 'value' => '3cd3'],
             $ssn->getBlindIndex('123-45-6788', 'contact_ssn_last_four')
         );
         $this->assertEquals(
-            ['type' => 'idlzpypmia6qu', 'value' => 'e2e3'],
+            ['type' => 'idlzpypmia6qu', 'value' => '4bb1'],
             $ssn->getBlindIndex('123-45-6789', 'contact_ssn_last_four')
         );
         $this->assertEquals(
@@ -212,19 +212,19 @@ class EncryptedFieldTest extends TestCase
         }
         $ssn = $this->getExampleField($this->naclEngine);
         $this->assertEquals(
-            ['type' => '3dywyifwujcu2', 'value' => 'f50e'],
+            ['type' => '3dywyifwujcu2', 'value' => '32ae'],
             $ssn->getBlindIndex('111-11-1111', 'contact_ssn_last_four')
         );
         $this->assertEquals(
-            ['type' => '3dywyifwujcu2', 'value' => '702f'],
+            ['type' => '3dywyifwujcu2', 'value' => 'e538'],
             $ssn->getBlindIndex('111-11-2222', 'contact_ssn_last_four')
         );
         $this->assertEquals(
-            ['type' => '3dywyifwujcu2', 'value' => '5953'],
+            ['type' => '3dywyifwujcu2', 'value' => '8d1a'],
             $ssn->getBlindIndex('123-45-6788', 'contact_ssn_last_four')
         );
         $this->assertEquals(
-            ['type' => '3dywyifwujcu2', 'value' => '8058'],
+            ['type' => '3dywyifwujcu2', 'value' => '2acb'],
             $ssn->getBlindIndex('123-45-6789', 'contact_ssn_last_four')
         );
         $this->assertEquals(
@@ -251,19 +251,19 @@ class EncryptedFieldTest extends TestCase
     {
         $ssn = $this->getExampleField($this->naclEngine, false, true);
         $this->assertEquals(
-            ['type' => '3dywyifwujcu2', 'value' => 'b102'],
+            ['type' => '3dywyifwujcu2', 'value' => '7843'],
             $ssn->getBlindIndex('111-11-1111', 'contact_ssn_last_four')
         );
         $this->assertEquals(
-            ['type' => '3dywyifwujcu2', 'value' => '7eb7'],
+            ['type' => '3dywyifwujcu2', 'value' => 'd246'],
             $ssn->getBlindIndex('111-11-2222', 'contact_ssn_last_four')
         );
         $this->assertEquals(
-            ['type' => '3dywyifwujcu2', 'value' => 'fe8c'],
+            ['type' => '3dywyifwujcu2', 'value' => '4882'],
             $ssn->getBlindIndex('123-45-6788', 'contact_ssn_last_four')
         );
         $this->assertEquals(
-            ['type' => '3dywyifwujcu2', 'value' => '04e4'],
+            ['type' => '3dywyifwujcu2', 'value' => '92c8'],
             $ssn->getBlindIndex('123-45-6789', 'contact_ssn_last_four')
         );
         $this->assertEquals(
