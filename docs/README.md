@@ -4,6 +4,7 @@
 
 * [Using CipherSweet](https://github.com/paragonie/ciphersweet/tree/master/docs)
   * **Table of Contents** (You are here)
+  * [Understanding CipherSweet's Features and Limitations](#understanding-ciphersweets-features-and-limitations)
   * [Setting up CipherSweet at Run-Time](#setting-up-ciphersweet-at-run-time)
     * [Select Your Backend](#select-your-backend)
     * [Define your Key Provider](#define-your-key-provider)
