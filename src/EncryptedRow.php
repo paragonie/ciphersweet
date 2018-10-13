@@ -165,13 +165,14 @@ class EncryptedRow
         $this->addCompoundIndex($index);
         return $index;
     }
+
     /**
      * Get all of the blind indexes and compound indexes defined for this
      * object, calculated from the input array.
      *
      * @param string $indexName
      * @param array $row
-     * @return array<string, array<string, string>>
+     * @return array<string, string>
      *
      * @throws ArrayKeyException
      * @throws BlindIndexNotFoundException
@@ -181,10 +182,12 @@ class EncryptedRow
     public function getBlindIndex($indexName, array $row)
     {
         if (isset($this->blindIndexes[$indexName])) {
+            /** @var BlindIndex $blindIndex */
+            $blindIndex = $this->blindIndexes[$indexName];
             return $this->calcBlindIndex(
                 $row,
                 $indexName,
-                $this->blindIndexes[$indexName]
+                $blindIndex
             );
         }
         if (isset($this->compoundIndexes[$indexName])) {

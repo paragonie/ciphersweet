@@ -42,7 +42,7 @@ class CompoundIndex
     protected $columnTransforms = [];
 
     /**
-     * @var array<string, array<int, RowTransformationInterface>>
+     * @var array<int, RowTransformationInterface>
      */
     protected $rowTransforms = [];
 
