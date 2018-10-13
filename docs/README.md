@@ -2,7 +2,7 @@
 
 ## Table of Contents
 
-* [Using CipherSweet](https://github.com/paragonie/ciphersweet/tree/compound-enhancement/docs)
+* [Using CipherSweet](https://github.com/paragonie/ciphersweet/tree/master/docs)
   * **Table of Contents** (You are here)
   * [Setting up CipherSweet at Run-Time](#setting-up-ciphersweet-at-run-time)
     * [Select Your Backend](#select-your-backend)
@@ -13,15 +13,15 @@
     * [`EncryptedRow`](#encryptedrow)
       * [`EncryptedRow` with a `CompoundIndex` using a custom Transform of Multiple Fields](#encryptedrow-with-a-compoundindex-using-a-custom-transform-of-multiple-fields)
       * [Using the Old API to Create a Congruent Result](#using-the-old-api-to-create-a-congruent-result)
-* [CipherSweet Examples](https://github.com/paragonie/ciphersweet/tree/compound-enhancement/docs/examples)
+* [CipherSweet Examples](https://github.com/paragonie/ciphersweet/tree/master/docs/examples)
   (Look here if you seek runnable example code for common integrations)
-* [CipherSweet Internals](https://github.com/paragonie/ciphersweet/tree/compound-enhancement/docs/internals)
+* [CipherSweet Internals](https://github.com/paragonie/ciphersweet/tree/master/docs/internals)
   (Look here if you seek to port CipherSweet to another language)
-  * [Key Hierarchy](https://github.com/paragonie/ciphersweet/blob/compound-enhancement/docs/internals/01-key-hierarchy.md)
-  * [Packing](https://github.com/paragonie/ciphersweet/blob/compound-enhancement/docs/internals/02-packing.md)
-  * [Field-Level Encryption](https://github.com/paragonie/ciphersweet/blob/compound-enhancement/docs/internals/03-encryption.md)
-  * [Blind Indexing](https://github.com/paragonie/ciphersweet/blob/compound-enhancement/docs/internals/04-blind-index.md)
-* [Solutions for Common Problems with Searchable Encryption](https://github.com/paragonie/ciphersweet/tree/compound-enhancement/docs/solutions)
+  * [Key Hierarchy](https://github.com/paragonie/ciphersweet/blob/master/docs/internals/01-key-hierarchy.md)
+  * [Packing](https://github.com/paragonie/ciphersweet/blob/master/docs/internals/02-packing.md)
+  * [Field-Level Encryption](https://github.com/paragonie/ciphersweet/blob/master/docs/internals/03-encryption.md)
+  * [Blind Indexing](https://github.com/paragonie/ciphersweet/blob/master/docs/internals/04-blind-index.md)
+* [Solutions for Common Problems with Searchable Encryption](https://github.com/paragonie/ciphersweet/tree/master/docs/solutions)
 
 ## Setting up CipherSweet at Run-Time
 
