@@ -352,6 +352,10 @@ glue code.
 
 #### EncryptedRow with a CompoundIndex using a custom Transform of Multiple Fields
 
+Since **version 1.5.0**, it's possible to quickly create a compound
+index that uses a transformation that combines multiple fields into one
+output string.
+
 Following the previous example:
 
 ```php
@@ -491,6 +495,101 @@ array(2) {
 The above snippet defines a custom implementation of 
 `RowTransformationInterface` that appends the first initial
 and the last name.
+
+Note: You can achieve the same overall effect (but not the same
+hash output) using the default CompoundIndex.
+
+#### Using the Old API to Create a Congruent Result
+
+```php
+<?php
+use ParagonIE\CipherSweet\BlindIndex;
+use ParagonIE\CipherSweet\CipherSweet;
+use ParagonIE\CipherSweet\Transformation\AlphaCharactersOnly;
+use ParagonIE\CipherSweet\Transformation\FirstCharacter;
+use ParagonIE\CipherSweet\Transformation\Lowercase;
+use ParagonIE\CipherSweet\Transformation\LastFourDigits;
+use ParagonIE\CipherSweet\EncryptedRow;
+
+/** @var CipherSweet $engine */
+$row = (new EncryptedRow($engine, 'contacts'))
+    ->addTextField('first_name')
+    ->addTextField('last_name')
+    ->addTextField('ssn')
+    ->addBooleanField('hivstatus');
+
+// Add a normal Blind Index on one field:
+$row->addBlindIndex(
+    'ssn',
+    new BlindIndex(
+        'contact_ssn_last_four',
+        [new LastFourDigits()],
+        32 // 32 bits = 4 bytes
+    )
+);
+
+// Notice the ->addRowTransform() method:
+$row->addCompoundIndex(
+    $row->createCompoundIndex(
+        'contact_first_init_last_name',
+        ['first_name', 'last_name'],
+        64, // 64 bits = 8 bytes
+        true
+    )
+    ->addTransform('first_name', new AlphaCharactersOnly())
+    ->addTransform('first_name', new Lowercase())
+    ->addTransform('first_name', new FirstCharacter())
+    ->addTransform('last_name', new AlphaCharactersOnly())
+    ->addTransform('last_name', new Lowercase())
+);
+
+$prepared = $row->prepareRowForStorage([
+    'first_name' => 'Jane',
+    'last_name' => 'Doe',
+    'extraneous' => true,
+    'ssn' => '123-45-6789',
+    'hivstatus' => false
+]);
+
+var_dump($prepared);
+/*
+array(2) {
+  [0]=>
+  array(5) {
+    ["first_name"]=>
+    string(141) "fips:32kSOVcY9IIX5rxoVhxSWMQs-PPl8XwPOPzD4sPA50_HAiD-ylCvoW_-vAEHtIp-o2p_M_9lxTRzmBa8U--g471Uipks2njotKwzFstqYiXwX80cdAsFYDazmvrs2TIOnKrX-w=="
+    ["last_name"]=>
+    string(137) "fips:MVPhhMtbgi14ofY8gsiI96PL3xv2-nbJRdJnkeXaZVA_ctGW_-1_Q-WsRCjZLVghykIMxdRYd5uNh-u39-dFufb2OmyP7r9_GCIM0OpAiqrjxEDezfLEMpdg5liaGKiNkx3x"
+    ["extraneous"]=>
+    bool(true)
+    ["ssn"]=>
+    string(149) "fips:laANliGoATw0HBWc8RbdE_sZ5gIFmRMvLP2ai6OgSapNZNIofsVO349Ui18FCggy8VoPtaIAjillR5uvxOJ_LtNdr2GtBikUXNkmlu2il7XCeQn41vs5u_kcZwFh6vFPvLGrDLXuDRV89zk="
+    ["hivstatus"]=>
+    string(137) "fips:Czzax6VDFGDIFuyCrRtU_K3EjYOaBDyPMkGDzZD8MFx03uzVPS77mjF5GNCR_0TGunCZsZbkDF5_R9O1PfZCA0GuSS4uBI34LBNx_c3Yn9LWJXt1K_R886qLCI6xmacaew=="
+  }
+  [1]=>
+  array(2) {
+    ["contact_ssn_last_four"]=>
+    array(2) {
+      ["type"]=>
+      string(13) "idlzpypmia6qu"
+      ["value"]=>
+      string(8) "a88e74ad"
+    }
+    ["contact_first_init_last_name"]=>
+    array(2) {
+      ["type"]=>
+      string(13) "w6dsrxbathjze"
+      ["value"]=>
+      string(16) "32ee2a30de9ef264"
+    }
+  }
+}
+*/
+```
+
+In both instances, we create a blind index on "jdoe" given a first name
+of "John" and a last name of "Doe".
 
 ## Using CipherSweet with a Database 
 

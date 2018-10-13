@@ -199,6 +199,8 @@ class CompoundIndex
             }
             $pieces[$col] = $piece;
         }
+
+        // If we define our own RowTransforms, we use them.
         if (!empty($this->rowTransforms)) {
             foreach ($this->rowTransforms as $tf) {
                 if ($tf instanceof RowTransformationInterface) {
@@ -207,9 +209,15 @@ class CompoundIndex
                 }
             }
         }
+
+        // If we ended up with a string (i.e. from RowTransforms),
+        // just return that. We're done.
         if (\is_string($pieces)) {
             return $pieces;
         }
+
+        // Use the default Compound transformation to flatten the array
+        // containing the pieces.
         $compounder = self::getCompounder();
         return (string) $compounder($pieces);
     }
