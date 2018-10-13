@@ -23,6 +23,32 @@
   * [Blind Indexing](https://github.com/paragonie/ciphersweet/blob/master/docs/internals/04-blind-index.md)
 * [Solutions for Common Problems with Searchable Encryption](https://github.com/paragonie/ciphersweet/tree/master/docs/solutions)
 
+## Understanding CipherSweet's Features and Limitations
+
+CipherSweet is an implementation of [PIE's searchable encryption design](https://paragonie.com/blog/2017/05/building-searchable-encrypted-databases-with-php-and-sql),
+which combines semantically secure authenticated encryption with "blind indexes"
+of the plaintext.
+
+At a super high level overview:
+
+* Ciphertexts (encrypted messages) are indistinguishable from each other.
+* Blind indexes offer limited searching capabilities.
+* It doesn't support `LIKE` operators or regular expressions.
+* Each blind index uses, at its core, a one-way cryptographic hash function.
+* Each blind index can be created on the plaintext itself, or a **transformation**
+  of the plaintext. Example transformations include:
+  * Last four numeric digits of the plaintext
+  * First letter of the plaintext
+  * All-lowercase representation of the plaintext
+* CipherSweet also supports **compound indexes**, which combine multiple fields
+  together before applying the cryptographic hash function.
+  * This allows you to create an index on "first initial" + "last name".
+  * It's recommended to use compound indexes for sensitive boolean fields.
+    * For example: Indexing your users' HIV status by itself would be a huge
+      HIPAA violation risk. However, if you index "HIV status + last 4 digits
+      of social security number", an attacker can't just look at the blind
+      indexes and immediately deduce the value of this boolean field.
+
 ## Setting up CipherSweet at Run-Time
 
 ### Select Your Backend
