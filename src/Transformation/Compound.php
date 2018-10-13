@@ -1,7 +1,7 @@
 <?php
 namespace ParagonIE\CipherSweet\Transformation;
 
-use ParagonIE\CipherSweet\Contract\TransformationInterface;
+use ParagonIE\CipherSweet\Contract\RowTransformationInterface;
 use ParagonIE\ConstantTime\Base64UrlSafe;
 use ParagonIE\ConstantTime\Binary;
 use ParagonIE\ConstantTime\Hex;
@@ -11,7 +11,7 @@ use ParagonIE_Sodium_Core_Util as SodiumUtil;
  * Class Compound
  * @package ParagonIE\CipherSweet\Transformation
  */
-class Compound implements TransformationInterface
+class Compound implements RowTransformationInterface
 {
     /**
      * @param mixed $input

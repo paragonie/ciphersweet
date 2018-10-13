@@ -7,12 +7,14 @@ use ParagonIE\CipherSweet\BlindIndex;
 use ParagonIE\CipherSweet\CipherSweet;
 use ParagonIE\CipherSweet\EncryptedRow;
 use ParagonIE\CipherSweet\Exception\ArrayKeyException;
+use ParagonIE\CipherSweet\Exception\BlindIndexNotFoundException;
 use ParagonIE\CipherSweet\Exception\CryptoOperationException;
 use ParagonIE\CipherSweet\KeyProvider\StringProvider;
 use ParagonIE\CipherSweet\Transformation\LastFourDigits;
 use ParagonIE\ConstantTime\Binary;
 use ParagonIE\ConstantTime\Hex;
 use PHPUnit\Framework\TestCase;
+use ParagonIE\CipherSweet\Tests\Transformation\FirstInitialLastName;
 
 /**
  * Class EncryptedRowTest
@@ -237,5 +239,52 @@ class EncryptedRowTest extends TestCase
             $fast
         );
         return $row;
+    }
+
+    /**
+     * @throws ArrayKeyException
+     * @throws CryptoOperationException
+     * @throws BlindIndexNotFoundException
+     * @throws \SodiumException
+     */
+    public function testRowTransform()
+    {
+        $row = (new EncryptedRow($this->fipsRandom, 'users'))
+            ->addTextField('first_name')
+            ->addTextField('last_name');
+        $row->addCompoundIndex(
+            $row->createCompoundIndex(
+                'first_init_last_name',
+                ['first_name', 'last_name'],
+                64,
+                true
+            )->addRowTransform(new FirstInitialLastName())
+        );
+        $this->assertEquals(
+            $row->getAllBlindIndexes(['first_name' => 'John', 'last_name' => 'Smith']),
+            $row->getAllBlindIndexes(['first_name' => 'Jane', 'last_name' => 'Smith'])
+        );
+        $this->assertNotEquals(
+            $row->getAllBlindIndexes(['first_name' => 'John', 'last_name' => 'Smith']),
+            $row->getAllBlindIndexes(['first_name' => 'Ryan', 'last_name' => 'Smith'])
+        );
+        $this->assertNotEquals(
+            $row->getAllBlindIndexes(['first_name' => 'John', 'last_name' => 'Smith']),
+            $row->getAllBlindIndexes(['first_name' => 'Jane', 'last_name' => 'Doe'])
+        );
+        $row->addCompoundIndex($row->createCompoundIndex(
+            'full_name',
+            ['first_name', 'last_name'],
+            64,
+            true
+        ));
+        $this->assertEquals(
+            $row->getBlindIndex('first_init_last_name', ['first_name' => 'John', 'last_name' => 'Smith']),
+            $row->getBlindIndex('first_init_last_name', ['first_name' => 'Jane', 'last_name' => 'Smith'])
+        );
+        $this->assertNotEquals(
+            $row->getBlindIndex('full_name', ['first_name' => 'John', 'last_name' => 'Smith']),
+            $row->getBlindIndex('full_name', ['first_name' => 'Jane', 'last_name' => 'Smith'])
+        );
     }
 }

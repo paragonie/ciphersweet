@@ -1,6 +1,7 @@
 <?php
 namespace ParagonIE\CipherSweet;
 
+use ParagonIE\CipherSweet\Contract\RowTransformationInterface;
 use ParagonIE\CipherSweet\Contract\TransformationInterface;
 use ParagonIE\CipherSweet\Transformation\Compound;
 
@@ -39,6 +40,11 @@ class CompoundIndex
      * @var array<string, array<int, TransformationInterface>>
      */
     protected $columnTransforms = [];
+
+    /**
+     * @var array<int, RowTransformationInterface>
+     */
+    protected $rowTransforms = [];
 
     /**
      * @var Compound
@@ -87,6 +93,18 @@ class CompoundIndex
     public function addTransform($column, TransformationInterface $tf)
     {
         $this->columnTransforms[$column][] = $tf;
+        return $this;
+    }
+
+    /**
+     * Add a Row-Level Transform. This replaces the Compounder.
+     *
+     * @param RowTransformationInterface $tf
+     * @return self
+     */
+    public function addRowTransform(RowTransformationInterface $tf)
+    {
+        $this->rowTransforms[] = $tf;
         return $this;
     }
 
@@ -143,6 +161,14 @@ class CompoundIndex
     }
 
     /**
+     * @return array<int, RowTransformationInterface>
+     */
+    public function getRowTransforms()
+    {
+        return $this->rowTransforms;
+    }
+
+    /**
      * Get a packed plaintext for use in creating a compound blind index
      * This is a one-way transformation meant to be distinct from other inputs
      * Not all elements of the row will be used.
@@ -173,6 +199,25 @@ class CompoundIndex
             }
             $pieces[$col] = $piece;
         }
+
+        // If we define our own RowTransforms, we use them.
+        if (!empty($this->rowTransforms)) {
+            foreach ($this->rowTransforms as $tf) {
+                if ($tf instanceof RowTransformationInterface) {
+                    /** @var array|string $pieces */
+                    $pieces = $tf($pieces);
+                }
+            }
+        }
+
+        // If we ended up with a string (i.e. from RowTransforms),
+        // just return that. We're done.
+        if (\is_string($pieces)) {
+            return $pieces;
+        }
+
+        // Use the default Compound transformation to flatten the array
+        // containing the pieces.
         $compounder = self::getCompounder();
         return (string) $compounder($pieces);
     }
