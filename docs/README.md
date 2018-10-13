@@ -145,6 +145,8 @@ $engine = new CipherSweet($provider);
 If you're using FIPSCrypto instead of ModernCrypto, you just need to pass
 it once to the `KeyProvider` and the rest is handled for you.
 
+There is no need to pass `ModernCrypto` or `FIPSCrypto` multiple times.
+
 ```php
 <?php
 use ParagonIE\CipherSweet\Backend\FIPSCrypto;
