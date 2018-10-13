@@ -50,7 +50,8 @@ At a super high level overview:
       of social security number", an attacker can't just look at the blind
       indexes and immediately deduce the value of this boolean field.
 * If you add too many blind indexes to your data, you may allow attackers who
-  know some plaintexts to be able to deduce facts about other ciphertexts.
+  know some plaintexts to be able to deduce facts about the decrypted value of
+  other ciphertexts.
      * We refer to these deductive strategies as "crossword puzzle attacks"
        because the same sort of analytical skills used to solve crossword 
        puzzles can be employed to learn facts about the unencryptable data.
