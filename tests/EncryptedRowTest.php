@@ -5,7 +5,6 @@ use ParagonIE\CipherSweet\Backend\FIPSCrypto;
 use ParagonIE\CipherSweet\Backend\ModernCrypto;
 use ParagonIE\CipherSweet\BlindIndex;
 use ParagonIE\CipherSweet\CipherSweet;
-use ParagonIE\CipherSweet\CompoundIndex;
 use ParagonIE\CipherSweet\EncryptedRow;
 use ParagonIE\CipherSweet\Exception\ArrayKeyException;
 use ParagonIE\CipherSweet\Exception\BlindIndexNotFoundException;

@@ -20,7 +20,7 @@ class FirstInitialLastName implements RowTransformationInterface
         if (!\is_array($input)) {
             throw new \TypeError('Compound Transformation expects an array');
         }
-        return (string) \json_encode($this->processArray($input));
+        return \strtolower($input['first_name'][0] . $input['last_name']);
 
     }
 
@@ -31,9 +31,10 @@ class FirstInitialLastName implements RowTransformationInterface
      *
      * @param mixed $input
      * @return string
+     * @throws \Exception
      */
     public function __invoke($input)
     {
-        return \strtolower($input['first_name'][0] . $input['last_name']);
+        return $this->processArray($input);
     }
 }
