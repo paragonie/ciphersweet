@@ -62,6 +62,8 @@ At a super high level overview:
     you wish your application to tolerate.
   * Shorter indexes will result in more duplicates, but will be less useful for
     attackers trying to perform crossword puzzle attacks on the blind indexes.
+* It's okay to only encrypt some fields and not create blind indexes on them,
+  so long as your application doesn't need to use those values in SELECT queries.
 
 ## Setting up CipherSweet at Run-Time
 
