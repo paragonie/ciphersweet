@@ -3,6 +3,7 @@ namespace ParagonIE\CipherSweet;
 
 use ParagonIE\CipherSweet\Backend\Key\SymmetricKey;
 use ParagonIE\CipherSweet\Exception\ArrayKeyException;
+use ParagonIE\CipherSweet\Exception\BlindIndexNotFoundException;
 use ParagonIE\ConstantTime\Hex;
 
 /**
@@ -163,6 +164,33 @@ class EncryptedRow
         );
         $this->addCompoundIndex($index);
         return $index;
+    }
+    /**
+     * Get all of the blind indexes and compound indexes defined for this
+     * object, calculated from the input array.
+     *
+     * @param string $indexName
+     * @param array $row
+     * @return array<string, array<string, string>>
+     *
+     * @throws ArrayKeyException
+     * @throws BlindIndexNotFoundException
+     * @throws Exception\CryptoOperationException
+     * @throws \SodiumException
+     */
+    public function getBlindIndex($indexName, array $row)
+    {
+        if (isset($this->blindIndexes[$indexName])) {
+            return $this->calcBlindIndex(
+                $row,
+                $indexName,
+                $this->blindIndexes[$indexName]
+            );
+        }
+        if (isset($this->compoundIndexes[$indexName])) {
+            return $this->calcCompoundIndex($row, $this->compoundIndexes[$indexName]);
+        }
+        throw new BlindIndexNotFoundException();
     }
 
     /**
