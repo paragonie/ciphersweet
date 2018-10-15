@@ -35,9 +35,9 @@ At a super high level overview:
 * Ciphertexts (encrypted messages) are indistinguishable from each other.
 * Blind indexes offer limited searching capabilities.
   * They don't support `LIKE` operators or regular expressions.
-* Each blind index is one-way (a.k.a. irreversible).
-* Each blind index can be created on the plaintext itself, or a **transformation**
-  of the plaintext. Example transformations include:
+* Each blind index is one-way (a.k.a. irreversible) and can be created
+  on the plaintext itself, or a **transformation** of the plaintext. 
+  Example transformations include:
   * Last four numeric digits of the plaintext
   * First letter of the plaintext
   * All-lowercase representation of the plaintext
