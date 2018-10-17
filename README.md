@@ -69,7 +69,7 @@ if you'd like to integrate CipherSweet with your software.
 
 ## Why "CipherSweet"?
 
-CipherSweet was originally intend for use in in [SuiteCRM](https://github.com/salesagility/SuiteCRM)
+CipherSweet was originally intended for use in [SuiteCRM](https://github.com/salesagility/SuiteCRM)
 (a fork of the SugarCRM Community Edition) and related products, although
 there is nothing preventing its use in other products.
 
