@@ -316,6 +316,14 @@ class EncryptedRow
     }
 
     /**
+     * @return array<int, string>
+     */
+    public function listEncryptedFields()
+    {
+        return \array_keys($this->fieldsToEncrypt);
+    }
+
+    /**
      * @param array $row
      * @param string $column
      * @param BlindIndex $index
