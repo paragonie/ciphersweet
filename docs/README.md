@@ -14,6 +14,7 @@
     * [`EncryptedRow`](#encryptedrow)
       * [`EncryptedRow` with a `CompoundIndex` using a custom Transform of Multiple Fields](#encryptedrow-with-a-compoundindex-using-a-custom-transform-of-multiple-fields)
       * [Using the Old API to Create a Congruent Result](#using-the-old-api-to-create-a-congruent-result)
+    * [`EncryptedMultiRows`](#encryptedmultirows)
 * [CipherSweet Examples](https://github.com/paragonie/ciphersweet/tree/master/docs/examples)
   (Look here if you seek runnable example code for common integrations)
 * [CipherSweet Internals](https://github.com/paragonie/ciphersweet/tree/master/docs/internals)
