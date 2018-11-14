@@ -12,13 +12,6 @@ use ParagonIE\ConstantTime\Hex;
  */
 class EncryptedRow
 {
-    const TYPE_BOOLEAN = 'bool';
-    const TYPE_TEXT = 'string';
-    const TYPE_INT = 'int';
-    const TYPE_FLOAT = 'float';
-
-    const COMPOUND_SPECIAL = 'special__compound__indexes';
-
     /**
      * @var CipherSweet $engine
      */
@@ -63,7 +56,7 @@ class EncryptedRow
      * @param string $type
      * @return self
      */
-    public function addField($fieldName, $type = self::TYPE_TEXT)
+    public function addField($fieldName, $type = Constants::TYPE_TEXT)
     {
         $this->fieldsToEncrypt[$fieldName] = $type;
         return $this;
@@ -77,7 +70,7 @@ class EncryptedRow
      */
     public function addBooleanField($fieldName)
     {
-        return $this->addField($fieldName, self::TYPE_BOOLEAN);
+        return $this->addField($fieldName, Constants::TYPE_BOOLEAN);
     }
 
     /**
@@ -88,7 +81,7 @@ class EncryptedRow
      */
     public function addFloatField($fieldName)
     {
-        return $this->addField($fieldName, self::TYPE_FLOAT);
+        return $this->addField($fieldName, Constants::TYPE_FLOAT);
     }
 
     /**
@@ -99,7 +92,7 @@ class EncryptedRow
      */
     public function addIntegerField($fieldName)
     {
-        return $this->addField($fieldName, self::TYPE_INT);
+        return $this->addField($fieldName, Constants::TYPE_INT);
     }
 
     /**
@@ -110,7 +103,7 @@ class EncryptedRow
      */
     public function addTextField($fieldName)
     {
-        return $this->addField($fieldName, self::TYPE_TEXT);
+        return $this->addField($fieldName, Constants::TYPE_TEXT);
     }
 
     /**
@@ -323,6 +316,14 @@ class EncryptedRow
     }
 
     /**
+     * @return array<int, string>
+     */
+    public function listEncryptedFields()
+    {
+        return \array_keys($this->fieldsToEncrypt);
+    }
+
+    /**
      * @param array $row
      * @param string $column
      * @param BlindIndex $index
@@ -371,12 +372,12 @@ class EncryptedRow
         $name = $index->getName();
         $key = $this->engine->getBlindIndexRootKey(
             $this->tableName,
-            self::COMPOUND_SPECIAL
+            Constants::COMPOUND_SPECIAL
         );
 
         $k = $this->engine->getIndexTypeColumn(
             $this->tableName,
-            self::COMPOUND_SPECIAL,
+            Constants::COMPOUND_SPECIAL,
             $name
         );
         return [
@@ -480,7 +481,7 @@ class EncryptedRow
         if (!$key) {
             $key = $this->engine->getBlindIndexRootKey(
                 $this->tableName,
-                self::COMPOUND_SPECIAL
+                Constants::COMPOUND_SPECIAL
             );
         }
 
@@ -493,7 +494,7 @@ class EncryptedRow
             $backend,
             \hash_hmac(
                 'sha256',
-                Util::pack([$this->tableName, self::COMPOUND_SPECIAL, $name]),
+                Util::pack([$this->tableName, Constants::COMPOUND_SPECIAL, $name]),
                 $key->getRawKey(),
                 true
             )
@@ -529,11 +530,11 @@ class EncryptedRow
     protected function convertFromString($data, $type)
     {
         switch ($type) {
-            case self::TYPE_BOOLEAN:
+            case Constants::TYPE_BOOLEAN:
                 return Util::chrToBool($data);
-            case self::TYPE_FLOAT:
+            case Constants::TYPE_FLOAT:
                 return Util::stringToFloat($data);
-            case self::TYPE_INT:
+            case Constants::TYPE_INT:
                 return Util::stringToInt($data);
             default:
                 return (string) $data;
@@ -558,19 +559,19 @@ class EncryptedRow
     {
         switch ($type) {
             // Will return a 1-byte string:
-            case self::TYPE_BOOLEAN:
+            case Constants::TYPE_BOOLEAN:
                 if (!\is_null($data) && !\is_bool($data)) {
                     $data = !empty($data);
                 }
                 return Util::boolToChr($data);
             // Will return a fixed-length string:
-            case self::TYPE_FLOAT:
+            case Constants::TYPE_FLOAT:
                 if (!\is_float($data)) {
                     throw new \TypeError('Expected a float');
                 }
                 return Util::floatToString($data);
             // Will return a fixed-length string:
-            case self::TYPE_INT:
+            case Constants::TYPE_INT:
                 if (!\is_int($data)) {
                     throw new \TypeError('Expected an integer');
                 }

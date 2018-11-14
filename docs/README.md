@@ -658,6 +658,138 @@ array(2) {
 In both instances, we create a blind index on "jdoe" given a first name
 of "John" and a last name of "Doe".
 
+### EncryptedMultiRows
+
+Since version 1.6.0, CipherSweet also provided a multi-row abstraction
+to make it easier to manage heavily-normalized databases.
+
+When working with `EncryptedMultiRows`, your arrays should be formatted
+as follows:
+
+```php
+$input = [
+    'table1' => [
+        'column1' => 'value',
+        'columnB' => 123456,
+        // ...
+    ],
+    'table2' => [ /* ... */ ],
+    // ...
+];
+```
+
+For example:
+
+```php
+<?php
+
+use ParagonIE\CipherSweet\CipherSweet;
+use ParagonIE\CipherSweet\Transformation\AlphaCharactersOnly;
+use ParagonIE\CipherSweet\Transformation\FirstCharacter;
+use ParagonIE\CipherSweet\Transformation\Lowercase;
+use ParagonIE\CipherSweet\Backend\FIPSCrypto;
+use ParagonIE\CipherSweet\KeyProvider\StringProvider;
+use ParagonIE\CipherSweet\EncryptedMultiRows;
+
+$provider = new StringProvider(
+    new FIPSCrypto(),
+    // Example key, chosen randomly, hex-encoded:
+    'a981d3894b5884f6965baea64a09bb5b4b59c10e857008fc814923cf2f2de558'
+);
+$engine = new CipherSweet($provider);
+$rowSet = (new EncryptedMultiRows($engine))
+    ->addTextField('contacts', 'first_name')
+    ->addTextField('contacts', 'last_name')
+    ->addFloatField('contacts', 'latitude')
+    ->addFloatField('contacts', 'longitude')
+    ->addTextField('foobar', 'test');
+
+$rowSet->addCompoundIndex(
+    'contacts',
+    $rowSet->createCompoundIndex(
+        'contacts',
+        'contact_first_init_last_name',
+        ['first_name', 'last_name'],
+        64, // 64 bits = 8 bytes
+        true
+    )
+        ->addTransform('first_name', new AlphaCharactersOnly())
+        ->addTransform('first_name', new Lowercase())
+        ->addTransform('first_name', new FirstCharacter())
+        ->addTransform('last_name', new AlphaCharactersOnly())
+        ->addTransform('last_name', new Lowercase())
+);
+
+
+$prepared = $rowSet->prepareForStorage([
+    'contacts' => [
+        'contactid' => 12345,
+        'first_name' => 'Jane',
+        'last_name' => 'Doe',
+        'latitude' => 52.52,
+        'longitude' => -33.106,
+        'extraneous' => true
+    ],
+    'foobar' => [
+        'foobarid' => 23,
+        'contactid' => 12345,
+        'test' => 'paragonie'
+    ]
+]);
+
+var_dump($prepared);
+```
+
+This will produce something similar to the following output:
+
+```
+array(2) {
+  [0]=>
+  array(2) {
+    ["contacts"]=>
+    array(6) {
+      ["contactid"]=>
+      int(12345)
+      ["first_name"]=>
+      string(141) "fips:8NSLNDWxN4u7OeN_v5ahnt-tgTNqrarsdhPwhMFT4uqtMsELj5L1D7KhukM1OSOKdwtgytiaut3-1kvtP8eSiIH8bQLidw3MwUFQ0JaxvNldI7rzVKeMP3yp4UVSrJZNH89nvQ=="
+      ["last_name"]=>
+      string(137) "fips:uk9FtD5HvXY4Fe8_ibXF32FurmV8WvAUVSWUPVhOcfmHNC-nol7EnNjdQ5vBG2HQmpeRaTjSE5QZNZ9TQGeK-HgaO3V_MCVQDTtN2u9-3HR4ehSFjn8rHbGt31Ygrh4CV6WV"
+      ["latitude"]=>
+      string(145) "fips:HE1PQoMso4FBu_rJWk0adWnp9i6HSBXQbf3QaHp1cw8-tOCDSm3rjiE1zIIrUmKarprPRzCTzb2BxdiXVg3RNsLH8iSko0ZmXSXhTa51XoEByxaH9fvAILpXttIfk8rsSXoIKgvMfcY="
+      ["longitude"]=>
+      string(145) "fips:4gwnipUOws0kLW9gLmIgUNOM65ba1SVkibxILmJOpCbvw3853v_AaEGD-PO3b0fNwVnD6zbWdpovtHblAlXX2iOUvfqgrnwO21vPcYt8FaFkT706-_ZvbRioooL7NwFBqvJJWpiTnhA="
+      ["extraneous"]=>
+      bool(true)
+    }
+    ["foobar"]=>
+    array(3) {
+      ["foobarid"]=>
+      int(23)
+      ["contactid"]=>
+      int(12345)
+      ["test"]=>
+      string(145) "fips:vnoJ6rIEBBMLCvXMt4gke8CT6PomgAExNufTZUrpPd3rp9y28jgopmXA7w8reqVe3SfE6KhRvN-lt5GQhzR1miQPVaIVq2V6D1i4eZCSKQDBmJ7PTAYuigNd9DPSL4qW3OAOtvagJ4Lc"
+    }
+  }
+  [1]=>
+  array(2) {
+    ["contacts"]=>
+    array(1) {
+      ["contact_first_init_last_name"]=>
+      array(2) {
+        ["type"]=>
+        string(13) "w6dsrxbathjze"
+        ["value"]=>
+        string(16) "546b1ffd1f83c37a"
+      }
+    }
+    ["foobar"]=>
+    array(0) {
+    }
+  }
+}
+```
+
 ## Using CipherSweet with a Database 
 
 CipherSweet is database-agnostic, so you'll need to write some code that
