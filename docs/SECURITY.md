@@ -223,7 +223,7 @@ in CipherSweet (i.e. with BLAKE2b, and domain separation constants),
 then our key hierarchy is also secure. Furthermore, related-key
 attacks can be obviated from the threat model.
 
-#### ModernCrypto Encrpytion
+#### ModernCrypto Encryption
 
 The best real-world attacks against XChaCha20-Poly1305 require a nonce-reuse
 condition. However, given its 24 byte nonce (generated from the kCSPRNG), you
