@@ -59,6 +59,13 @@ class FileProvider implements KeyProviderInterface
         }
 
         return new SymmetricKey($this->backend, $contents);
+    }
 
+    /**
+     * @return array
+     */
+    public function __debugInfo()
+    {
+        return ['symmetricKeyPath'];
     }
 }

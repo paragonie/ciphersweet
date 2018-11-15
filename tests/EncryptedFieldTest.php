@@ -10,6 +10,7 @@ use ParagonIE\CipherSweet\Exception\ArrayKeyException;
 use ParagonIE\CipherSweet\Exception\BlindIndexNameCollisionException;
 use ParagonIE\CipherSweet\Exception\BlindIndexNotFoundException;
 use ParagonIE\CipherSweet\Exception\CryptoOperationException;
+use ParagonIE\CipherSweet\Exception\InvalidCiphertextException;
 use ParagonIE\CipherSweet\KeyProvider\ArrayProvider;
 use ParagonIE\CipherSweet\Transformation\LastFourDigits;
 use ParagonIE\ConstantTime\Binary;
@@ -115,6 +116,38 @@ class EncryptedFieldTest extends TestCase
 
         $this->assertSame($message, $eF->decryptValue($fCipher));
         $this->assertSame($message, $eM->decryptValue($mCipher));
+
+        $aad = 'Test AAD: ' . \random_bytes(32);
+        $fCipherWithAD = $eF->encryptValue($message, $aad);
+        $mCipherWithAD = $eM->encryptValue($message, $aad);
+
+        $this->assertSame($message, $eF->decryptValue($fCipherWithAD, $aad));
+        $this->assertSame($message, $eM->decryptValue($mCipherWithAD, $aad));
+
+        try {
+            $eF->decryptValue($fCipher, $aad);
+            $this->fail('AAD was permitted when ciphertext had none');
+        } catch (\Throwable $ex) {
+            $this->assertInstanceOf(InvalidCiphertextException::class, $ex);
+        }
+        try {
+            $eM->decryptValue($mCipher, $aad);
+            $this->fail('AAD was permitted when ciphertext had none');
+        } catch (\Throwable $ex) {
+            $this->assertInstanceOf('SodiumException', $ex);
+        }
+        try {
+            $eF->decryptValue($fCipherWithAD);
+            $this->fail('AAD stripping was permitted');
+        } catch (\Throwable $ex) {
+            $this->assertInstanceOf(InvalidCiphertextException::class, $ex);
+        }
+        try {
+            $eM->decryptValue($mCipherWithAD);
+            $this->fail('AAD stripping was permitted');
+        } catch (\Throwable $ex) {
+            $this->assertInstanceOf('SodiumException', $ex);
+        }
     }
 
     /**

@@ -9,6 +9,7 @@ use ParagonIE\CipherSweet\EncryptedRow;
 use ParagonIE\CipherSweet\Exception\ArrayKeyException;
 use ParagonIE\CipherSweet\Exception\BlindIndexNotFoundException;
 use ParagonIE\CipherSweet\Exception\CryptoOperationException;
+use ParagonIE\CipherSweet\Exception\InvalidCiphertextException;
 use ParagonIE\CipherSweet\KeyProvider\StringProvider;
 use ParagonIE\CipherSweet\Transformation\LastFourDigits;
 use ParagonIE\ConstantTime\Binary;
@@ -112,6 +113,98 @@ class EncryptedRowTest extends TestCase
 
         $this->assertSame($row, $eF->decryptRow($fCipher));
         $this->assertSame($row, $eM->decryptRow($mCipher));
+    }
+
+    /**
+     * @throws ArrayKeyException
+     * @throws CryptoOperationException
+     * @throws \SodiumException
+     */
+    public function testEncryptWithAAD()
+    {
+        $eFwithout = (new EncryptedRow($this->fipsRandom, 'contacts'));
+        $eMwithout = (new EncryptedRow($this->naclRandom, 'contacts'));
+        $eFwithout->addTextField('message');
+        $eMwithout->addTextField('message');
+
+        $eF = (new EncryptedRow($this->fipsRandom, 'contacts'));
+        $eM = (new EncryptedRow($this->naclRandom, 'contacts'));
+        $eF->addTextField('message', 'id');
+        $eM->addTextField('message', 'id');
+
+        $message = 'This is a test message: ' . \random_bytes(16);
+        $row     = [
+            'id' => 123,
+            'message' => $message
+        ];
+        $row2     = [
+            'id' => 124,
+            'message' => $message
+        ];
+
+        $fCipher = $eF->encryptRow($row);
+        $mCipher = $eM->encryptRow($row);
+        $fCipher2 = $eF->encryptRow($row2);
+        $mCipher2 = $eM->encryptRow($row2);
+        $fCipherWithAD = $eFwithout->encryptRow($row);
+        $mCipherWithAD = $eMwithout->encryptRow($row);
+        $fCipherWithAD2 = $eFwithout->encryptRow($row2);
+        $mCipherWithAD2 = $eMwithout->encryptRow($row2);
+
+
+        try {
+            $eF->decryptRow($fCipherWithAD);
+            $this->fail('AAD was permitted when ciphertext had none');
+        } catch (\Throwable $ex) {
+            $this->assertInstanceOf(InvalidCiphertextException::class, $ex);
+        }
+        try {
+            $eM->decryptRow($mCipherWithAD);
+            $this->fail('AAD was permitted when ciphertext had none');
+        } catch (\Throwable $ex) {
+            $this->assertInstanceOf('SodiumException', $ex);
+        }
+
+        try {
+            $eFwithout->decryptRow($fCipher);
+            $this->fail('AAD stripping was permitted');
+        } catch (\Throwable $ex) {
+            $this->assertInstanceOf(InvalidCiphertextException::class, $ex);
+        }
+        try {
+            $eMwithout->decryptRow($mCipher);
+            $this->fail('AAD stripping was permitted');
+        } catch (\Throwable $ex) {
+            $this->assertInstanceOf('SodiumException', $ex);
+        }
+        try {
+            $fCipher2['id'] = $row['id'];
+            $eFwithout->decryptRow($fCipher2);
+            $this->fail('AAD stripping was permitted');
+        } catch (\Throwable $ex) {
+            $this->assertInstanceOf(InvalidCiphertextException::class, $ex);
+        }
+        try {
+            $mCipher2['id'] = $row['id'];
+            $eMwithout->decryptRow($mCipher2);
+            $this->fail('AAD stripping was permitted');
+        } catch (\Throwable $ex) {
+            $this->assertInstanceOf('SodiumException', $ex);
+        }
+        try {
+            $fCipherWithAD2['id'] = $row['id'];
+            $eF->decryptRow($fCipherWithAD2);
+            $this->fail('AAD stripping was permitted');
+        } catch (\Throwable $ex) {
+            $this->assertInstanceOf(InvalidCiphertextException::class, $ex);
+        }
+        try {
+            $mCipherWithAD2['id'] = $row['id'];
+            $eM->decryptRow($mCipherWithAD2);
+            $this->fail('AAD stripping was permitted');
+        } catch (\Throwable $ex) {
+            $this->assertInstanceOf('SodiumException', $ex);
+        }
     }
 
     /**

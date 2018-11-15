@@ -62,15 +62,16 @@ class EncryptedField
      * Encrypt a value and calculate all of its blind indices in one go.
      *
      * @param string $plaintext
+     * @param string $aad               Additional authenticated data
      * @return array<int, string|array>
      *
      * @throws BlindIndexNotFoundException
      * @throws CryptoOperationException
      */
-    public function prepareForStorage($plaintext)
+    public function prepareForStorage($plaintext, $aad = '')
     {
         return [
-            $this->encryptValue($plaintext),
+            $this->encryptValue($plaintext, $aad),
             $this->getAllBlindIndexes($plaintext)
         ];
     }
@@ -79,16 +80,18 @@ class EncryptedField
      * Encrypt a single value, using the per-field symmetric key.
      *
      * @param string $plaintext
+     * @param string $aad       Additional authenticated data
      * @return string
      */
-    public function encryptValue($plaintext)
+    public function encryptValue($plaintext, $aad = '')
     {
         return $this
             ->engine
             ->getBackend()
             ->encrypt(
                 $plaintext,
-                $this->key
+                $this->key,
+                $aad
             );
     }
 
@@ -96,16 +99,18 @@ class EncryptedField
      * Decrypt a single value, using the per-field symmetric key.
      *
      * @param string $ciphertext
+     * @param string $aad       Additional authenticated data
      * @return string
      */
-    public function decryptValue($ciphertext)
+    public function decryptValue($ciphertext, $aad = '')
     {
         return $this
             ->engine
             ->getBackend()
             ->decrypt(
                 $ciphertext,
-                $this->key
+                $this->key,
+                $aad
             );
     }
 

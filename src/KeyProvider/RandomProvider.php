@@ -57,4 +57,12 @@ class RandomProvider implements KeyProviderInterface
         }
         throw new \TypeError('Invalid Backend provided');
     }
+
+    /**
+     * @return array
+     */
+    public function __debugInfo()
+    {
+        return [];
+    }
 }

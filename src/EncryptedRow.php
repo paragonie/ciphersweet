@@ -23,6 +23,11 @@ class EncryptedRow
     protected $fieldsToEncrypt = [];
 
     /**
+     * @var array<string, string> $aadSourceField
+     */
+    protected $aadSourceField = [];
+
+    /**
      * @var array<string, array<string, BlindIndex>> $blindIndexes
      */
     protected $blindIndexes = [];
@@ -54,11 +59,15 @@ class EncryptedRow
      *
      * @param string $fieldName
      * @param string $type
+     * @param string $aadSource Field name to source AAD from
      * @return self
      */
-    public function addField($fieldName, $type = Constants::TYPE_TEXT)
+    public function addField($fieldName, $type = Constants::TYPE_TEXT, $aadSource = '')
     {
         $this->fieldsToEncrypt[$fieldName] = $type;
+        if ($aadSource) {
+            $this->aadSourceField[$fieldName] = $aadSource;
+        }
         return $this;
     }
 
@@ -66,44 +75,48 @@ class EncryptedRow
      * Define a boolean field that will be encrypted. Nullable.
      *
      * @param string $fieldName
+     * @param string $aadSource Field name to source AAD from
      * @return self
      */
-    public function addBooleanField($fieldName)
+    public function addBooleanField($fieldName, $aadSource = '')
     {
-        return $this->addField($fieldName, Constants::TYPE_BOOLEAN);
+        return $this->addField($fieldName, Constants::TYPE_BOOLEAN, $aadSource);
     }
 
     /**
      * Define a floating point number (decimal) field that will be encrypted.
      *
      * @param string $fieldName
+     * @param string $aadSource Field name to source AAD from
      * @return self
      */
-    public function addFloatField($fieldName)
+    public function addFloatField($fieldName, $aadSource = '')
     {
-        return $this->addField($fieldName, Constants::TYPE_FLOAT);
+        return $this->addField($fieldName, Constants::TYPE_FLOAT, $aadSource);
     }
 
     /**
      * Define an integer field that will be encrypted.
      *
      * @param string $fieldName
+     * @param string $aadSource Field name to source AAD from
      * @return self
      */
-    public function addIntegerField($fieldName)
+    public function addIntegerField($fieldName, $aadSource = '')
     {
-        return $this->addField($fieldName, Constants::TYPE_INT);
+        return $this->addField($fieldName, Constants::TYPE_INT, $aadSource);
     }
 
     /**
      * Define a text field that will be encrypted.
      *
      * @param string $fieldName
+     * @param string $aadSource Field name to source AAD from
      * @return self
      */
-    public function addTextField($fieldName)
+    public function addTextField($fieldName, $aadSource = '')
     {
-        return $this->addField($fieldName, Constants::TYPE_TEXT);
+        return $this->addField($fieldName, Constants::TYPE_TEXT, $aadSource);
     }
 
     /**
@@ -237,15 +250,25 @@ class EncryptedRow
     public function decryptRow(array $row)
     {
         $return = $row;
+        $backend = $this->engine->getBackend();
         foreach ($this->fieldsToEncrypt as $field => $type) {
             $key = $this->engine->getFieldSymmetricKey(
                 $this->tableName,
                 $field
             );
-            $plaintext = $this
-                ->engine
-                ->getBackend()
-                ->decrypt($row[$field], $key);
+            if (
+                !empty($this->aadSourceField[$field])
+                    &&
+                \array_key_exists($this->aadSourceField[$field], $row)
+            ) {
+                $plaintext = $backend->decrypt(
+                    $row[$field],
+                    $key,
+                    $row[$this->aadSourceField[$field]]
+                );
+            } else {
+                $plaintext = $backend->decrypt($row[$field], $key);
+            }
             $return[$field] = $this->convertFromString($plaintext, $type);
         }
         return $return;
@@ -267,6 +290,7 @@ class EncryptedRow
     public function encryptRow(array $row)
     {
         $return = $row;
+        $backend = $this->engine->getBackend();
         foreach ($this->fieldsToEncrypt as $field => $type) {
             if (!\array_key_exists($field, $row)) {
                 throw new ArrayKeyException(
@@ -281,10 +305,19 @@ class EncryptedRow
                 $this->tableName,
                 $field
             );
-            $return[$field] = $this
-                ->engine
-                ->getBackend()
-                ->encrypt($plaintext, $key);
+            if (
+                !empty($this->aadSourceField[$field])
+                    &&
+                \array_key_exists($this->aadSourceField[$field], $row)
+            ) {
+                $return[$field] = $backend->encrypt(
+                    $plaintext,
+                    $key,
+                    $row[$this->aadSourceField[$field]]
+                );
+            } else {
+                $return[$field] = $backend->encrypt($plaintext, $key);
+            }
         }
         /** @var array<string, string> $return */
         return $return;
@@ -321,6 +354,17 @@ class EncryptedRow
     public function listEncryptedFields()
     {
         return \array_keys($this->fieldsToEncrypt);
+    }
+
+    /**
+     * @param string $fieldName
+     * @param string $aadSource
+     * @return self
+     */
+    public function setAadSourceField($fieldName, $aadSource)
+    {
+        $this->aadSourceField[$fieldName] = $aadSource;
+        return $this;
     }
 
     /**

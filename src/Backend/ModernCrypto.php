@@ -28,16 +28,17 @@ class ModernCrypto implements BackendInterface
      *
      * @param string $plaintext
      * @param SymmetricKey $key
+     * @param string $aad       Additional authenticated data
      *
      * @return string
      * @throws \SodiumException
      */
-    public function encrypt($plaintext, SymmetricKey $key)
+    public function encrypt($plaintext, SymmetricKey $key, $aad = '')
     {
         $nonce = \random_bytes(self::NONCE_SIZE);
         $ciphertext = SodiumCompat::crypto_aead_xchacha20poly1305_ietf_encrypt(
             $plaintext,
-            $nonce,
+            $nonce . $aad,
             $nonce,
             $key->getRawKey()
         );
@@ -49,12 +50,13 @@ class ModernCrypto implements BackendInterface
      *
      * @param string $ciphertext
      * @param SymmetricKey $key
+     * @param string $aad       Additional authenticated data
      *
      * @return string
      * @throws InvalidCiphertextException
      * @throws \SodiumException
      */
-    public function decrypt($ciphertext, SymmetricKey $key)
+    public function decrypt($ciphertext, SymmetricKey $key, $aad = '')
     {
         // Make sure we're using the correct version:
         $header = Binary::safeSubstr($ciphertext, 0, 5);
@@ -72,7 +74,7 @@ class ModernCrypto implements BackendInterface
 
         return SodiumCompat::crypto_aead_xchacha20poly1305_ietf_decrypt(
             $encrypted,
-            $nonce,
+            $nonce . $aad,
             $nonce,
             $key->getRawKey()
         );

@@ -6,6 +6,7 @@ use ParagonIE\CipherSweet\CipherSweet;
 use ParagonIE\CipherSweet\EncryptedMultiRows;
 use ParagonIE\CipherSweet\Backend\FIPSCrypto;
 use ParagonIE\CipherSweet\Backend\ModernCrypto;
+use ParagonIE\CipherSweet\Exception\InvalidCiphertextException;
 use ParagonIE\CipherSweet\KeyProvider\StringProvider;
 use ParagonIE\CipherSweet\Transformation\Lowercase;
 use ParagonIE\ConstantTime\Hex;
@@ -104,11 +105,9 @@ class EncryptedMultiRowsTest extends TestCase
     }
 
     /**
-     * @throws \ParagonIE\CipherSweet\Exception\ArrayKeyException
-     * @throws \ParagonIE\CipherSweet\Exception\CryptoOperationException
-     * @throws \SodiumException
+     * @return EncryptedMultiRows
      */
-    public function testUsage()
+    public function getMultiRows()
     {
         $mr = (new EncryptedMultiRows($this->fipsEngine))
             ->addTable('foo')
@@ -124,6 +123,17 @@ class EncryptedMultiRowsTest extends TestCase
             'column2',
             (new BlindIndex('foo_column2_idx', [new Lowercase()], 32, true))
         );
+        return $mr;
+    }
+
+    /**
+     * @throws \ParagonIE\CipherSweet\Exception\ArrayKeyException
+     * @throws \ParagonIE\CipherSweet\Exception\CryptoOperationException
+     * @throws \SodiumException
+     */
+    public function testUsage()
+    {
+        $mr = $this->getMultiRows();
 
         $rows = [
             'foo' => [
@@ -164,5 +174,25 @@ class EncryptedMultiRowsTest extends TestCase
 
         $indexes2 = $mr->getAllBlindIndexes($rows);
         $this->assertSame($indexes, $indexes2, 'Both blind index APIs must produce the same output');
+
+        // Additional authenticated data (sourced from ID column)
+        $mr2 = $this->getMultiRows()
+            ->setAadSourceField('foo', 'column1', 'id');
+        $outRow2 = $mr2->encryptManyRows($rows);
+        $decrypted2 = $mr2->decryptManyRows($outRow2);
+
+        $this->assertSame($rows, $decrypted2, 'Decryption must be the same');
+        try {
+            $mr->decryptManyRows($outRow2);
+            $this->fail('AAD stripping was permitted');
+        } catch (\Throwable $ex) {
+            $this->assertInstanceOf(InvalidCiphertextException::class, $ex);
+        }
+        try {
+            $mr2->decryptManyRows($outRow);
+            $this->fail('AAD stripping was permitted');
+        } catch (\Throwable $ex) {
+            $this->assertInstanceOf(InvalidCiphertextException::class, $ex);
+        }
     }
 }

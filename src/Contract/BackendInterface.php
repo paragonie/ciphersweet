@@ -12,16 +12,18 @@ interface BackendInterface
     /**
      * @param string $plaintext
      * @param SymmetricKey $key
+     * @param string $aad       Additional authenticated data
      * @return string
      */
-    public function encrypt($plaintext, SymmetricKey $key);
+    public function encrypt($plaintext, SymmetricKey $key, $aad = '');
 
     /**
      * @param string $ciphertext
      * @param SymmetricKey $key
+     * @param string $aad       Additional authenticated data
      * @return string
      */
-    public function decrypt($ciphertext, SymmetricKey $key);
+    public function decrypt($ciphertext, SymmetricKey $key, $aad = '');
 
     /**
      * @param string $plaintext
