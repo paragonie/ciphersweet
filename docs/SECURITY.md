@@ -4,7 +4,7 @@
 
 * [Table of Contents](#table-of-contents)
 * [Threat Model](#threat-model)
-  * [Threat Model](#attacker-capabilities)
+  * [Attacker Capabilities](#attacker-capabilities)
 * [Security Properties of CipherSweet](#security-properties-of-ciphersweet)
   * [Encryption](#encryption)
   * [Blind Indexes](#blind-indexes)
