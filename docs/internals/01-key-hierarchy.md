@@ -26,7 +26,7 @@ which allows data to be securely encrypted or decrypted in the database.
 
 The `Index Root Key` in the above diagram is the root key for each
 blind index on the field. Each index's corresponding key is calculated
-by taking the HMAC-SHA384 of the packed table name, field name,
+by taking the HMAC-SHA256 of the packed table name, field name,
 and index name as the message, and the `Index Root Key` as the HMAC key,
 and truncating the result to 32 bytes.
 
