@@ -171,14 +171,12 @@ chance of a random nonce collision.
 > At this threshold, due to the pigeonhole principle, we would expect a 16 byte
 block of the keystream to repeat long before a nonce/key pair repeats.
 
-Assuming nonces never repeat for a given key, the next 
-
 By using an Encrypt-then-HMAC construction and verifying MACs in constant-time
 (as per [the encryption documentation](internals/03-encryption.md)), we side-step
 chosen-ciphertext attacks (assuming HMAC-SHA384 remains secure).
 
 Additionally, the AES and HMAC keys are derived from a single key through
-HKDF-SHA384.
+HKDF-SHA384. You cannot provide independent keys for each step in the process.
 
 #### FIPSCrypto Fast Blind Indexes
 
@@ -224,6 +222,8 @@ If we assume that HKDF is a secure key-splitting function [as used](internals/01
 in CipherSweet (i.e. with BLAKE2b, and domain separation constants),
 then our key hierarchy is also secure. Furthermore, related-key
 attacks can be obviated from the threat model.
+
+#### ModernCrypto Encrpytion
 
 The best real-world attacks against XChaCha20-Poly1305 require a nonce-reuse
 condition. However, given its 24 byte nonce (generated from the kCSPRNG), you
