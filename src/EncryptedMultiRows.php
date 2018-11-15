@@ -50,7 +50,7 @@ class EncryptedMultiRows
      * @param string $fieldName
      * @param string $type
      * @param string $aadSource
-     * @return $this
+     * @return self
      */
     public function addField(
         $tableName,
@@ -85,7 +85,7 @@ class EncryptedMultiRows
      * Mark a column to be encrypted as floating point input.
      *
      * @param string $tableName
-     * @param string
+     * @param string $fieldName
      * @param string $aadSource
      * @return self
      */

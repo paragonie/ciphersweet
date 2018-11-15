@@ -313,7 +313,7 @@ class EncryptedRow
                 $return[$field] = $backend->encrypt(
                     $plaintext,
                     $key,
-                    $row[$this->aadSourceField[$field]]
+                    (string) $row[$this->aadSourceField[$field]]
                 );
             } else {
                 $return[$field] = $backend->encrypt($plaintext, $key);
