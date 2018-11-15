@@ -146,7 +146,7 @@ backend before we can describe the security properties of CipherSweet itself.
    with 256-bit keys (AES-CTR-256), followed by HMAC-SHA384
    ([Encrypt-then-MAC](https://moxie.org/blog/the-cryptographic-doom-principle/)).
    Decryption requires validating the MAC first, which is done in constant-time. 
-6. * [PBKDF2](https://tools.ietf.org/html/rfc2898) with SHA384 (optional, for slow blind indexes)
+6. [PBKDF2](https://tools.ietf.org/html/rfc2898) with SHA384 (optional, for slow blind indexes)
 
 If we assume that HKDF is a secure key-splitting function [as used](internals/01-key-heirarchy.svg)
 in CipherSweet (i.e. with HMAC-SHA384, and domain separation constants),
