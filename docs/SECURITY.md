@@ -10,7 +10,7 @@
   * [Blind Indexes](#blind-indexes)
   * [Cryptographic Secrets](#cryptographic-secrets)
 * [Design Rationale](#design-rationale)
-* [Informal Security Description](#informal-security-analysis)
+* [Informal Security Analysis](#informal-security-analysis)
   * [FIPSCrypto](#fipscrypto)
     * [FIPSCrypto Encryption](#fipscrypto-encryption)
     * [FIPSCrypto Fast Blind Indexes](#fipscrypto-fast-blind-indexes)
