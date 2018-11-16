@@ -155,54 +155,54 @@ class EncryptedRowTest extends TestCase
         try {
             $eF->decryptRow($fCipherWithAD);
             $this->fail('AAD was permitted when ciphertext had none');
-        } catch (\Throwable $ex) {
+        } catch (\Exception $ex) {
             $this->assertInstanceOf(InvalidCiphertextException::class, $ex);
         }
         try {
             $eM->decryptRow($mCipherWithAD);
             $this->fail('AAD was permitted when ciphertext had none');
-        } catch (\Throwable $ex) {
+        } catch (\Exception $ex) {
             $this->assertInstanceOf('SodiumException', $ex);
         }
 
         try {
             $eFwithout->decryptRow($fCipher);
             $this->fail('AAD stripping was permitted');
-        } catch (\Throwable $ex) {
+        } catch (\Exception $ex) {
             $this->assertInstanceOf(InvalidCiphertextException::class, $ex);
         }
         try {
             $eMwithout->decryptRow($mCipher);
             $this->fail('AAD stripping was permitted');
-        } catch (\Throwable $ex) {
+        } catch (\Exception $ex) {
             $this->assertInstanceOf('SodiumException', $ex);
         }
         try {
             $fCipher2['id'] = $row['id'];
             $eFwithout->decryptRow($fCipher2);
             $this->fail('AAD stripping was permitted');
-        } catch (\Throwable $ex) {
+        } catch (\Exception $ex) {
             $this->assertInstanceOf(InvalidCiphertextException::class, $ex);
         }
         try {
             $mCipher2['id'] = $row['id'];
             $eMwithout->decryptRow($mCipher2);
             $this->fail('AAD stripping was permitted');
-        } catch (\Throwable $ex) {
+        } catch (\Exception $ex) {
             $this->assertInstanceOf('SodiumException', $ex);
         }
         try {
             $fCipherWithAD2['id'] = $row['id'];
             $eF->decryptRow($fCipherWithAD2);
             $this->fail('AAD stripping was permitted');
-        } catch (\Throwable $ex) {
+        } catch (\Exception $ex) {
             $this->assertInstanceOf(InvalidCiphertextException::class, $ex);
         }
         try {
             $mCipherWithAD2['id'] = $row['id'];
             $eM->decryptRow($mCipherWithAD2);
             $this->fail('AAD stripping was permitted');
-        } catch (\Throwable $ex) {
+        } catch (\Exception $ex) {
             $this->assertInstanceOf('SodiumException', $ex);
         }
     }

@@ -127,25 +127,25 @@ class EncryptedFieldTest extends TestCase
         try {
             $eF->decryptValue($fCipher, $aad);
             $this->fail('AAD was permitted when ciphertext had none');
-        } catch (\Throwable $ex) {
+        } catch (\Exception $ex) {
             $this->assertInstanceOf(InvalidCiphertextException::class, $ex);
         }
         try {
             $eM->decryptValue($mCipher, $aad);
             $this->fail('AAD was permitted when ciphertext had none');
-        } catch (\Throwable $ex) {
+        } catch (\Exception $ex) {
             $this->assertInstanceOf('SodiumException', $ex);
         }
         try {
             $eF->decryptValue($fCipherWithAD);
             $this->fail('AAD stripping was permitted');
-        } catch (\Throwable $ex) {
+        } catch (\Exception $ex) {
             $this->assertInstanceOf(InvalidCiphertextException::class, $ex);
         }
         try {
             $eM->decryptValue($mCipherWithAD);
             $this->fail('AAD stripping was permitted');
-        } catch (\Throwable $ex) {
+        } catch (\Exception $ex) {
             $this->assertInstanceOf('SodiumException', $ex);
         }
     }

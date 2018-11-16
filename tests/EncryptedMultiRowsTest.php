@@ -185,13 +185,13 @@ class EncryptedMultiRowsTest extends TestCase
         try {
             $mr->decryptManyRows($outRow2);
             $this->fail('AAD stripping was permitted');
-        } catch (\Throwable $ex) {
+        } catch (\Exception $ex) {
             $this->assertInstanceOf(InvalidCiphertextException::class, $ex);
         }
         try {
             $mr2->decryptManyRows($outRow);
             $this->fail('AAD stripping was permitted');
-        } catch (\Throwable $ex) {
+        } catch (\Exception $ex) {
             $this->assertInstanceOf(InvalidCiphertextException::class, $ex);
         }
     }
