@@ -1,6 +1,7 @@
 <?php
 namespace ParagonIE\CipherSweet\Backend;
 
+use ParagonIE\CipherSweet\Exception\CryptoOperationException;
 use ParagonIE\CipherSweet\Util;
 use ParagonIE\ConstantTime\Base32;
 use ParagonIE\ConstantTime\Base64UrlSafe;
@@ -31,11 +32,17 @@ class ModernCrypto implements BackendInterface
      * @param string $aad       Additional authenticated data
      *
      * @return string
+     *
+     * @throws CryptoOperationException
      * @throws \SodiumException
      */
     public function encrypt($plaintext, SymmetricKey $key, $aad = '')
     {
-        $nonce = \random_bytes(self::NONCE_SIZE);
+        try {
+            $nonce = \random_bytes(self::NONCE_SIZE);
+        } catch (\Exception $ex) {
+            throw new CryptoOperationException('CSPRNG failure', 0, $ex);
+        }
         $ciphertext = SodiumCompat::crypto_aead_xchacha20poly1305_ietf_encrypt(
             $plaintext,
             $nonce . $aad,

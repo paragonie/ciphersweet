@@ -38,6 +38,8 @@ class SymmetricKey
 
     /**
      * Attempt to wipe memory.
+     *
+     * @throws \SodiumException
      */
     public function __destruct()
     {

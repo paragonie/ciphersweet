@@ -349,6 +349,8 @@ class EncryptedRow
     }
 
     /**
+     * Return a list of the fields in this row that will be encrypted.
+     *
      * @return array<int, string>
      */
     public function listEncryptedFields()
@@ -357,6 +359,9 @@ class EncryptedRow
     }
 
     /**
+     * Specify the Additional Authenticated Data source column for an encrypted
+     * column.
+     *
      * @param string $fieldName
      * @param string $aadSource
      * @return self
@@ -368,6 +373,8 @@ class EncryptedRow
     }
 
     /**
+     * Calculates the actual blind index on a given row.
+     *
      * @param array $row
      * @param string $column
      * @param BlindIndex $index
@@ -405,6 +412,8 @@ class EncryptedRow
     }
 
     /**
+     * Call this to calculate a compound blind index on a given row.
+     *
      * @param array $row
      * @param CompoundIndex $index
      *
@@ -438,6 +447,8 @@ class EncryptedRow
     }
 
     /**
+     * Calculates a blind index.
+     *
      * @param array $row
      * @param string $column
      * @param BlindIndex $index
@@ -509,10 +520,13 @@ class EncryptedRow
     }
 
     /**
+     * Calculates a compound blind index.
+     *
      * @param array $row
      * @param CompoundIndex $index
      * @param SymmetricKey|null $key
      * @return string
+     * @internal
      *
      * @throws \Exception
      * @throws Exception\CryptoOperationException
@@ -566,6 +580,9 @@ class EncryptedRow
     }
 
     /**
+     * Convert data from decrypted ciphertext into the intended data type
+     * (i.e. the format of the original plaintext before being converted).
+     *
      * @param string $data
      * @param string $type
      * @return int|string|float|bool|null
