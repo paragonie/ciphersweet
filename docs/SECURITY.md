@@ -304,5 +304,57 @@ Larger indexes are also more useful than shorter indexes.
 
 The exact formula to determine safer upper bounds for the amount of information
 that one can safely leak without conclusively revealing duplicate plaintexts
-(i.e. allowing the attacker to rule out false positives) will be provided at a
-later date.
+(i.e. allowing the attacker to rule out false positives) can be derived as
+follows:
+
+* Let **L_i** be the number of bits in the blind index output
+* Let **K_i** be the keyspace of the input domain (in bits)
+* Let **R** be the number of encrypted records that use this blind index
+* The probability of a coincidence for a given blind index is
+  `2^-(min(L_i, K_i))`
+* The number of coincidences (**C**) you can expect for each plaintext can be 
+  obtained through simple multiplication. A summation of the exponent is
+  quicker to calculate, and yields an equivalent result.
+
+Thus:
+
+    C = R / 2^-(sum(min(L_i, K_i))) 
+
+...or, alternatively:
+
+```php
+<?php
+/**
+ * @param array $indexes
+ * @param int $R
+ * @return float
+ */
+function coincidenceCount(array $indexes, $R)
+{
+    $exponent = 0;
+    $count = count($indexes);
+    for ($i = 0; $i < $count; ++$i) {
+        $exponent += min($indexes[$i]['L'] ,$indexes[$i]['K']);
+    }
+    return (float) max(1, $R) / pow(2, $exponent);
+}
+
+/* Usage example: */
+$indexes = [
+    ['L' => 16, 'K' => 24],
+    ['L' => 8, 'K' => PHP_INT_MAX]
+];
+var_dump(coincidenceCount($indexes, 1 << 31)); // float(128)
+var_dump(coincidenceCount($indexes, 1 << 24)); // float(1)
+var_dump(coincidenceCount($indexes, 1 << 16)); // float(0.00390625)
+```
+
+Our recommendation is to ensure that you always have a **C** value of 2 or
+higher for your expected value of **R**. This means reducing the values of
+**L** appropriately.
+
+On the other side, if **C** is larger than the square root of **R**, then
+there is no marginal benefit of using blind indexes at all.
+
+In short, one should always aim for `2 <= C < sqrt(R)`, for any given value
+of R.
