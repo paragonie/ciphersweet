@@ -339,6 +339,7 @@ function coincidenceCount(array $indexes, $R)
     return (float) max(1, $R) / pow(2, $exponent);
 }
 
+/* Usage example: */
 $indexes = [
     ['L' => 16, 'K' => 24],
     ['L' => 8, 'K' => PHP_INT_MAX]
