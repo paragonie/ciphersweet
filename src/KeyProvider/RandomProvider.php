@@ -41,6 +41,7 @@ class RandomProvider implements KeyProviderInterface
 
     /**
      * @return SymmetricKey
+     * @throws \Exception
      */
     public function getSymmetricKey()
     {

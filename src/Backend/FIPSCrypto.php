@@ -49,8 +49,12 @@ class FIPSCrypto implements BackendInterface
      */
     public function encrypt($plaintext, SymmetricKey $key, $aad = '')
     {
-        $hkdfSalt = \random_bytes(self::SALT_SIZE);
-        $ctrNonce = \random_bytes(self::NONCE_SIZE);
+        try {
+            $hkdfSalt = \random_bytes(self::SALT_SIZE);
+            $ctrNonce = \random_bytes(self::NONCE_SIZE);
+        } catch (\Exception $ex) {
+            throw new CryptoOperationException('CSPRNG failure', 0, $ex);
+        }
         $encKey = Util::HKDF($key, $hkdfSalt, 'AES-256-CTR');
         $macKey = Util::HKDF($key, $hkdfSalt, 'HMAC-SHA-384');
 

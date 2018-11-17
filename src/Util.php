@@ -2,9 +2,9 @@
 
 namespace ParagonIE\CipherSweet;
 
-use ParagonIE\ConstantTime\Binary;
 use ParagonIE\CipherSweet\Backend\Key\SymmetricKey;
 use ParagonIE\CipherSweet\Exception\CryptoOperationException;
+use ParagonIE\ConstantTime\Binary;
 use ParagonIE_Sodium_Core_Util as SodiumUtil;
 
 /**

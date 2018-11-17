@@ -15,13 +15,6 @@ use ParagonIE_Sodium_Compat as SodiumCompat;
  */
 final class CipherSweet
 {
-    /*
-     * These domain separation constants has a hamming distance of 4 from each
-     * other, for each byte.
-     */
-    const DS_BIDX = "\x7E\x7E\x7E\x7E\x7E\x7E\x7E\x7E\x7E\x7E\x7E\x7E\x7E\x7E\x7E\x7E\x7E\x7E\x7E\x7E\x7E\x7E\x7E\x7E\x7E\x7E\x7E\x7E\x7E\x7E\x7E\x7E";
-    const DS_FENC = "\xB4\xB4\xB4\xB4\xB4\xB4\xB4\xB4\xB4\xB4\xB4\xB4\xB4\xB4\xB4\xB4\xB4\xB4\xB4\xB4\xB4\xB4\xB4\xB4\xB4\xB4\xB4\xB4\xB4\xB4\xB4\xB4";
-
     /**
      * @var BackendInterface $backend
      */
@@ -95,7 +88,7 @@ final class CipherSweet
             Util::HKDF(
                 $this->keyProvider->getSymmetricKey(),
                 $tableName,
-                self::DS_BIDX . $fieldName
+                Constants::DS_BIDX . $fieldName
             )
         );
     }
@@ -119,7 +112,7 @@ final class CipherSweet
             Util::HKDF(
                 $this->keyProvider->getSymmetricKey(),
                 $tableName,
-                self::DS_FENC . $fieldName
+                Constants::DS_FENC . $fieldName
             )
         );
     }
