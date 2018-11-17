@@ -42,11 +42,12 @@ class FIPSCrypto implements BackendInterface
      *
      * @param string $plaintext
      * @param SymmetricKey $key
+     * @param string $aad       Additional authenticated data
      *
      * @return string
      * @throws CryptoOperationException
      */
-    public function encrypt($plaintext, SymmetricKey $key)
+    public function encrypt($plaintext, SymmetricKey $key, $aad = '')
     {
         $hkdfSalt = \random_bytes(self::SALT_SIZE);
         $ctrNonce = \random_bytes(self::NONCE_SIZE);
@@ -57,7 +58,7 @@ class FIPSCrypto implements BackendInterface
         $ciphertext = self::aes256ctr($plaintext, $encKey, $ctrNonce);
         $mac = \hash_hmac(
             'sha384',
-            Util::pack([self::MAGIC_HEADER, $hkdfSalt, $ctrNonce, $ciphertext]),
+            Util::pack([self::MAGIC_HEADER, $hkdfSalt, $ctrNonce, $ciphertext]) . $aad,
             $macKey,
             true
         );
@@ -78,13 +79,14 @@ class FIPSCrypto implements BackendInterface
      *
      * @param string $ciphertext
      * @param SymmetricKey $key
+     * @param string $aad       Additional authenticated data
      *
      * @return string
      * @throws CryptoOperationException
      * @throws InvalidCiphertextException
      * @throws \SodiumException
      */
-    public function decrypt($ciphertext, SymmetricKey $key)
+    public function decrypt($ciphertext, SymmetricKey $key, $aad = '')
     {
         // Make sure we're using the correct version:
         $header = Binary::safeSubstr($ciphertext, 0, 5);
@@ -109,7 +111,7 @@ class FIPSCrypto implements BackendInterface
         // Verify the MAC in constant-time:
         $recalc = \hash_hmac(
             'sha384',
-            Util::pack([self::MAGIC_HEADER, $hkdfSalt, $ctrNonce, $ciphertext]),
+            Util::pack([self::MAGIC_HEADER, $hkdfSalt, $ctrNonce, $ciphertext]) . $aad,
             $macKey,
             true
         );

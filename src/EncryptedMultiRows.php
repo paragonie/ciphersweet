@@ -49,12 +49,17 @@ class EncryptedMultiRows
      * @param string $tableName
      * @param string $fieldName
      * @param string $type
-     * @return $this
+     * @param string $aadSource
+     * @return self
      */
-    public function addField($tableName, $fieldName, $type = Constants::TYPE_TEXT)
-    {
+    public function addField(
+        $tableName,
+        $fieldName,
+        $type = Constants::TYPE_TEXT,
+        $aadSource = ''
+    ) {
         $this->getEncryptedRowObjectForTable($tableName)
-            ->addField($fieldName, $type);
+            ->addField($fieldName, $type, $aadSource);
         return $this;
     }
 
@@ -63,11 +68,17 @@ class EncryptedMultiRows
      *
      * @param string $tableName
      * @param string $fieldName
+     * @param string $aadSource
      * @return self
      */
-    public function addBooleanField($tableName, $fieldName)
+    public function addBooleanField($tableName, $fieldName, $aadSource = '')
     {
-        return $this->addField($tableName, $fieldName, Constants::TYPE_BOOLEAN);
+        return $this->addField(
+            $tableName,
+            $fieldName,
+            Constants::TYPE_BOOLEAN,
+            $aadSource
+        );
     }
 
     /**
@@ -75,11 +86,17 @@ class EncryptedMultiRows
      *
      * @param string $tableName
      * @param string $fieldName
+     * @param string $aadSource
      * @return self
      */
-    public function addFloatField($tableName, $fieldName)
+    public function addFloatField($tableName, $fieldName, $aadSource = '')
     {
-        return $this->addField($tableName, $fieldName, Constants::TYPE_FLOAT);
+        return $this->addField(
+            $tableName,
+            $fieldName,
+            Constants::TYPE_FLOAT,
+            $aadSource
+        );
     }
 
     /**
@@ -87,11 +104,17 @@ class EncryptedMultiRows
      *
      * @param string $tableName
      * @param string $fieldName
+     * @param string $aadSource
      * @return self
      */
-    public function addIntegerField($tableName, $fieldName)
+    public function addIntegerField($tableName, $fieldName, $aadSource = '')
     {
-        return $this->addField($tableName, $fieldName, Constants::TYPE_INT);
+        return $this->addField(
+            $tableName,
+            $fieldName,
+            Constants::TYPE_INT,
+            $aadSource
+        );
     }
 
     /**
@@ -99,11 +122,17 @@ class EncryptedMultiRows
      *
      * @param string $tableName
      * @param string $fieldName
+     * @param string $aadSource
      * @return self
      */
-    public function addTextField($tableName, $fieldName)
+    public function addTextField($tableName, $fieldName, $aadSource = '')
     {
-        return $this->addField($tableName, $fieldName, Constants::TYPE_TEXT);
+        return $this->addField(
+            $tableName,
+            $fieldName,
+            Constants::TYPE_TEXT,
+            $aadSource
+        );
     }
 
     /**
@@ -325,6 +354,19 @@ class EncryptedMultiRows
     public function listTables()
     {
         return \array_keys($this->tables);
+    }
+
+    /**
+     * @param string $tableName
+     * @param string $fieldName
+     * @param string $aadSource
+     * @return self
+     */
+    public function setAadSourceField($tableName, $fieldName, $aadSource)
+    {
+        $this->getEncryptedRowObjectForTable($tableName)
+            ->setAadSourceField($fieldName, $aadSource);
+        return $this;
     }
 
     /**

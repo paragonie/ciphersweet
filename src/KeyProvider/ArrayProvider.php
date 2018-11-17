@@ -93,4 +93,12 @@ class ArrayProvider implements KeyProviderInterface
     {
         return new SymmetricKey($this->backend, $this->rootSymmetricKey);
     }
+
+    /**
+     * @return array
+     */
+    public function __debugInfo()
+    {
+        return [];
+    }
 }
