@@ -332,6 +332,13 @@ array(2) {
 */
 ```
 
+#### EncryptedField with AAD
+
+Since version 1.6.0, both `EncryptedField::encryptValue()` and
+`EncryptedField::prepareForStorage()` allow an optional string to be passed to
+the second parameter, which will be included in the authentication tag on the
+ciphertext. It will **NOT** be stored in the ciphertext.
+
 ### EncryptedRow
 
 An alternative approach for datasets with multiple encrypted rows and/or
@@ -613,6 +620,7 @@ $row->addCompoundIndex(
 );
 
 $prepared = $row->prepareRowForStorage([
+    'contactid' => 123456,
     'first_name' => 'Jane',
     'last_name' => 'Doe',
     'extraneous' => true,
@@ -624,7 +632,9 @@ var_dump($prepared);
 /*
 array(2) {
   [0]=>
-  array(5) {
+  array(6) {
+    ["contactid"]=>
+    int(123456)
     ["first_name"]=>
     string(141) "fips:32kSOVcY9IIX5rxoVhxSWMQs-PPl8XwPOPzD4sPA50_HAiD-ylCvoW_-vAEHtIp-o2p_M_9lxTRzmBa8U--g471Uipks2njotKwzFstqYiXwX80cdAsFYDazmvrs2TIOnKrX-w=="
     ["last_name"]=>
@@ -659,6 +669,32 @@ array(2) {
 
 In both instances, we create a blind index on "jdoe" given a first name
 of "John" and a last name of "Doe".
+
+#### EncryptedRow with AAD
+
+Since version 1.6.0, you can now use a separate plaintext column (e.g. primary
+or foreign key) as additional authenticated data.
+ 
+This binds the ciphertext to a specific row, thereby preventing an attacker
+capable of replacing ciphertexts and using legitimate app access to decrypt
+ciphertexts they wouldn't otherwise have access to.
+
+```php
+$row->setAadSourceField('first_name', 'contactid');
+```
+
+This can also be included during the table instantiation:
+
+```php
+<?php
+use ParagonIE\CipherSweet\CipherSweet;
+use ParagonIE\CipherSweet\EncryptedRow;
+
+/** @var CipherSweet $engine */
+$row = (new EncryptedRow($engine, 'contacts'))
+    ->addTextField('first_name', 'contact_id');
+    /* ... */
+```
 
 ### EncryptedMultiRows
 
@@ -790,6 +826,32 @@ array(2) {
     }
   }
 }
+```
+
+#### EncryptedMultiRows with AAD
+
+Since version 1.6.0, you can now use a separate plaintext column (e.g. primary
+or foreign key) as additional authenticated data.
+ 
+This binds the ciphertext to a specific row, thereby preventing an attacker
+capable of replacing ciphertexts and using legitimate app access to decrypt
+ciphertexts they wouldn't otherwise have access to.
+
+```php
+$rowSet->setAadSourceField('contacts', 'first_name', 'contactid');
+```
+
+This can also be included during the table instantiation:
+
+```php
+<?php
+use ParagonIE\CipherSweet\CipherSweet;
+use ParagonIE\CipherSweet\EncryptedMultiRows;
+
+/** @var CipherSweet $engine */
+$rowSet = (new EncryptedMultiRows($engine))
+    ->addTextField('contacts', 'first_name', 'contactid');
+    /* ... */
 ```
 
 ## Using CipherSweet with a Database 
