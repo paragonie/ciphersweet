@@ -1,14 +1,14 @@
 <?php
 namespace ParagonIE\CipherSweet\Backend;
 
-use ParagonIE\ConstantTime\Base32;
-use ParagonIE\ConstantTime\Base64UrlSafe;
-use ParagonIE\ConstantTime\Binary;
 use ParagonIE\CipherSweet\Contract\BackendInterface;
 use ParagonIE\CipherSweet\Backend\Key\SymmetricKey;
 use ParagonIE\CipherSweet\Exception\CryptoOperationException;
 use ParagonIE\CipherSweet\Exception\InvalidCiphertextException;
 use ParagonIE\CipherSweet\Util;
+use ParagonIE\ConstantTime\Base32;
+use ParagonIE\ConstantTime\Base64UrlSafe;
+use ParagonIE\ConstantTime\Binary;
 use ParagonIE_Sodium_Core_Util as SodiumUtil;
 
 /**
@@ -46,6 +46,7 @@ class FIPSCrypto implements BackendInterface
      *
      * @return string
      * @throws CryptoOperationException
+     * @throws \SodiumException
      */
     public function encrypt($plaintext, SymmetricKey $key, $aad = '')
     {
@@ -66,11 +67,8 @@ class FIPSCrypto implements BackendInterface
             $macKey,
             true
         );
-        try {
-            \ParagonIE_Sodium_Compat::memzero($encKey);
-            \ParagonIE_Sodium_Compat::memzero($macKey);
-        } catch (\SodiumException $ex) {
-        }
+        Util::memzero($encKey);
+        Util::memzero($macKey);
 
         return self::MAGIC_HEADER . Base64UrlSafe::encode(
             $hkdfSalt . $ctrNonce . $mac . $ciphertext
@@ -127,11 +125,8 @@ class FIPSCrypto implements BackendInterface
 
         // If we're here, it's time to decrypt:
         $plaintext = self::aes256ctr($ciphertext, $encKey, $ctrNonce);
-        try {
-            \ParagonIE_Sodium_Compat::memzero($encKey);
-            \ParagonIE_Sodium_Compat::memzero($macKey);
-        } catch (\SodiumException $ex) {
-        }
+        Util::memzero($encKey);
+        Util::memzero($macKey);
         return $plaintext;
     }
 

@@ -5,6 +5,7 @@ use ParagonIE\CipherSweet\Backend\Key\SymmetricKey;
 use ParagonIE\CipherSweet\Contract\BackendInterface;
 use ParagonIE\CipherSweet\Contract\KeyProviderInterface;
 use ParagonIE\CipherSweet\Exception\CryptoOperationException;
+use ParagonIE\CipherSweet\Util;
 use ParagonIE\ConstantTime\Base64UrlSafe;
 use ParagonIE\ConstantTime\Binary;
 use ParagonIE\ConstantTime\Hex;
@@ -54,16 +55,7 @@ class StringProvider implements KeyProviderInterface
      */
     public function __destruct()
     {
-        if (\extension_loaded('sodium')) {
-            \sodium_memzero($this->rootSymmetricKey);
-        } elseif (\extension_loaded('libsodium')) {
-            \Sodium\memzero($this->rootSymmetricKey);
-        } else {
-            // Worst-case scenario: Best-ditch effort to wipe memory
-            $m = \str_repeat("\xff", (int) Binary::safeStrlen($this->rootSymmetricKey));
-            $this->rootSymmetricKey ^= ($this->rootSymmetricKey ^ $m);
-            unset($this->rootSymmetricKey);
-        }
+        Util::memzero($this->rootSymmetricKey);
     }
 
     /**

@@ -1,14 +1,14 @@
 <?php
 namespace ParagonIE\CipherSweet\Backend;
 
+use ParagonIE\CipherSweet\Backend\Key\SymmetricKey;
+use ParagonIE\CipherSweet\Contract\BackendInterface;
 use ParagonIE\CipherSweet\Exception\CryptoOperationException;
+use ParagonIE\CipherSweet\Exception\InvalidCiphertextException;
 use ParagonIE\CipherSweet\Util;
 use ParagonIE\ConstantTime\Base32;
 use ParagonIE\ConstantTime\Base64UrlSafe;
 use ParagonIE\ConstantTime\Binary;
-use ParagonIE\CipherSweet\Contract\BackendInterface;
-use ParagonIE\CipherSweet\Backend\Key\SymmetricKey;
-use ParagonIE\CipherSweet\Exception\InvalidCiphertextException;
 use ParagonIE_Sodium_Compat as SodiumCompat;
 use ParagonIE_Sodium_Core_Util as SodiumUtil;
 

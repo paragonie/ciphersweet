@@ -267,6 +267,25 @@ abstract class Util
     }
 
     /**
+     * @param string $string
+     * @return void
+     * @throws \SodiumException
+     */
+    public static function memzero(&$string)
+    {
+        if (\extension_loaded('sodium')) {
+            \sodium_memzero($string);
+        } elseif (\extension_loaded('libsodium')) {
+            \Sodium\memzero($string);
+        } else {
+            // Worst-case scenario: Best-ditch effort to wipe memory
+            $m = \str_repeat("\xff", (int)Binary::safeStrlen($string));
+            $string ^= ($string ^ $m);
+            unset($string);
+        }
+    }
+
+    /**
      * Used for packing [table, field, index] names together in a way that
      * resists and/or prevents collisions caused by operator error.
      *

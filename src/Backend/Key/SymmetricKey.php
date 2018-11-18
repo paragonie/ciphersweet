@@ -2,7 +2,7 @@
 namespace ParagonIE\CipherSweet\Backend\Key;
 
 use ParagonIE\CipherSweet\Contract\BackendInterface;
-use ParagonIE\ConstantTime\Binary;
+use ParagonIE\CipherSweet\Util;
 
 /**
  * Class SymmetricKey
@@ -43,16 +43,7 @@ class SymmetricKey
      */
     public function __destruct()
     {
-        if (\extension_loaded('sodium')) {
-            \sodium_memzero($this->keyMaterial);
-        } elseif (\extension_loaded('libsodium')) {
-            \Sodium\memzero($this->keyMaterial);
-        } else {
-            // Worst-case scenario: Best-ditch effort to wipe memory
-            $m = \str_repeat("\xff", (int) Binary::safeStrlen($this->keyMaterial));
-            $this->keyMaterial ^= ($this->keyMaterial ^ $m);
-            unset($this->keyMaterial);
-        }
+        Util::memzero($this->keyMaterial);
     }
 
     /**
