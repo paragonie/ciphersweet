@@ -124,7 +124,9 @@ class FieldIndexPlanner
      */
     public function withPopulation($int)
     {
-        return (clone $this)->setEstimatedPopulation($int);
+        /** @var self $clone */
+        $clone = clone $this;
+        return $clone->setEstimatedPopulation($int);
     }
 
     /**
