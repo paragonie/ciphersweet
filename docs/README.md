@@ -15,6 +15,8 @@
       * [`EncryptedRow` with a `CompoundIndex` using a custom Transform of Multiple Fields](#encryptedrow-with-a-compoundindex-using-a-custom-transform-of-multiple-fields)
       * [Using the Old API to Create a Congruent Result](#using-the-old-api-to-create-a-congruent-result)
     * [`EncryptedMultiRows`](#encryptedmultirows)
+      * [`EncryptedMultiRows` with AAD](#encryptedmultirows-with-aad)
+  * [Blind Index Planning](#blind-index-planning)
 * [Security Properties and Thread Model for CipherSweet](SECURITY.md)
 * [CipherSweet Examples](https://github.com/paragonie/ciphersweet/tree/master/docs/examples)
   (Look here if you seek runnable example code for common integrations)
@@ -853,6 +855,55 @@ $rowSet = (new EncryptedMultiRows($engine))
     ->addTextField('contacts', 'first_name', 'contactid');
     /* ... */
 ```
+
+### Blind Index Planning
+
+Since version 1.7.0, CipherSweet includes a **planner** to assist developers in
+determining the safe sizes for an additional blind index on an encrypted field.
+
+Using the planner is straightforward:
+
+```php
+<?php
+use ParagonIE\CipherSweet\Planner\FieldIndexPlanner;
+
+# First, instantiate the planner for a given field
+$planner = new FieldIndexPlanner();
+
+# How many rows do you anticipate?
+$planner->setEstimatedPopulation(50000);
+
+# Next, add some information about existing fields
+$planner->addExistingIndex('name_goes_here', 4, 16);
+// ... etc.
+
+$recommended = $planner->recommend();
+var_dump($recommended);
+```
+
+This code snippet should yield the following:
+
+```
+array(2) {
+  ["min"]=>
+  int(4)
+  ["max"]=>
+  int(11)
+}
+```
+
+How to interpret this data:
+
+If you make the additional index larger than `11`, you [introduce the risk of leaking data](SECURITY.md#blind-index-information-leaks).
+
+If you make it lower than `4`, you'll have a lot of false positives and it
+really would not be worth creating this blind index.
+
+If your additional index has a limited keyspace, you can pass the number of
+bits to the `recommend()` method to include this in the calculation.
+
+Furthermore, you can use `recommendLow()` to only get the lower number, and
+`recommendHigh()` to only get the higher number.
 
 ## Using CipherSweet with a Database 
 
