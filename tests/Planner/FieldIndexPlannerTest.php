@@ -1,6 +1,7 @@
 <?php
 namespace ParagonIE\CipherSweet\Tests\Planner;
 
+use ParagonIE\CipherSweet\Exception\PlannerException;
 use ParagonIE\CipherSweet\Planner\FieldIndexPlanner;
 use PHPUnit\Framework\TestCase;
 
@@ -62,5 +63,29 @@ class FieldIndexPlannerTest extends TestCase
         // What if we're adding a very-low-entropy input? Recommend a much smaller index!
         $this->assertSame(['min' => 1, 'max' => 8], $plan3->withPopulation(1 << 31)->recommend(8));
 
+    }
+
+    public function testPlannerExtremes()
+    {
+        $planner = (new FieldIndexPlanner())
+            ->setEstimatedPopulation(2)
+            ->addExistingIndex('name', 32, PHP_INT_MAX)
+            ->addExistingIndex('first_initial_last_name', 16, PHP_INT_MAX)
+            ->addExistingIndex('initials', 16, PHP_INT_MAX);
+        try {
+            $planner->recommend();
+            $this->fail(
+                'Planner should throw an exception if it cannot offer safe recommendations.'
+            );
+        } catch (PlannerException $ex) {
+            $this->assertSame('There is no safe upper bound', $ex->getMessage());
+        }
+
+        $planner = (new FieldIndexPlanner())
+            ->setEstimatedPopulation((1 << 31) - 1);
+        $this->assertSame(['min' => 16, 'max' => 30], $planner->recommend());
+        $this->assertSame(['min' => 16, 'max' => 17], $planner->recommend(17));
+        $this->assertSame(['min' => 16, 'max' => 29], $planner->recommend(29));
+        $this->assertSame(['min' => 16, 'max' => 30], $planner->recommend(30));
     }
 }

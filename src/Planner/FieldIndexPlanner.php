@@ -1,6 +1,8 @@
 <?php
 namespace ParagonIE\CipherSweet\Planner;
 
+use ParagonIE\CipherSweet\Exception\PlannerException;
+
 /**
  * Class Planner
  * @package ParagonIE\CipherSweet
@@ -47,11 +49,13 @@ class FieldIndexPlanner
     /**
      * @param int $extraFieldPopulationBits
      * @return array<string, int>
+     *
+     * @throws PlannerException
      */
     public function recommend($extraFieldPopulationBits = PHP_INT_MAX)
     {
         if ($this->population < 1) {
-            throw new \RangeException('An empty population is not useful for estimates');
+            throw new PlannerException('An empty population is not useful for estimates');
         }
         $existing = \array_values($this->indexes);
         $recommend = ['min' => null, 'max' => null];
@@ -85,7 +89,7 @@ class FieldIndexPlanner
             $recommend['min'] = 1;
         }
         if (is_null($recommend['max'])) {
-            $recommend['max'] = min(256, $extraFieldPopulationBits);
+            throw new PlannerException('There is no safe upper bound');
         }
 
         // This will probably never happen, but...
@@ -99,6 +103,8 @@ class FieldIndexPlanner
     /**
      * @param int $extraFieldPopulationBits
      * @return int
+     *
+     * @throws PlannerException
      */
     public function recommendLow($extraFieldPopulationBits = PHP_INT_MAX)
     {
@@ -110,6 +116,8 @@ class FieldIndexPlanner
     /**
      * @param int $extraFieldPopulationBits
      * @return int
+     *
+     * @throws PlannerException
      */
     public function recommendHigh($extraFieldPopulationBits = PHP_INT_MAX)
     {
