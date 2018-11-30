@@ -905,6 +905,9 @@ bits to the `recommend()` method to include this in the calculation.
 Furthermore, you can use `recommendLow()` to only get the lower number, and
 `recommendHigh()` to only get the higher number.
 
+**Note:** If there is no safe value for an additional index, the `recommend`
+methods will throw a `PlannerException`.
+
 ## Using CipherSweet with a Database 
 
 CipherSweet is database-agnostic, so you'll need to write some code that
