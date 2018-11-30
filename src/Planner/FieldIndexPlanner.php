@@ -47,7 +47,7 @@ class FieldIndexPlanner
      * @param int $K
      * @return self
      */
-    public function addExistingIndex($name, $L, $K)
+    public function addExistingIndex($name, $L, $K = PHP_INT_MAX)
     {
         $this->indexes[$name] = ['L' => $L, 'K' => $K];
         return $this;
