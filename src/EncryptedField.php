@@ -245,6 +245,14 @@ class EncryptedField
     }
 
     /**
+     * @return array<string, BlindIndex>
+     */
+    public function getBlindIndexObjects()
+    {
+        return $this->blindIndexes;
+    }
+
+    /**
      * Get a list of all the blind index "type"s, corresponding with their
      * index names.
      *
