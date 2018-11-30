@@ -1,6 +1,8 @@
 <?php
 namespace ParagonIE\CipherSweet\Planner;
 
+use ParagonIE\CipherSweet\BlindIndex;
+use ParagonIE\CipherSweet\EncryptedField;
 use ParagonIE\CipherSweet\Exception\PlannerException;
 
 /**
@@ -14,6 +16,30 @@ class FieldIndexPlanner
 
     /** @var array<string, array<string, int>> $indexes */
     protected $indexes = [];
+
+    /**
+     * Create a predictor from an EncryptedField.
+     *
+     * Attempts to parse the bit lengths of the existing fields. Note that this
+     * may be slightly inaccurate with respect to the input domains of each
+     * existing index. We default to "infinity" (PHP_INT_MAX bits) in our
+     * estimates for K_i when populating from an object, but L_i is accurate.
+     *
+     * @param EncryptedField $field
+     * @return self
+     */
+    public static function fromEncryptedField(EncryptedField $field)
+    {
+        $self = new static();
+        /**
+         * @var string $name
+         * @var BlindIndex $object
+         */
+        foreach ($field->getBlindIndexObjects() as $name => $object) {
+            $self->addExistingIndex($name, $object->getFilterBitLength(), PHP_INT_MAX);
+        }
+        return $self;
+    }
 
     /**
      * @param string $name,
@@ -34,16 +60,6 @@ class FieldIndexPlanner
     {
         $indexes = \array_values($this->indexes);
         return $this->coincidenceCounter($indexes, $this->population);
-    }
-
-    /**
-     * @param int $int
-     * @return self
-     */
-    public function setEstimatedPopulation($int)
-    {
-        $this->population = $int;
-        return $this;
     }
 
     /**
@@ -124,6 +140,16 @@ class FieldIndexPlanner
         /** @var array<string, int> $recommend */
         $recommend = $this->recommend($extraFieldPopulationBits);
         return $recommend['max'];
+    }
+
+    /**
+     * @param int $int
+     * @return self
+     */
+    public function setEstimatedPopulation($int)
+    {
+        $this->population = $int;
+        return $this;
     }
 
     /**
