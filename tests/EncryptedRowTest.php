@@ -158,11 +158,13 @@ class EncryptedRowTest extends TestCase
         } catch (\Exception $ex) {
             $this->assertInstanceOf(InvalidCiphertextException::class, $ex);
         }
-        try {
-            $eM->decryptRow($mCipherWithAD);
-            $this->fail('AAD was permitted when ciphertext had none');
-        } catch (\Exception $ex) {
-            $this->assertInstanceOf('SodiumException', $ex);
+        if (PHP_VERSION_ID !== 70300) { // PHP bug #77297
+            try {
+                $eM->decryptRow($mCipherWithAD);
+                $this->fail('AAD was permitted when ciphertext had none');
+            } catch (\Exception $ex) {
+                $this->assertInstanceOf('SodiumException', $ex);
+            }
         }
 
         try {
@@ -171,11 +173,13 @@ class EncryptedRowTest extends TestCase
         } catch (\Exception $ex) {
             $this->assertInstanceOf(InvalidCiphertextException::class, $ex);
         }
-        try {
-            $eMwithout->decryptRow($mCipher);
-            $this->fail('AAD stripping was permitted');
-        } catch (\Exception $ex) {
-            $this->assertInstanceOf('SodiumException', $ex);
+        if (PHP_VERSION_ID !== 70300) { // PHP bug #77297
+            try {
+                $eMwithout->decryptRow($mCipher);
+                $this->fail('AAD stripping was permitted');
+            } catch (\Exception $ex) {
+                $this->assertInstanceOf('SodiumException', $ex);
+            }
         }
         try {
             $fCipher2['id'] = $row['id'];
@@ -184,12 +188,14 @@ class EncryptedRowTest extends TestCase
         } catch (\Exception $ex) {
             $this->assertInstanceOf(InvalidCiphertextException::class, $ex);
         }
-        try {
-            $mCipher2['id'] = $row['id'];
-            $eMwithout->decryptRow($mCipher2);
-            $this->fail('AAD stripping was permitted');
-        } catch (\Exception $ex) {
-            $this->assertInstanceOf('SodiumException', $ex);
+        if (PHP_VERSION_ID !== 70300) { // PHP bug #77297
+            try {
+                $mCipher2['id'] = $row['id'];
+                $eMwithout->decryptRow($mCipher2);
+                $this->fail('AAD stripping was permitted');
+            } catch (\Exception $ex) {
+                $this->assertInstanceOf('SodiumException', $ex);
+            }
         }
         try {
             $fCipherWithAD2['id'] = $row['id'];
@@ -198,12 +204,14 @@ class EncryptedRowTest extends TestCase
         } catch (\Exception $ex) {
             $this->assertInstanceOf(InvalidCiphertextException::class, $ex);
         }
-        try {
-            $mCipherWithAD2['id'] = $row['id'];
-            $eM->decryptRow($mCipherWithAD2);
-            $this->fail('AAD stripping was permitted');
-        } catch (\Exception $ex) {
-            $this->assertInstanceOf('SodiumException', $ex);
+        if (PHP_VERSION_ID !== 70300) { // PHP bug #77297
+            try {
+                $mCipherWithAD2['id'] = $row['id'];
+                $eM->decryptRow($mCipherWithAD2);
+                $this->fail('AAD stripping was permitted');
+            } catch (\Exception $ex) {
+                $this->assertInstanceOf('SodiumException', $ex);
+            }
         }
     }
 

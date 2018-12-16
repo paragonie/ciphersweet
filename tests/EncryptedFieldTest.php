@@ -17,7 +17,6 @@ use ParagonIE\ConstantTime\Binary;
 use ParagonIE\ConstantTime\Hex;
 use PHPUnit\Framework\TestCase;
 
-
 /**
  * Class EncryptedFieldTest
  * @package ParagonIE\CipherSweet\Tests
@@ -130,11 +129,13 @@ class EncryptedFieldTest extends TestCase
         } catch (\Exception $ex) {
             $this->assertInstanceOf(InvalidCiphertextException::class, $ex);
         }
-        try {
-            $eM->decryptValue($mCipher, $aad);
-            $this->fail('AAD was permitted when ciphertext had none');
-        } catch (\Exception $ex) {
-            $this->assertInstanceOf('SodiumException', $ex);
+        if (PHP_VERSION_ID !== 70300) { // PHP bug #77297
+            try {
+                $eM->decryptValue($mCipher, $aad);
+                $this->fail('AAD was permitted when ciphertext had none');
+            } catch (\Exception $ex) {
+                $this->assertInstanceOf('SodiumException', $ex);
+            }
         }
         try {
             $eF->decryptValue($fCipherWithAD);
@@ -142,11 +143,13 @@ class EncryptedFieldTest extends TestCase
         } catch (\Exception $ex) {
             $this->assertInstanceOf(InvalidCiphertextException::class, $ex);
         }
-        try {
-            $eM->decryptValue($mCipherWithAD);
-            $this->fail('AAD stripping was permitted');
-        } catch (\Exception $ex) {
-            $this->assertInstanceOf('SodiumException', $ex);
+        if (PHP_VERSION_ID !== 70300) { // PHP bug #77297
+            try {
+                $eM->decryptValue($mCipherWithAD);
+                $this->fail('AAD stripping was permitted');
+            } catch (\Exception $ex) {
+                $this->assertInstanceOf('SodiumException', $ex);
+            }
         }
     }
 
