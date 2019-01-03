@@ -78,3 +78,8 @@ open source heritage of the project we designed this library for.
 
 If the wordplay is too heavy, feel free to juxtapose the two component
 nouns and call it "SweetCipher" in spoken conversation.
+
+## Support Contracts
+
+If your company uses this library in their products or services, you may be
+interested in [purchasing a support contract from Paragon Initiative Enterprises](https://paragonie.com/enterprise).
