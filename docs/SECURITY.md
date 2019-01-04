@@ -1,4 +1,4 @@
-# Security Properties and Thread Model for CipherSweet
+# Security Properties and Threat Model for CipherSweet
 
 ## Table of Contents
 
