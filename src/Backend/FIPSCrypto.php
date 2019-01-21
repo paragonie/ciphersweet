@@ -250,4 +250,12 @@ class FIPSCrypto implements BackendInterface
 
         return $ciphertext;
     }
+
+    /**
+     * @return string
+     */
+    public function getPrefix()
+    {
+        return static::MAGIC_HEADER;
+    }
 }

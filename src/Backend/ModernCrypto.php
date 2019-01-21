@@ -190,4 +190,12 @@ class ModernCrypto implements BackendInterface
         );
         return Base32::encodeUnpadded($hash);
     }
+
+    /**
+     * @return string
+     */
+    public function getPrefix()
+    {
+        return static::MAGIC_HEADER;
+    }
 }

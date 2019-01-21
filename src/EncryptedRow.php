@@ -642,4 +642,12 @@ class EncryptedRow
                 return (string) $data;
         }
     }
+
+    /**
+     * @return CipherSweet
+     */
+    public function getEngine()
+    {
+        return $this->engine;
+    }
 }
