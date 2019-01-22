@@ -292,4 +292,12 @@ class EncryptedField
         $this->blindIndexes[$name] = $index;
         return $this;
     }
+
+    /**
+     * @return CipherSweet
+     */
+    public function getEngine()
+    {
+        return $this->engine;
+    }
 }

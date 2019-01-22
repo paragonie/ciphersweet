@@ -1,0 +1,157 @@
+<?php
+namespace ParagonIE\CipherSweet\Tests\Rotator;
+
+use ParagonIE\CipherSweet\Backend\FIPSCrypto;
+use ParagonIE\CipherSweet\Backend\ModernCrypto;
+use ParagonIE\CipherSweet\BlindIndex;
+use ParagonIE\CipherSweet\CipherSweet;
+use ParagonIE\CipherSweet\EncryptedField;
+use ParagonIE\CipherSweet\Exception\ArrayKeyException;
+use ParagonIE\CipherSweet\Exception\BlindIndexNameCollisionException;
+use ParagonIE\CipherSweet\Exception\CryptoOperationException;
+use ParagonIE\CipherSweet\Exception\InvalidCiphertextException;
+use ParagonIE\CipherSweet\KeyProvider\ArrayProvider;
+use ParagonIE\CipherSweet\KeyRotation\FieldRotator;
+use ParagonIE\CipherSweet\Transformation\LastFourDigits;
+use ParagonIE\ConstantTime\Hex;
+use PHPUnit\Framework\TestCase;
+
+/**
+ * Class FieldRotatorTest
+ * @package ParagonIE\CipherSweet\Tests\Rotator
+ */
+class FieldRotatorTest extends TestCase
+{
+    /**
+     * @var CipherSweet $fipsEngine
+     */
+    protected $fipsEngine;
+
+    /**
+     * @var CipherSweet $naclEngine
+     */
+    protected $naclEngine;
+
+    /**
+     * @var CipherSweet $fipsRandom
+     */
+    protected $fipsRandom;
+
+    /**
+     * @var CipherSweet $naclRandom
+     */
+    protected $naclRandom;
+
+    /**
+     * @throws ArrayKeyException
+     * @throws CryptoOperationException
+     */
+    public function setUp()
+    {
+        $fips = new FIPSCrypto();
+        $nacl = new ModernCrypto();
+
+        $this->fipsEngine = new CipherSweet(
+            new ArrayProvider(
+                $fips,
+                [
+                    ArrayProvider::INDEX_SYMMETRIC_KEY => Hex::decode(
+                        '4e1c44f87b4cdf21808762970b356891db180a9dd9850e7baf2a79ff3ab8a2fc'
+                    )
+                ]
+            )
+        );
+        $this->naclEngine = new CipherSweet(
+            new ArrayProvider(
+                $nacl,
+                [
+                    ArrayProvider::INDEX_SYMMETRIC_KEY => Hex::decode(
+                        '4e1c44f87b4cdf21808762970b356891db180a9dd9850e7baf2a79ff3ab8a2fc'
+                    )
+                ]
+            )
+        );
+
+        $this->fipsRandom = new CipherSweet(
+            new ArrayProvider(
+                $fips,
+                [
+                    ArrayProvider::INDEX_SYMMETRIC_KEY => \random_bytes(32)
+                ]
+            )
+        );
+        $this->naclRandom = new CipherSweet(
+            new ArrayProvider(
+                $nacl,
+                [
+                    ArrayProvider::INDEX_SYMMETRIC_KEY => \random_bytes(32)
+                ]
+            )
+        );
+    }
+
+    /**
+     * @throws BlindIndexNameCollisionException
+     * @throws CryptoOperationException
+     * @throws InvalidCiphertextException
+     */
+    public function testFipsToNacl()
+    {
+        $eF = $this->getExampleField($this->fipsRandom);
+        $eM = $this->getExampleField($this->naclRandom);
+
+        $message = 'This is a test message: ' . \random_bytes(16);
+        $fCipher = $eF->encryptValue($message);
+        $mCipher = $eM->encryptValue($message);
+
+        $rotator = new FieldRotator($eF, $eM);
+        $this->assertTrue($rotator->needsReEncrypt($fCipher));
+        $this->assertFalse($rotator->needsReEncrypt($mCipher));
+    }
+
+    /**
+     * @param CipherSweet $backend
+     * @param bool $longer
+     * @param bool $fast
+     *
+     * @return EncryptedField
+     * @throws BlindIndexNameCollisionException
+     * @throws CryptoOperationException
+     */
+    public function getExampleField(CipherSweet $backend, $longer = false, $fast = false)
+    {
+        return (new EncryptedField($backend, 'contacts', 'ssn'))
+            // Add a blind index for the "last 4 of SSN":
+            ->addBlindIndex(
+                new BlindIndex(
+                // Name (used in key splitting):
+                    'contact_ssn_last_four',
+                    // List of Transforms:
+                    [new LastFourDigits()],
+                    // Output length (bytes)
+                    $longer ? 64 : 16,
+                    $fast
+                )
+            )
+            ->addBlindIndex(
+                new BlindIndex(
+                // Name (used in key splitting):
+                    'contact_ssn_last_4',
+                    // List of Transforms:
+                    [new LastFourDigits()],
+                    // Output length (bytes)
+                    $longer ? 64 : 16,
+                    $fast
+                )
+            )
+            // Add a blind index for the full SSN:
+            ->addBlindIndex(
+                new BlindIndex(
+                    'contact_ssn',
+                    [],
+                    $longer ? 128 : 32,
+                    $fast
+                )
+            );
+    }
+}

@@ -156,6 +156,26 @@ abstract class Util
     }
 
     /**
+     * @param string $a
+     * @param string $b
+     * @return bool
+     * @throws \Exception
+     */
+    public static function hashEquals($a, $b)
+    {
+        if (\is_callable('hash_equals')) {
+            return \hash_equals($a, $b);
+        }
+        if (!\is_string($a)) {
+            throw new \TypeError('Expected a string for argument 1');
+        }
+        if (!\is_string($b)) {
+            throw new \TypeError('Expected a string for argument 2');
+        }
+        return (bool) SodiumUtil::hashEquals($a, $b);
+    }
+
+    /**
      * @param int $int
      * @return string
      */

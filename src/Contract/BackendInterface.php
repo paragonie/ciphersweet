@@ -60,4 +60,9 @@ interface BackendInterface
      * @return string
      */
     public function getIndexTypeColumn($tableName, $fieldName, $indexName);
+
+    /**
+     * @return string
+     */
+    public function getPrefix();
 }

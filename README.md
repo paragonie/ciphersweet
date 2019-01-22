@@ -39,7 +39,7 @@ or noncommercial, open source or proprietary, at no cost to you.
 * **Searchable Encryption.** CipherSweet uses
   [blind indexing](https://paragonie.com/blog/2017/05/building-searchable-encrypted-databases-with-php-and-sql#solution-literal-search)
   with the fuzzier and Bloom filter strategies to allow fast ciphertext search
-  with minimal data leakage. 
+  with [minimal data leakage](https://github.com/paragonie/ciphersweet/tree/master/docs#blind-index-planning). 
   * Each blind index on each column uses a distinct key from your encryption key
     and each other blind index key.
   * This doesn't allow for `LIKE` operators or regular expression searching, but
@@ -61,6 +61,8 @@ composer require paragonie/ciphersweet
 
 Please refer to **[the documentation](https://github.com/paragonie/ciphersweet/tree/master/docs)**
 to learn how to use CipherSweet.
+
+Security experts may be interested in [the security properties of our design](https://github.com/paragonie/ciphersweet/blob/master/docs/SECURITY.md).
 
 ### Integration Support
 

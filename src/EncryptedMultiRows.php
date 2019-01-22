@@ -407,4 +407,12 @@ class EncryptedMultiRows
         }
         return [$tables, $indexes];
     }
+
+    /**
+     * @return CipherSweet
+     */
+    public function getEngine()
+    {
+        return $this->engine;
+    }
 }
