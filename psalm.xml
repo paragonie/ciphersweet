@@ -7,7 +7,6 @@
     </projectFiles>
 
     <issueHandlers>
-        <InternalMethod errorLevel="suppress" />
         <MoreSpecificImplementedParamType errorLevel="suppress" /><!-- this is fine -->
         <RedundantConditionGivenDocblockType errorLevel="suppress" /><!-- we're being explicit -->
     </issueHandlers>

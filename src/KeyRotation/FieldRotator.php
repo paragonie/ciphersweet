@@ -1,12 +1,13 @@
 <?php
 namespace ParagonIE\CipherSweet\KeyRotation;
 
+use ParagonIE\CipherSweet\Contract\KeyRotationInterface;
 use ParagonIE\CipherSweet\EncryptedField;
 use ParagonIE\CipherSweet\Exception\BlindIndexNotFoundException;
 use ParagonIE\CipherSweet\Exception\CipherSweetException;
 use ParagonIE\CipherSweet\Exception\CryptoOperationException;
 use ParagonIE\CipherSweet\Exception\InvalidCiphertextException;
-use ParagonIE\CipherSweet\Contract\KeyRotationInterface;
+use ParagonIE\CipherSweet\Util;
 use ParagonIE\ConstantTime\Binary;
 
 /**
@@ -47,7 +48,7 @@ class FieldRotator implements KeyRotationInterface
             throw new InvalidCiphertextException('This message is not encrypted');
         }
         $pre = Binary::safeSubstr($ciphertext, 0, 5);
-        if (!\hash_equals($pre, $this->new->getEngine()->getBackend()->getPrefix())) {
+        if (!Util::hashEquals($pre, $this->new->getEngine()->getBackend()->getPrefix())) {
             // Header mismatch: True
             return true;
         }
