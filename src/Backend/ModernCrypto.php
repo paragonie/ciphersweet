@@ -196,6 +196,6 @@ class ModernCrypto implements BackendInterface
      */
     public function getPrefix()
     {
-        return static::MAGIC_HEADER;
+        return (string) static::MAGIC_HEADER;
     }
 }

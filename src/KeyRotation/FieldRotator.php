@@ -3,6 +3,7 @@ namespace ParagonIE\CipherSweet\KeyRotation;
 
 use ParagonIE\CipherSweet\EncryptedField;
 use ParagonIE\CipherSweet\Exception\BlindIndexNotFoundException;
+use ParagonIE\CipherSweet\Exception\CipherSweetException;
 use ParagonIE\CipherSweet\Exception\CryptoOperationException;
 use ParagonIE\CipherSweet\Exception\InvalidCiphertextException;
 use ParagonIE\CipherSweet\Contract\KeyRotationInterface;
@@ -32,13 +33,16 @@ class FieldRotator implements KeyRotationInterface
     }
 
     /**
-     * @param string $ciphertext
+     * @param string|array $ciphertext
      * @param string $aad
      * @return bool
      * @throws InvalidCiphertextException
      */
     public function needsReEncrypt($ciphertext = '', $aad = '')
     {
+        if (!\is_string($ciphertext)) {
+            throw new InvalidCiphertextException('FieldRotator expects a string, not an array');
+        }
         if (Binary::safeStrlen($ciphertext) < 5) {
             throw new InvalidCiphertextException('This message is not encrypted');
         }

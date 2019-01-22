@@ -11,14 +11,14 @@ interface KeyRotationInterface
 {
 
     /**
-     * @param string $ciphertext
+     * @param string|array<string, string> $ciphertext
      * @return bool
      * @throws InvalidCiphertextException
      */
     public function needsReEncrypt($ciphertext = '');
 
     /**
-     * @param string|array $values
+     * @param string|array<string, string> $values
      * @return array
      */
     public function prepareForUpdate($values);

@@ -6,8 +6,6 @@ use ParagonIE\CipherSweet\Backend\Key\SymmetricKey;
 /**
  * Interface BackendInterface
  * @package ParagonIE\CipherSweet\Contract
- *
- * @method string getPrefix()
  */
 interface BackendInterface
 {
@@ -66,5 +64,5 @@ interface BackendInterface
     /**
      * @return string
      */
-    // public function getPrefix();
+    public function getPrefix();
 }
