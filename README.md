@@ -78,8 +78,8 @@ there is nothing preventing its use in other products.
 Therefore, we opted for a pun on "ciphersuite" that pays homage to the
 open source heritage of the project we designed this library for.
 
-If the wordplay is too heavy, feel free to juxtapose the two component
-nouns and call it "SweetCipher" in spoken conversation.
+If the wordplay is too heavy, feel free to just call it "Sweet", or juxtapose
+the two component nouns and call it "SweetCipher" in spoken conversation.
 
 ## Support Contracts
 
