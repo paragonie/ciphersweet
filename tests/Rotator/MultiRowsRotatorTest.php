@@ -5,22 +5,21 @@ use ParagonIE\CipherSweet\Backend\FIPSCrypto;
 use ParagonIE\CipherSweet\Backend\ModernCrypto;
 use ParagonIE\CipherSweet\BlindIndex;
 use ParagonIE\CipherSweet\CipherSweet;
-use ParagonIE\CipherSweet\EncryptedField;
+use ParagonIE\CipherSweet\EncryptedMultiRows;
 use ParagonIE\CipherSweet\Exception\ArrayKeyException;
 use ParagonIE\CipherSweet\Exception\BlindIndexNameCollisionException;
 use ParagonIE\CipherSweet\Exception\CryptoOperationException;
 use ParagonIE\CipherSweet\Exception\InvalidCiphertextException;
 use ParagonIE\CipherSweet\KeyProvider\ArrayProvider;
-use ParagonIE\CipherSweet\KeyRotation\FieldRotator;
-use ParagonIE\CipherSweet\Transformation\LastFourDigits;
-use ParagonIE\ConstantTime\Hex;
+use ParagonIE\CipherSweet\KeyRotation\MultiRowsRotator;
+use ParagonIE\CipherSweet\Transformation\Lowercase;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Class FieldRotatorTest
+ * Class RowRotatorTest
  * @package ParagonIE\CipherSweet\Tests\Rotator
  */
-class FieldRotatorTest extends TestCase
+class MultiRowsRotatorTest extends TestCase
 {
     /**
      * @var CipherSweet $fipsEngine
@@ -67,20 +66,38 @@ class FieldRotatorTest extends TestCase
     }
 
     /**
+     * @throws ArrayKeyException
      * @throws BlindIndexNameCollisionException
      * @throws CryptoOperationException
      * @throws InvalidCiphertextException
+     * @throws \SodiumException
      */
     public function testFipsToNacl()
     {
-        $eF = $this->getExampleField($this->fipsRandom);
-        $eM = $this->getExampleField($this->naclRandom);
+        $eF = $this->getExampleMultiRows($this->fipsRandom);
+        $eM = $this->getExampleMultiRows($this->naclRandom);
 
         $message = 'This is a test message: ' . \random_bytes(16);
-        $fCipher = $eF->encryptValue($message);
-        $mCipher = $eM->encryptValue($message);
+        $rows = [
+            'foo' => [
+                'column1' => 12345,
+                'column2' => $message,
+                'column3' => false,
+                'column4' => 'testing'
+            ],
+            'bar' => [
+                'column1' => 45,
+                'extraneous' => 'test'
+            ],
+            'baz' => [
+                'column1' => 67,
+                'extraneous' => true
+            ]
+        ];
+        $rotator = new MultiRowsRotator($eF, $eM);
+        $fCipher = $eF->encryptManyRows($rows);
+        $mCipher = $eM->encryptManyRows($rows);
 
-        $rotator = new FieldRotator($eF, $eM);
         $this->assertTrue($rotator->needsReEncrypt($fCipher));
         $this->assertFalse($rotator->needsReEncrypt($mCipher));
     }
@@ -90,44 +107,26 @@ class FieldRotatorTest extends TestCase
      * @param bool $longer
      * @param bool $fast
      *
-     * @return EncryptedField
+     * @return EncryptedMultiRows
      * @throws BlindIndexNameCollisionException
-     * @throws CryptoOperationException
      */
-    public function getExampleField(CipherSweet $backend, $longer = false, $fast = false)
+    public function getExampleMultiRows(CipherSweet $backend)
     {
-        return (new EncryptedField($backend, 'contacts', 'ssn'))
-            // Add a blind index for the "last 4 of SSN":
-            ->addBlindIndex(
-                new BlindIndex(
-                // Name (used in key splitting):
-                    'contact_ssn_last_four',
-                    // List of Transforms:
-                    [new LastFourDigits()],
-                    // Output length (bytes)
-                    $longer ? 64 : 16,
-                    $fast
-                )
-            )
-            ->addBlindIndex(
-                new BlindIndex(
-                // Name (used in key splitting):
-                    'contact_ssn_last_4',
-                    // List of Transforms:
-                    [new LastFourDigits()],
-                    // Output length (bytes)
-                    $longer ? 64 : 16,
-                    $fast
-                )
-            )
-            // Add a blind index for the full SSN:
-            ->addBlindIndex(
-                new BlindIndex(
-                    'contact_ssn',
-                    [],
-                    $longer ? 128 : 32,
-                    $fast
-                )
-            );
+
+        $mr = (new EncryptedMultiRows($backend))
+            ->addTable('foo')
+            ->addTable('bar');
+        $mr->addIntegerField('foo', 'column1')
+            ->addTextField('foo', 'column2')
+            ->addBooleanField('foo', 'column3');
+        $mr->addIntegerField('bar', 'column1');
+        $mr->addIntegerField('baz', 'column1');
+
+        $mr->addBlindIndex(
+            'foo',
+            'column2',
+            (new BlindIndex('foo_column2_idx', [new Lowercase()], 32, true))
+        );
+        return $mr;
     }
 }

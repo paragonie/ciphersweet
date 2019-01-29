@@ -13,7 +13,6 @@ use ParagonIE\CipherSweet\Exception\InvalidCiphertextException;
 use ParagonIE\CipherSweet\KeyProvider\ArrayProvider;
 use ParagonIE\CipherSweet\KeyRotation\RowRotator;
 use ParagonIE\CipherSweet\Transformation\LastFourDigits;
-use ParagonIE\ConstantTime\Hex;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -48,33 +47,9 @@ class RowRotatorTest extends TestCase
      */
     public function setUp()
     {
-        $fips = new FIPSCrypto();
-        $nacl = new ModernCrypto();
-
-        $this->fipsEngine = new CipherSweet(
-            new ArrayProvider(
-                $fips,
-                [
-                    ArrayProvider::INDEX_SYMMETRIC_KEY => Hex::decode(
-                        '4e1c44f87b4cdf21808762970b356891db180a9dd9850e7baf2a79ff3ab8a2fc'
-                    )
-                ]
-            )
-        );
-        $this->naclEngine = new CipherSweet(
-            new ArrayProvider(
-                $nacl,
-                [
-                    ArrayProvider::INDEX_SYMMETRIC_KEY => Hex::decode(
-                        '4e1c44f87b4cdf21808762970b356891db180a9dd9850e7baf2a79ff3ab8a2fc'
-                    )
-                ]
-            )
-        );
-
         $this->fipsRandom = new CipherSweet(
             new ArrayProvider(
-                $fips,
+                new FIPSCrypto(),
                 [
                     ArrayProvider::INDEX_SYMMETRIC_KEY => \random_bytes(32)
                 ]
@@ -82,7 +57,7 @@ class RowRotatorTest extends TestCase
         );
         $this->naclRandom = new CipherSweet(
             new ArrayProvider(
-                $nacl,
+                new ModernCrypto(),
                 [
                     ArrayProvider::INDEX_SYMMETRIC_KEY => \random_bytes(32)
                 ]
