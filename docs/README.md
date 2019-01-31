@@ -17,7 +17,7 @@
     * [`EncryptedMultiRows`](#encryptedmultirows)
       * [`EncryptedMultiRows` with AAD](#encryptedmultirows-with-aad)
   * [Blind Index Planning](#blind-index-planning)
-  * [Key/Backend Rotation](#key-backend-rotation)
+  * [Key/Backend Rotation](#keybackend-rotation)
     * [`FieldRotator`](#fieldrotator)
     * [`RowRotator`](#rowrotator)
     * [`MultiRowsRotator`](#multirowsrotator)
