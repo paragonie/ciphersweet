@@ -17,6 +17,10 @@
     * [`EncryptedMultiRows`](#encryptedmultirows)
       * [`EncryptedMultiRows` with AAD](#encryptedmultirows-with-aad)
   * [Blind Index Planning](#blind-index-planning)
+  * [Key/Backend Rotation](#key-backend-rotation)
+    * [`FieldRotator`](#fieldrotator)
+    * [`RowRotator`](#rowrotator)
+    * [`MultiRowsRotator`](#multirowsrotator)
 * [Security Properties and Thread Model for CipherSweet](SECURITY.md)
 * [CipherSweet Examples](https://github.com/paragonie/ciphersweet/tree/master/docs/examples)
   (Look here if you seek runnable example code for common integrations)
@@ -907,6 +911,91 @@ Furthermore, you can use `recommendLow()` to only get the lower number, and
 
 **Note:** If there is no safe value for an additional index, the `recommend`
 methods will throw a `PlannerException`.
+
+### Key/Backend Rotation
+
+Since version 1.8.0, CipherSweet aims to make key rotation and/or backend migration
+as pain-free as possible.
+
+To use these APIs, first instantiate two `CipherSweet` instances.
+They can have different backends (e.g. FIPSCrypto to ModernCrypto),
+different keys, or both.
+
+#### `FieldRotator`
+
+```php
+<?php
+use ParagonIE\CipherSweet\CipherSweet;
+use ParagonIE\CipherSweet\KeyRotation\FieldRotator;
+use ParagonIE\CipherSweet\EncryptedField;
+
+/**
+ * @var string $ciphertext
+ * @var CipherSweet $old
+ * @var CipherSweet $new
+ */
+$oldField = new EncryptedField($old, 'contacts', 'ssn');
+$newField = new EncryptedField($new, 'contacts', 'ssn');
+
+$rotator = new FieldRotator($oldField, $newField);
+if ($rotator->needsReEncrypt($ciphertext)) {
+    list($ciphertext, $indices) = $rotator->prepareForUpdate($ciphertext);
+}
+```
+
+You can optionally also provide additional authenticated data to this API, like so:
+
+```php
+if ($rotator->needsReEncrypt($ciphertext, 'old AAD')) {
+    list($ciphertext, $indices) = $rotator->prepareForUpdate($ciphertext, 'old AAD', 'new AAD');
+}
+```
+
+The end result will be re-encrypted, and the ciphertext tag will be tied to `"new AAD"`.
+
+#### `RowRotator`
+
+```php
+<?php
+use ParagonIE\CipherSweet\CipherSweet;
+use ParagonIE\CipherSweet\KeyRotation\RowRotator;
+use ParagonIE\CipherSweet\EncryptedRow;
+
+/**
+ * @var array<string, string> $ciphertext
+ * @var CipherSweet $old
+ * @var CipherSweet $new
+ */
+$oldRow = new EncryptedRow($old, 'contacts');
+$newRow = new EncryptedRow($new, 'contacts');
+
+$rotator = new RowRotator($oldRow, $newRow);
+if ($rotator->needsReEncrypt($ciphertext)) {
+    list($ciphertext, $indices) = $rotator->prepareForUpdate($ciphertext);
+}
+```
+
+#### `MultiRowsRotator`
+
+```php
+<?php
+use ParagonIE\CipherSweet\CipherSweet;
+use ParagonIE\CipherSweet\KeyRotation\MultiRowsRotator;
+use ParagonIE\CipherSweet\EncryptedMultiRows;
+
+/**
+ * @var array<string, array<string, string>> $ciphertext
+ * @var CipherSweet $old
+ * @var CipherSweet $new
+ */
+$oldMultiRows = new EncryptedMultiRows($old);
+$newMultiRows = new EncryptedMultiRows($new);
+
+$rotator = new MultiRowsRotator($oldMultiRows, $newMultiRows);
+if ($rotator->needsReEncrypt($ciphertext)) {
+    list($ciphertext, $indices) = $rotator->prepareForUpdate($ciphertext);
+}
+```
 
 ## Using CipherSweet with a Database 
 

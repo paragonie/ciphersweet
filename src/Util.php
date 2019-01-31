@@ -159,7 +159,8 @@ abstract class Util
      * @param string $a
      * @param string $b
      * @return bool
-     * @throws \Exception
+     * @throws \TypeError
+     * @throws \SodiumException
      */
     public static function hashEquals($a, $b)
     {

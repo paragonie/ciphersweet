@@ -38,6 +38,7 @@ class FieldRotator implements KeyRotationInterface
      * @param string $aad
      * @return bool
      * @throws InvalidCiphertextException
+     * @throws \SodiumException
      */
     public function needsReEncrypt($ciphertext = '', $aad = '')
     {
@@ -62,17 +63,18 @@ class FieldRotator implements KeyRotationInterface
 
     /**
      * @param array|string $values
-     * @param string $aad
+     * @param string $oldAad
+     * @param string $newAad
      * @return array
      * @throws BlindIndexNotFoundException
      * @throws CryptoOperationException
      */
-    public function prepareForUpdate($values, $aad = '')
+    public function prepareForUpdate($values, $oldAad = '', $newAad = '')
     {
         if (!\is_string($values)) {
             throw new \TypeError('FieldRotator expects a string');
         }
-        $plaintext = $this->old->decryptValue($values, $aad);
-        return $this->new->prepareForStorage($plaintext, $aad);
+        $plaintext = $this->old->decryptValue($values, $oldAad);
+        return $this->new->prepareForStorage($plaintext, $newAad);
     }
 }

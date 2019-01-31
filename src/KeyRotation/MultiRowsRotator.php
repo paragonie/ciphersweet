@@ -38,7 +38,7 @@ class MultiRowsRotator implements KeyRotationInterface
     public function needsReEncrypt($ciphertext = '')
     {
         if (!\is_array($ciphertext)) {
-            throw new InvalidCiphertextException('RowRotator expects an array, not a string');
+            throw new InvalidCiphertextException('MultiRowsRotator expects an array, not a string');
         }
         try {
             $this->new->decryptManyRows($ciphertext);
@@ -59,7 +59,7 @@ class MultiRowsRotator implements KeyRotationInterface
     public function prepareForUpdate($values)
     {
         if (!\is_array($values)) {
-            throw new InvalidCiphertextException('RowRotator expects an array, not a string');
+            throw new InvalidCiphertextException('MultiRowsRotator expects an array, not a string');
         }
         /** @var array<string, array<string, string|int|float|bool|null>> $decrypted */
         $decrypted = $this->old->decryptManyRows($values);
