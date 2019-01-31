@@ -30,8 +30,10 @@ or noncommercial, open source or proprietary, at no cost to you.
   diverse range of compliance requirements. More can be added as needed:
   * `ModernCrypto` uses [libsodium](https://download.libsodium.org/doc/), the de
     facto standard encryption library for software developers.
+    [Algorithm details](https://github.com/paragonie/ciphersweet/blob/master/docs/SECURITY.md#moderncrypto).
   * `FIPSCrypto` only uses the cryptographic algorithms covered by the
     FIPS 140-2 recommendations to avoid auditing complexity.
+    [Algorithm details](https://github.com/paragonie/ciphersweet/blob/master/docs/SECURITY.md#fipscrypto).
 * **Key separation.** Each column is encrypted with a different key, all of which are derived from
   your master encryption key using secure key-splitting algorithms.
 * **Key management integration.** CipherSweet supports integration with Key
