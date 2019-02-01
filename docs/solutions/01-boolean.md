@@ -31,8 +31,6 @@ For example:
 
 ```php
 <?php
-use ParagonIE\CipherSweet\Backend\FIPSCrypto;
-use ParagonIE\CipherSweet\Backend\ModernCrypto;
 use ParagonIE\CipherSweet\BlindIndex;
 use ParagonIE\CipherSweet\CipherSweet;
 use ParagonIE\CipherSweet\CompoundIndex;
@@ -135,6 +133,10 @@ $field = (new EncryptedField($engine, 'contacts', 'hivstatus'))
 
 $lastFour = new LastFourDigits();
 
+/**
+ * @var bool $hivStatus
+ * @var string $lastFourSSN
+ */
 // Storage
 $ciphertext = $field->encryptValue(Util::boolToChr($hivStatus));
 $index = $field->getBlindIndex(
@@ -146,6 +148,10 @@ $dbh->insert('contacts', [
     'contact_hivstatus_ssn' => $index
 ]);
 
+/**
+ * @var bool $givenHIVStatus
+ * @var string $givenLastFourSSN
+ */
 // Retrieval
 $lookup = $field->getBlindIndex(
     [$givenHIVStatus, $lastFour($givenLastFourSSN)],

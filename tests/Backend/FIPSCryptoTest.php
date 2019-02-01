@@ -3,7 +3,6 @@ namespace ParagonIE\CipherSweet\Tests\Backend;
 
 use ParagonIE\CipherSweet\Backend\FIPSCrypto;
 use ParagonIE\CipherSweet\KeyProvider\ArrayProvider;
-use ParagonIE\CipherSweet\KeyProvider\RandomProvider;
 use PHPUnit\Framework\TestCase;
 
 /**

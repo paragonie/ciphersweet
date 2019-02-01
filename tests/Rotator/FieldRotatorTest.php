@@ -13,7 +13,6 @@ use ParagonIE\CipherSweet\Exception\InvalidCiphertextException;
 use ParagonIE\CipherSweet\KeyProvider\ArrayProvider;
 use ParagonIE\CipherSweet\KeyRotation\FieldRotator;
 use ParagonIE\CipherSweet\Transformation\LastFourDigits;
-use ParagonIE\ConstantTime\Hex;
 use PHPUnit\Framework\TestCase;
 
 /**

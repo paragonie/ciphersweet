@@ -4,7 +4,6 @@ namespace ParagonIE\CipherSweet\KeyRotation;
 use ParagonIE\CipherSweet\Contract\KeyRotationInterface;
 use ParagonIE\CipherSweet\EncryptedField;
 use ParagonIE\CipherSweet\Exception\BlindIndexNotFoundException;
-use ParagonIE\CipherSweet\Exception\CipherSweetException;
 use ParagonIE\CipherSweet\Exception\CryptoOperationException;
 use ParagonIE\CipherSweet\Exception\InvalidCiphertextException;
 use ParagonIE\CipherSweet\Util;
