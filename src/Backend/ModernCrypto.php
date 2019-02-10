@@ -53,7 +53,7 @@ class ModernCrypto implements BackendInterface
             $nonce,
             $key->getRawKey()
         );
-        return self::MAGIC_HEADER . Base64UrlSafe::encode($nonce . $ciphertext);
+        return (string) (self::MAGIC_HEADER) . Base64UrlSafe::encode($nonce . $ciphertext);
     }
 
     /**
@@ -240,7 +240,7 @@ class ModernCrypto implements BackendInterface
         if (Binary::safeStrlen($header) < 5) {
             throw new CryptoOperationException('Input file is empty');
         }
-        if (!Util::hashEquals(static::MAGIC_HEADER, $header)) {
+        if (!Util::hashEquals((string) (static::MAGIC_HEADER), $header)) {
             throw new CryptoOperationException('Invalid cipher backend for this file');
         }
         $storedAuthTag = \fread($inputFP, 16);
@@ -262,7 +262,7 @@ class ModernCrypto implements BackendInterface
         );
 
         // Update the Poly1305 authenticator with our metadata
-        $poly1305->update(static::MAGIC_HEADER . $salt . $nonce);
+        $poly1305->update((string) (static::MAGIC_HEADER) . $salt . $nonce);
         $poly1305->update(str_repeat("\x00", ((0x10 - $adlen) & 0xf)));
 
         $pos = \ftell($inputFP);
@@ -356,7 +356,7 @@ class ModernCrypto implements BackendInterface
         $nonceLast = "\x00\x00\x00\x00" . SodiumUtil::substr($nonce, 16, 8);
 
         // Write the header, empty space for a MAC, salts, then nonce.
-        \fwrite($outputFP, static::MAGIC_HEADER, 5);
+        \fwrite($outputFP, (string) static::MAGIC_HEADER, 5);
         \fwrite($outputFP, str_repeat("\0", 16), 16);
         \fwrite($outputFP, $salt, 16);
         \fwrite($outputFP, $nonce, 24);
@@ -365,7 +365,7 @@ class ModernCrypto implements BackendInterface
         $poly1305 = new Poly1305(ChaCha20::ietfStream(32, $nonceLast, $subkey));
 
         // Update the Poly1305 authenticator with our metadata
-        $poly1305->update(static::MAGIC_HEADER . $salt . $nonce);
+        $poly1305->update((string) (static::MAGIC_HEADER) . $salt . $nonce);
         $poly1305->update(str_repeat("\x00", ((0x10 - $adlen) & 0xf)));
 
         // XChaCha20-Poly1305

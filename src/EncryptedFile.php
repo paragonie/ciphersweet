@@ -95,8 +95,8 @@ class EncryptedFile
     }
 
     /**
-     * @param $inputFP
-     * @param $outputFP
+     * @param resource $inputFP
+     * @param resource $outputFP
      * @return bool
      * @throws CryptoOperationException
      */
@@ -194,6 +194,7 @@ class EncryptedFile
     /**
      * @param resource $inputFP
      * @param resource $outputFP
+     * @return bool
      *
      * @throws CryptoOperationException
      */
@@ -216,6 +217,7 @@ class EncryptedFile
      * @param resource $outputFP
      * @param string $password
      * @throws CryptoOperationException
+     * @return bool
      */
     public function encryptStreamWithPassword($inputFP, $outputFP, $password)
     {

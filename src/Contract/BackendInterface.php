@@ -73,6 +73,7 @@ interface BackendInterface
      * @param resource $outputFP
      * @param SymmetricKey $key
      * @param int $chunkSize
+     * @return bool
      */
     public function doStreamDecrypt(
         $inputFP,
@@ -87,6 +88,7 @@ interface BackendInterface
      * @param SymmetricKey $key
      * @param int $chunkSize
      * @param string $salt
+     * @return bool
      */
     public function doStreamEncrypt(
         $inputFP,

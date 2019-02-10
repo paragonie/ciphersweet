@@ -294,7 +294,7 @@ class FIPSCrypto implements BackendInterface
         if (Binary::safeStrlen($header) < 5) {
             throw new CryptoOperationException('Input file is empty');
         }
-        if (!Util::hashEquals(static::MAGIC_HEADER, $header)) {
+        if (!Util::hashEquals((string) (static::MAGIC_HEADER), $header)) {
             throw new CryptoOperationException('Invalid cipher backend for this file');
         }
         $storedMAC = \fread($inputFP, 48);
@@ -307,7 +307,7 @@ class FIPSCrypto implements BackendInterface
 
         // Initialize MAC state
         $hmac = \hash_init('sha384', HASH_HMAC, $macKey);
-        \hash_update($hmac, static::MAGIC_HEADER);
+        \hash_update($hmac, (string) (static::MAGIC_HEADER));
         \hash_update($hmac, $salt);
         \hash_update($hmac, $hkdfSalt);
         \hash_update($hmac, $ctrNonce);
@@ -387,7 +387,7 @@ class FIPSCrypto implements BackendInterface
         $macKey = Util::HKDF($key, $hkdfSalt, 'HMAC-SHA-384');
 
         // Write the header, empty space for a MAC, salts, then nonce.
-        \fwrite($outputFP, static::MAGIC_HEADER, 5);
+        \fwrite($outputFP, (string) (static::MAGIC_HEADER), 5);
         \fwrite($outputFP, str_repeat("\0", 48), 48);
         \fwrite($outputFP, $salt, 16);
         \fwrite($outputFP, $hkdfSalt, 32);
@@ -395,7 +395,7 @@ class FIPSCrypto implements BackendInterface
 
         // Init MAC state
         $hmac = \hash_init('sha384', HASH_HMAC, $macKey);
-        \hash_update($hmac, static::MAGIC_HEADER);
+        \hash_update($hmac, (string) (static::MAGIC_HEADER));
         \hash_update($hmac, $salt);
         \hash_update($hmac, $hkdfSalt);
         \hash_update($hmac, $ctrNonce);
