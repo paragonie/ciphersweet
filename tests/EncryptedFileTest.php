@@ -166,6 +166,11 @@ class EncryptedFileTest extends TestCase
      */
     public function testModernPasswordEncryptStream()
     {
+        if (!\ParagonIE_Sodium_Compat::crypto_pwhash_is_available()) {
+            // We cannot
+            $this->markTestSkipped('Cannot test this without libsodium');
+            return;
+        }
         $message = "Paragon Initiative Enterprises\n" . \random_bytes(256);
         $password = 'correct horse battery staple';
 
@@ -231,9 +236,10 @@ class EncryptedFileTest extends TestCase
         $this->fips->decryptFileWithPassword($path, $path, $password);
         $this->assertSame($message, \file_get_contents($path));
 
-
-        $this->nacl->encryptFileWithPassword($path, $path, $password);
-        $this->nacl->decryptFileWithPassword($path, $path, $password);
-        $this->assertSame($message, \file_get_contents($path));
+        if (\ParagonIE_Sodium_Compat::crypto_pwhash_is_available()) {
+            $this->nacl->encryptFileWithPassword($path, $path, $password);
+            $this->nacl->decryptFileWithPassword($path, $path, $password);
+            $this->assertSame($message, \file_get_contents($path));
+        }
     }
 }
