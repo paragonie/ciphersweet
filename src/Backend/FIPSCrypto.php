@@ -320,7 +320,7 @@ class FIPSCrypto implements BackendInterface
             $ciphertext = \fread($inputFP, $chunkSize);
             \hash_update($hmac, $ciphertext);
             $chunk = \hash_copy($hmac);
-            $chunkMacs []= \hash_final($chunk, true);
+            $chunkMacs []= Binary::safeSubstr(\hash_final($chunk, true), 0, 16);
         } while (!\feof($inputFP));
         $calcMAC = \hash_final($hmac, true);
 
@@ -341,7 +341,8 @@ class FIPSCrypto implements BackendInterface
             // Guard against TOCTOU
             $chunk = \hash_copy($hmac);
             $storedChunk = \array_shift($chunkMacs);
-            if (!Util::hashEquals($storedChunk, \hash_final($chunk, true))) {
+            $thisChunk = Binary::safeSubstr(\hash_final($chunk, true), 0, 16);
+            if (!Util::hashEquals($storedChunk, $thisChunk)) {
                 throw new CryptoOperationException('Race condition');
             }
 
@@ -416,7 +417,6 @@ class FIPSCrypto implements BackendInterface
         $mac = \hash_final($hmac, true);
         \fseek($outputFP, 5, SEEK_SET);
         \fwrite($outputFP, $mac, 48);
-
         \fseek($outputFP, $end, SEEK_SET);
         return true;
     }
