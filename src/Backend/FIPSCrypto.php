@@ -422,6 +422,14 @@ class FIPSCrypto implements BackendInterface
     }
 
     /**
+     * @return int
+     */
+    public function getFileEncryptionSaltOffset()
+    {
+        return 53;
+    }
+
+    /**
      * @return string
      */
     public function getPrefix()

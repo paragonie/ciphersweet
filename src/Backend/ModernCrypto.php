@@ -401,6 +401,14 @@ class ModernCrypto implements BackendInterface
     }
 
     /**
+     * @return int
+     */
+    public function getFileEncryptionSaltOffset()
+    {
+        return 21;
+    }
+
+    /**
      * @return string
      */
     public function getPrefix()

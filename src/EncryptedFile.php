@@ -1,8 +1,6 @@
 <?php
 namespace ParagonIE\CipherSweet;
 
-use ParagonIE\CipherSweet\Backend\FIPSCrypto;
-use ParagonIE\CipherSweet\Backend\ModernCrypto;
 use ParagonIE\CipherSweet\Contract\BackendInterface;
 use ParagonIE\CipherSweet\Exception\CryptoOperationException;
 use ParagonIE\CipherSweet\Exception\FilesystemException;
@@ -48,6 +46,14 @@ class EncryptedFile
     }
 
     /**
+     * @return string
+     */
+    public function getBackendPrefix()
+    {
+        return $this->engine->getBackend()->getPrefix();
+    }
+
+    /**
      * @param string $inputFile
      * @param string $outputFile
      * @return bool
@@ -79,7 +85,6 @@ class EncryptedFile
      * @param string $password
      * @return bool
      *
-     * @throws CryptoOperationException
      * @throws FilesystemException
      */
     public function decryptFileWithPassword($inputFile, $outputFile, $password)
@@ -128,7 +133,6 @@ class EncryptedFile
      * @param resource $inputFP
      * @param resource $outputFP
      * @param string $password
-     * @throws CryptoOperationException
      * @return bool
      */
     public function decryptStreamWithPassword($inputFP, $outputFP, $password)
@@ -254,18 +258,12 @@ class EncryptedFile
     /**
      * @param resource $inputFP
      * @return string
-     * @throws CryptoOperationException
      */
     public function getSaltFromStream($inputFP)
     {
         $backend = $this->engine->getBackend();
-        if ($backend instanceof FIPSCrypto) {
-            \fseek($inputFP, 53, SEEK_SET);
-        } else if ($backend instanceof ModernCrypto) {
-            \fseek($inputFP, 21, SEEK_SET);
-        } else {
-            throw new CryptoOperationException('Unknown cipher backend');
-        }
+        \fseek($inputFP, $backend->getFileEncryptionSaltOffset(), SEEK_SET);
+
         /** @var string $salt */
         $salt = \fread($inputFP, 16);
         \fseek($inputFP, 0, SEEK_SET);
@@ -302,7 +300,7 @@ class EncryptedFile
         }
 
         // Compare the stored header with the backend:
-        $expect = $this->engine->getBackend()->getPrefix();
+        $expect = $this->getBackendPrefix();
 
         /** @var bool $return */
         $return = Util::hashEquals($expect, $header);

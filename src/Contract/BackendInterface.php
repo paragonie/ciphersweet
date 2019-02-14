@@ -99,6 +99,11 @@ interface BackendInterface
     );
 
     /**
+     * @return int
+     */
+    public function getFileEncryptionSaltOffset();
+
+    /**
      * @return string
      */
     public function getPrefix();
