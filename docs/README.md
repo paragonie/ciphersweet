@@ -21,6 +21,7 @@
     * [`FieldRotator`](#fieldrotator)
     * [`RowRotator`](#rowrotator)
     * [`MultiRowsRotator`](#multirowsrotator)
+  * [`EncryptedFile`](#encryptedfile)
 * [Security Properties and Thread Model for CipherSweet](SECURITY.md)
 * [CipherSweet Examples](https://github.com/paragonie/ciphersweet/tree/master/docs/examples)
   (Look here if you seek runnable example code for common integrations)
@@ -30,6 +31,7 @@
   * [Packing](https://github.com/paragonie/ciphersweet/blob/master/docs/internals/02-packing.md)
   * [Field-Level Encryption](https://github.com/paragonie/ciphersweet/blob/master/docs/internals/03-encryption.md)
   * [Blind Indexing](https://github.com/paragonie/ciphersweet/blob/master/docs/internals/04-blind-index.md)
+  * [File Encryption](https://github.com/paragonie/ciphersweet/blob/master/docs/internals/05-file-encryption.md)
 * [Solutions for Common Problems with Searchable Encryption](https://github.com/paragonie/ciphersweet/tree/master/docs/solutions)
 
 ## Understanding CipherSweet's Features and Limitations
@@ -996,6 +998,120 @@ if ($rotator->needsReEncrypt($ciphertext)) {
     list($ciphertext, $indices) = $rotator->prepareForUpdate($ciphertext);
 }
 ```
+
+## `EncryptedFile`
+
+Since version 1.9.0, CipherSweet has provided an `EncryptedFile` API that provides
+authenticated encryption, password-based encryption, and resistance against race
+condition attacks.
+
+### Using `EncryptedFile` in your Projects
+
+First, instantiate the `EncryptedFile` class by passing your engine to the
+constructor, like so:
+
+```php
+<?php
+use ParagonIE\CipherSweet\CipherSweet;
+use ParagonIE\CipherSweet\EncryptedFile;
+
+/** @var CipherSweet $engine */
+$encFile = new EncryptedFile($engine);
+```
+
+Now that you have an `EncryptedFile` object, you can use it to encrypt files on
+disk or PHP streams.
+
+```php
+<?php
+use ParagonIE\CipherSweet\EncryptedFile;
+/** @var EncryptedFile $encFile */
+
+// Encrypting a file with CipherSweet
+$encFile->encryptFile(
+    '/tmp/super-secret', 
+    '/tmp/super-secret.enc'
+);
+
+// Encrypting a stream with CipherSweet
+$input = \fopen('/tmp/super-secret', 'rb');
+$output = \fopen('php://temp', 'wb');
+$encFile->encryptStream($input, $output);
+```
+
+The above functions will use the key provider and backend from your `CipherSweet`
+object to encrypt each file.
+
+Decryption is a congruent operation:
+
+```php
+<?php
+use ParagonIE\CipherSweet\EncryptedFile;
+/** @var EncryptedFile $encFile */
+
+// Decrypting a file with CipherSweet
+if ($encFile->isFileEncrypted('/tmp/super-secret.enc')) {
+    $encFile->decryptFile(
+        '/tmp/super-secret.enc',
+        '/tmp/super-secret.dec'
+    );
+}
+
+// Decrypting a stream with CipherSweet
+$input = \fopen('/tmp/super-secret.enc', 'rb');
+$output = \fopen('php://temp', 'wb');
+if ($encFile->isStreamEncrypted($input)) {
+    $encFile->decryptStream($input, $output);
+}
+```
+
+The `isFileEncrypted()` and `isStreamEncrypted()` methods return `TRUE` only if
+this file was encrypted with the same backend as the current engine.
+
+If you'd rather encrypt each file with a password rather than a local key, you
+can use the `*WithPassword()` API instead:
+
+```php
+<?php
+use ParagonIE\CipherSweet\EncryptedFile;
+/** @var EncryptedFile $encFile */
+
+$password = 'correct horse battery staple';
+
+// Encrypting a file with CipherSweet
+$encFile->encryptFileWithPassword(
+    '/tmp/super-secret',
+    '/tmp/super-secret.enc',
+    $password
+);
+
+// Encrypting a stream with CipherSweet
+$input = \fopen('/tmp/super-secret', 'rb');
+$output = \fopen('php://temp', 'wb');
+$encFile->encryptStreamWithPassword($input, $output, $password);
+
+// Decrypting a file with CipherSweet
+if ($encFile->isFileEncrypted('/tmp/super-secret.enc')) {
+    $encFile->decryptFileWithPassword(
+        '/tmp/super-secret.enc',
+        '/tmp/super-secret.dec',
+        $password
+    );
+}
+
+// Decrypting a stream with CipherSweet
+$input = \fopen('/tmp/super-secret.enc', 'rb');
+$output = \fopen('php://temp', 'wb');
+if ($encFile->isStreamEncrypted($input)) {
+    $encFile->decryptStreamWithPassword($input, $output, $password);
+}
+```
+
+Please be aware that encrypting with a password does **NOT** use your local
+encryption key.
+
+To learn more about how `EncryptedFile` was designed and implemented, please
+refer to the [internal documentation](https://github.com/paragonie/ciphersweet/blob/master/docs/internals/05-file-encryption.md).
 
 ## Using CipherSweet with a Database 
 

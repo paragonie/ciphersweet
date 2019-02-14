@@ -20,4 +20,8 @@ abstract class Constants
     const TYPE_FLOAT = 'float';
 
     const COMPOUND_SPECIAL = 'special__compound__indexes';
+
+    const FILE_TABLE = "special__file__encryption";
+    const FILE_COLUMN = "special__file__ciphersweet";
+    const DUMMY_SALT = "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00";
 }

@@ -62,6 +62,43 @@ interface BackendInterface
     public function getIndexTypeColumn($tableName, $fieldName, $indexName);
 
     /**
+     * @param string $password
+     * @param string $salt
+     * @return SymmetricKey
+     */
+    public function deriveKeyFromPassword($password, $salt);
+
+    /**
+     * @param resource $inputFP
+     * @param resource $outputFP
+     * @param SymmetricKey $key
+     * @param int $chunkSize
+     * @return bool
+     */
+    public function doStreamDecrypt(
+        $inputFP,
+        $outputFP,
+        SymmetricKey $key,
+        $chunkSize = 8192
+    );
+
+    /**
+     * @param resource $inputFP
+     * @param resource $outputFP
+     * @param SymmetricKey $key
+     * @param int $chunkSize
+     * @param string $salt
+     * @return bool
+     */
+    public function doStreamEncrypt(
+        $inputFP,
+        $outputFP,
+        SymmetricKey $key,
+        $chunkSize = 8192,
+        $salt = Constants::DUMMY_SALT
+    );
+
+    /**
      * @return string
      */
     public function getPrefix();

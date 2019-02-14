@@ -1,6 +1,7 @@
 <?php
 namespace ParagonIE\CipherSweet\Backend;
 
+use ParagonIE\CipherSweet\Constants;
 use ParagonIE\CipherSweet\Contract\BackendInterface;
 use ParagonIE\CipherSweet\Backend\Key\SymmetricKey;
 use ParagonIE\CipherSweet\Exception\CryptoOperationException;
@@ -249,6 +250,175 @@ class FIPSCrypto implements BackendInterface
         }
 
         return $ciphertext;
+    }
+
+    /**
+     * @param string $password
+     * @param string $salt
+     * @return SymmetricKey
+     */
+    public function deriveKeyFromPassword($password, $salt)
+    {
+        return new SymmetricKey(
+            $this,
+            \hash_pbkdf2(
+                'sha384',
+                $password,
+                $salt,
+                100000,
+                32,
+                true
+            )
+        );
+    }
+
+    /**
+     * @param resource $inputFP
+     * @param resource $outputFP
+     * @param SymmetricKey $key
+     * @param int $chunkSize
+     * @return bool
+     *
+     * @throws CryptoOperationException
+     * @throws \SodiumException
+     */
+    public function doStreamDecrypt(
+        $inputFP,
+        $outputFP,
+        SymmetricKey $key,
+        $chunkSize = 8192
+    ) {
+        \fseek($inputFP, 0, SEEK_SET);
+        \fseek($outputFP, 0, SEEK_SET);
+        $header = \fread($inputFP, 5);
+        if (Binary::safeStrlen($header) < 5) {
+            throw new CryptoOperationException('Input file is empty');
+        }
+        if (!Util::hashEquals((string) (static::MAGIC_HEADER), $header)) {
+            throw new CryptoOperationException('Invalid cipher backend for this file');
+        }
+        $storedMAC = \fread($inputFP, 48);
+        $salt = \fread($inputFP, 16);
+        $hkdfSalt = \fread($inputFP, 32);
+        $ctrNonce = \fread($inputFP, 16);
+
+        $encKey = Util::HKDF($key, $hkdfSalt, 'AES-256-CTR');
+        $macKey = Util::HKDF($key, $hkdfSalt, 'HMAC-SHA-384');
+
+        // Initialize MAC state
+        $hmac = \hash_init('sha384', HASH_HMAC, $macKey);
+        \hash_update($hmac, (string) (static::MAGIC_HEADER));
+        \hash_update($hmac, $salt);
+        \hash_update($hmac, $hkdfSalt);
+        \hash_update($hmac, $ctrNonce);
+
+        $pos = \ftell($inputFP);
+        // MAC each chunk in memory to defend against race conditions
+        $chunkMacs = [];
+        $hmacInit = \hash_copy($hmac);
+        do {
+            $ciphertext = \fread($inputFP, $chunkSize);
+            \hash_update($hmac, $ciphertext);
+            $chunk = \hash_copy($hmac);
+            $chunkMacs []= Binary::safeSubstr(\hash_final($chunk, true), 0, 16);
+        } while (!\feof($inputFP));
+        $calcMAC = \hash_final($hmac, true);
+
+        // Did the final MAC validate? If so, we're good to decrypt.
+        if (!Util::hashEquals($storedMAC, $calcMAC)) {
+            throw new CryptoOperationException('Invalid authentication tag');
+        }
+
+        $hmac = \hash_copy($hmacInit);
+        \fseek($inputFP, $pos, SEEK_SET);
+
+        // We want to increase our CTR value by the number of blocks we used previously
+        $ctrIncrease = ($chunkSize + 15) >> 4;
+        do {
+            $ciphertext = \fread($inputFP, $chunkSize);
+            \hash_update($hmac, $ciphertext);
+
+            // Guard against TOCTOU
+            $chunk = \hash_copy($hmac);
+            $storedChunk = \array_shift($chunkMacs);
+            $thisChunk = Binary::safeSubstr(\hash_final($chunk, true), 0, 16);
+            if (!Util::hashEquals($storedChunk, $thisChunk)) {
+                throw new CryptoOperationException('Race condition');
+            }
+
+            $plaintext = self::aes256ctr($ciphertext, $encKey, $ctrNonce);
+            \fwrite($outputFP, $plaintext);
+
+            $ctrNonce = Util::ctrNonceIncrease($ctrNonce, $ctrIncrease);
+        } while (!\feof($inputFP));
+
+        if (!empty($chunkMacs)) {
+            // Truncation attack against decryption after MAC validation
+            throw new CryptoOperationException('Race condition');
+        }
+        return true;
+    }
+
+    /**
+     * @param resource $inputFP
+     * @param resource $outputFP
+     * @param SymmetricKey $key
+     * @param int $chunkSize
+     * @param string $salt
+     * @return bool
+     *
+     * @throws CryptoOperationException
+     */
+    public function doStreamEncrypt(
+        $inputFP,
+        $outputFP,
+        SymmetricKey $key,
+        $chunkSize = 8192,
+        $salt = Constants::DUMMY_SALT
+    ) {
+        \fseek($inputFP, 0, SEEK_SET);
+        \fseek($outputFP, 0, SEEK_SET);
+        try {
+            $hkdfSalt = \random_bytes(self::SALT_SIZE);
+            $ctrNonce = \random_bytes(self::NONCE_SIZE);
+        } catch (\Exception $ex) {
+            throw new CryptoOperationException('CSPRNG failure', 0, $ex);
+        }
+        $encKey = Util::HKDF($key, $hkdfSalt, 'AES-256-CTR');
+        $macKey = Util::HKDF($key, $hkdfSalt, 'HMAC-SHA-384');
+
+        // Write the header, empty space for a MAC, salts, then nonce.
+        \fwrite($outputFP, (string) (static::MAGIC_HEADER), 5);
+        \fwrite($outputFP, str_repeat("\0", 48), 48);
+        \fwrite($outputFP, $salt, 16);
+        \fwrite($outputFP, $hkdfSalt, 32);
+        \fwrite($outputFP, $ctrNonce, 16);
+
+        // Init MAC state
+        $hmac = \hash_init('sha384', HASH_HMAC, $macKey);
+        \hash_update($hmac, (string) (static::MAGIC_HEADER));
+        \hash_update($hmac, $salt);
+        \hash_update($hmac, $hkdfSalt);
+        \hash_update($hmac, $ctrNonce);
+
+        // We want to increase our CTR value by the number of blocks we used previously
+        $ctrIncrease = ($chunkSize + 15) >> 4;
+        do {
+            $plaintext = \fread($inputFP, $chunkSize);
+            $ciphertext = self::aes256ctr($plaintext, $encKey, $ctrNonce);
+            \hash_update($hmac, $ciphertext);
+            \fwrite($outputFP, $ciphertext);
+            $ctrNonce = Util::ctrNonceIncrease($ctrNonce, $ctrIncrease);
+        } while (!\feof($inputFP));
+
+        $end = \ftell($outputFP);
+
+        // Write the MAC at the beginning of the file.
+        $mac = \hash_final($hmac, true);
+        \fseek($outputFP, 5, SEEK_SET);
+        \fwrite($outputFP, $mac, 48);
+        \fseek($outputFP, $end, SEEK_SET);
+        return true;
     }
 
     /**

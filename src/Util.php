@@ -189,14 +189,15 @@ abstract class Util
      * Increase a counter nonce, starting with the LSB (big-endian)
      *
      * @param string $nonce
+     * @param int $amount
      * @return string
      */
-    public static function ctrNonceIncrease($nonce)
+    public static function ctrNonceIncrease($nonce, $amount = 1)
     {
         /** @var array<int, int> $pieces */
         $pieces = \unpack('C*', $nonce);
         $c = 0;
-        ++$pieces[16];
+        $pieces[16] += $amount;
         for ($i = 16; $i > 0; --$i) {
             $pieces[$i] += $c;
             $c = $pieces[$i] >> 8;
