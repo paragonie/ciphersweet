@@ -54,6 +54,7 @@ class EncryptedFileTest extends TestCase
     /**
      * @throws CryptoOperationException
      * @throws FilesystemException
+     * @throws \SodiumException
      */
     public function testFipsEncryptStream()
     {
@@ -61,9 +62,11 @@ class EncryptedFileTest extends TestCase
 
         $input = $this->fips->getStreamForFile('php://temp');
         \fwrite($input, $message);
+        $this->assertFalse($this->fips->isStreamEncrypted($input));
 
         $output = $this->fips->getStreamForFile('php://temp');
         $this->fips->encryptStream($input, $output);
+        $this->assertTrue($this->fips->isStreamEncrypted($output));
 
         \fseek($output, 0, SEEK_SET);
         $header = \fread($output, 5);
@@ -77,6 +80,7 @@ class EncryptedFileTest extends TestCase
 
         $decrypted = $this->fips->getStreamForFile('php://temp');
         $this->fips->decryptStream($output, $decrypted);
+        $this->assertFalse($this->fips->isStreamEncrypted($decrypted));
 
         \fseek($input, 0, SEEK_SET);
         \fseek($decrypted, 0, SEEK_SET);
@@ -90,6 +94,7 @@ class EncryptedFileTest extends TestCase
     /**
      * @throws CryptoOperationException
      * @throws FilesystemException
+     * @throws \SodiumException
      */
     public function testFipsPasswordEncryptStream()
     {
@@ -98,9 +103,11 @@ class EncryptedFileTest extends TestCase
 
         $input = $this->fips->getStreamForFile('php://temp');
         \fwrite($input, $message);
+        $this->assertFalse($this->fips->isStreamEncrypted($input));
 
         $output = $this->fips->getStreamForFile('php://temp');
         $this->fips->encryptStreamWithPassword($input, $output, $password);
+        $this->assertTrue($this->fips->isStreamEncrypted($output));
 
         \fseek($output, 0, SEEK_SET);
         $header = \fread($output, 5);
@@ -114,6 +121,7 @@ class EncryptedFileTest extends TestCase
 
         $decrypted = $this->fips->getStreamForFile('php://temp');
         $this->fips->decryptStreamWithPassword($output, $decrypted, $password);
+        $this->assertFalse($this->fips->isStreamEncrypted($decrypted));
 
         \fseek($input, 0, SEEK_SET);
         \fseek($decrypted, 0, SEEK_SET);
@@ -127,6 +135,7 @@ class EncryptedFileTest extends TestCase
     /**
      * @throws CryptoOperationException
      * @throws FilesystemException
+     * @throws \SodiumException
      */
     public function testModernEncryptStream()
     {
@@ -134,9 +143,11 @@ class EncryptedFileTest extends TestCase
 
         $input = $this->nacl->getStreamForFile('php://temp');
         \fwrite($input, $message);
+        $this->assertFalse($this->nacl->isStreamEncrypted($input));
 
         $output = $this->nacl->getStreamForFile('php://temp');
         $this->nacl->encryptStream($input, $output);
+        $this->assertTrue($this->nacl->isStreamEncrypted($output));
 
         \fseek($output, 0, SEEK_SET);
         $header = \fread($output, 5);
@@ -150,6 +161,7 @@ class EncryptedFileTest extends TestCase
 
         $decrypted = $this->nacl->getStreamForFile('php://temp');
         $this->nacl->decryptStream($output, $decrypted);
+        $this->assertFalse($this->nacl->isStreamEncrypted($decrypted));
 
         \fseek($input, 0, SEEK_SET);
         \fseek($decrypted, 0, SEEK_SET);
@@ -163,6 +175,7 @@ class EncryptedFileTest extends TestCase
     /**
      * @throws CryptoOperationException
      * @throws FilesystemException
+     * @throws \SodiumException
      */
     public function testModernPasswordEncryptStream()
     {
@@ -176,9 +189,11 @@ class EncryptedFileTest extends TestCase
 
         $input = $this->nacl->getStreamForFile('php://temp');
         \fwrite($input, $message);
+        $this->assertFalse($this->nacl->isStreamEncrypted($input));
 
         $output = $this->nacl->getStreamForFile('php://temp');
         $this->nacl->encryptStreamWithPassword($input, $output, $password);
+        $this->assertTrue($this->nacl->isStreamEncrypted($output));
 
         \fseek($output, 0, SEEK_SET);
         $header = \fread($output, 5);
@@ -192,6 +207,7 @@ class EncryptedFileTest extends TestCase
 
         $decrypted = $this->nacl->getStreamForFile('php://temp');
         $this->nacl->decryptStreamWithPassword($output, $decrypted, $password);
+        $this->assertFalse($this->nacl->isStreamEncrypted($decrypted));
 
         \fseek($input, 0, SEEK_SET);
         \fseek($decrypted, 0, SEEK_SET);

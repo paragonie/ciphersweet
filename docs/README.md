@@ -1050,16 +1050,23 @@ use ParagonIE\CipherSweet\EncryptedFile;
 /** @var EncryptedFile $encFile */
 
 // Decrypting a file with CipherSweet
-$encFile->decryptFile(
-    '/tmp/super-secret.enc',
-    '/tmp/super-secret.dec'
-);
+if ($encFile->isFileEncrypted('/tmp/super-secret.enc')) {
+    $encFile->decryptFile(
+        '/tmp/super-secret.enc',
+        '/tmp/super-secret.dec'
+    );
+}
 
 // Decrypting a stream with CipherSweet
 $input = \fopen('/tmp/super-secret.enc', 'rb');
 $output = \fopen('php://temp', 'wb');
-$encFile->decryptStream($input, $output);
+if ($encFile->isStreamEncrypted($input)) {
+    $encFile->decryptStream($input, $output);
+}
 ```
+
+The `isFileEncrypted()` and `isStreamEncrypted()` methods return `TRUE` only if
+this file was encrypted with the same backend as the current engine.
 
 If you'd rather encrypt each file with a password rather than a local key, you
 can use the `*WithPassword()` API instead:
@@ -1084,16 +1091,20 @@ $output = \fopen('php://temp', 'wb');
 $encFile->encryptStreamWithPassword($input, $output, $password);
 
 // Decrypting a file with CipherSweet
-$encFile->decryptFileWithPassword(
-    '/tmp/super-secret.enc',
-    '/tmp/super-secret.dec',
-    $password
-);
+if ($encFile->isFileEncrypted('/tmp/super-secret.enc')) {
+    $encFile->decryptFileWithPassword(
+        '/tmp/super-secret.enc',
+        '/tmp/super-secret.dec',
+        $password
+    );
+}
 
 // Decrypting a stream with CipherSweet
 $input = \fopen('/tmp/super-secret.enc', 'rb');
 $output = \fopen('php://temp', 'wb');
-$encFile->decryptStreamWithPassword($input, $output, $password);
+if ($encFile->isStreamEncrypted($input)) {
+    $encFile->decryptStreamWithPassword($input, $output, $password);
+}
 ```
 
 Please be aware that encrypting with a password does **NOT** use your local

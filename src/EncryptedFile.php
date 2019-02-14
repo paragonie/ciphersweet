@@ -5,6 +5,7 @@ use ParagonIE\CipherSweet\Backend\FIPSCrypto;
 use ParagonIE\CipherSweet\Backend\ModernCrypto;
 use ParagonIE\CipherSweet\Exception\CryptoOperationException;
 use ParagonIE\CipherSweet\Exception\FilesystemException;
+use ParagonIE\ConstantTime\Binary;
 
 /**
  * Class EncryptedFile
@@ -260,6 +261,45 @@ class EncryptedFile
         $salt = \fread($inputFP, 16);
         \fseek($inputFP, 0, SEEK_SET);
         return $salt;
+    }
+
+    /**
+     * @param string $filename
+     * @return bool
+     *
+     * @throws FilesystemException
+     * @throws \SodiumException
+     */
+    public function isFileEncrypted($filename)
+    {
+        return $this->isStreamEncrypted($this->getStreamForFile($filename));
+    }
+
+    /**
+     * @param resource $inputFile
+     * @return bool
+     *
+     * @throws \SodiumException
+     */
+    public function isStreamEncrypted($inputFile)
+    {
+        $pos = \ftell($inputFile);
+        \fseek($inputFile, 0, SEEK_SET);
+        $header = \fread($inputFile, 5);
+
+        // Can we get a valid header?
+        if (Binary::safeStrlen($header) < 5) {
+            return false;
+        }
+
+        // Compare the stored header with the backend:
+        $expect = $this->engine->getBackend()->getPrefix();
+
+        /** @var bool $return */
+        $return = Util::hashEquals($expect, $header);
+
+        \fseek($inputFile, $pos, SEEK_SET);
+        return $return;
     }
 
     /**
