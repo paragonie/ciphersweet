@@ -21,7 +21,7 @@ class EncryptedFile
     /**
      * EncryptedFile constructor.
      * @param CipherSweet $engine
-     * @param int $chunkSize
+     * @param int $chunkSize      Affects how much memory is read at once.
      */
     public function __construct(CipherSweet $engine, $chunkSize = 8192)
     {
@@ -38,14 +38,6 @@ class EncryptedFile
     }
 
     /**
-     * @return CipherSweet
-     */
-    public function getEngine()
-    {
-        return $this->engine;
-    }
-
-    /**
      * @return string
      */
     public function getBackendPrefix()
@@ -54,6 +46,16 @@ class EncryptedFile
     }
 
     /**
+     * @return CipherSweet
+     */
+    public function getEngine()
+    {
+        return $this->engine;
+    }
+
+    /**
+     * Decrypts a file. Uses the KeyProvider.
+     *
      * @param string $inputFile
      * @param string $outputFile
      * @return bool
@@ -80,6 +82,8 @@ class EncryptedFile
     }
 
     /**
+     * Decrypts a file. Uses the given password, NOT the KeyProvider.
+     *
      * @param string $inputFile
      * @param string $outputFile
      * @param string $password
@@ -110,6 +114,8 @@ class EncryptedFile
     }
 
     /**
+     * Decrypts a stream. Uses the KeyProvider.
+     *
      * @param resource $inputFP
      * @param resource $outputFP
      * @return bool
@@ -130,6 +136,8 @@ class EncryptedFile
     }
 
     /**
+     * Decrypts a stream. Uses the given password, NOT the KeyProvider.
+     *
      * @param resource $inputFP
      * @param resource $outputFP
      * @param string $password
@@ -149,6 +157,8 @@ class EncryptedFile
     }
 
     /**
+     * Encrypts a file. Uses the KeyProvider.
+     *
      * @param string $inputFile
      * @param string $outputFile
      * @return bool
@@ -175,6 +185,8 @@ class EncryptedFile
     }
 
     /**
+     * Encrypts a file. Uses the given password, NOT the KeyProvider.
+     *
      * @param string $inputFile
      * @param string $outputFile
      * @param string $password
@@ -206,6 +218,8 @@ class EncryptedFile
     }
 
     /**
+     * Encrypts a stream. Uses the KeyProvider.
+     *
      * @param resource $inputFP
      * @param resource $outputFP
      * @return bool
@@ -227,6 +241,8 @@ class EncryptedFile
     }
 
     /**
+     * Encrypts a stream. Uses the given password, NOT the KeyProvider.
+     *
      * @param resource $inputFP
      * @param resource $outputFP
      * @param string $password
@@ -256,12 +272,14 @@ class EncryptedFile
     }
 
     /**
+     * Read the salt from the encrypted file.
+     *
      * @param resource $inputFP
      * @return string
      */
     public function getSaltFromStream($inputFP)
     {
-        $backend = $this->engine->getBackend();
+        $backend = $this->getBackend();
         \fseek($inputFP, $backend->getFileEncryptionSaltOffset(), SEEK_SET);
 
         /** @var string $salt */
@@ -320,6 +338,10 @@ class EncryptedFile
         $fp = \fopen($fileName, $mode);
         if (!\is_resource($fp)) {
             throw new FilesystemException('Could not create stream');
+        }
+        if ($this->chunkSize !== 8192) {
+            // Improve performance slightly:
+            \stream_set_chunk_size($fp, $this->chunkSize);
         }
         return $fp;
     }
