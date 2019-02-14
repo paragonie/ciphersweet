@@ -30,6 +30,7 @@
   * [Packing](https://github.com/paragonie/ciphersweet/blob/master/docs/internals/02-packing.md)
   * [Field-Level Encryption](https://github.com/paragonie/ciphersweet/blob/master/docs/internals/03-encryption.md)
   * [Blind Indexing](https://github.com/paragonie/ciphersweet/blob/master/docs/internals/04-blind-index.md)
+  * [File Encryption](https://github.com/paragonie/ciphersweet/blob/master/docs/internals/05-file-encryption.md)
 * [Solutions for Common Problems with Searchable Encryption](https://github.com/paragonie/ciphersweet/tree/master/docs/solutions)
 
 ## Understanding CipherSweet's Features and Limitations
