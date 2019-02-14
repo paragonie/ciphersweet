@@ -2,6 +2,7 @@
 namespace ParagonIE\CipherSweet;
 
 use ParagonIE\CipherSweet\Backend\Key\SymmetricKey;
+use ParagonIE\CipherSweet\Contract\BackendInterface;
 use ParagonIE\CipherSweet\Exception\BlindIndexNameCollisionException;
 use ParagonIE\CipherSweet\Exception\BlindIndexNotFoundException;
 use ParagonIE\CipherSweet\Exception\CryptoOperationException;
@@ -291,6 +292,14 @@ class EncryptedField
         }
         $this->blindIndexes[$name] = $index;
         return $this;
+    }
+
+    /**
+     * @return BackendInterface
+     */
+    public function getBackend()
+    {
+        return $this->engine->getBackend();
     }
 
     /**

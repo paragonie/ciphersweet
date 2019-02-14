@@ -3,6 +3,7 @@ namespace ParagonIE\CipherSweet;
 
 use ParagonIE\CipherSweet\Backend\FIPSCrypto;
 use ParagonIE\CipherSweet\Backend\ModernCrypto;
+use ParagonIE\CipherSweet\Contract\BackendInterface;
 use ParagonIE\CipherSweet\Exception\CryptoOperationException;
 use ParagonIE\CipherSweet\Exception\FilesystemException;
 use ParagonIE\ConstantTime\Binary;
@@ -28,6 +29,14 @@ class EncryptedFile
     {
         $this->engine = $engine;
         $this->chunkSize = $chunkSize;
+    }
+
+    /**
+     * @return BackendInterface
+     */
+    public function getBackend()
+    {
+        return $this->engine->getBackend();
     }
 
     /**

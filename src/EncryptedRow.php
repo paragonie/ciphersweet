@@ -2,6 +2,7 @@
 namespace ParagonIE\CipherSweet;
 
 use ParagonIE\CipherSweet\Backend\Key\SymmetricKey;
+use ParagonIE\CipherSweet\Contract\BackendInterface;
 use ParagonIE\CipherSweet\Exception\ArrayKeyException;
 use ParagonIE\CipherSweet\Exception\BlindIndexNotFoundException;
 use ParagonIE\ConstantTime\Hex;
@@ -235,6 +236,26 @@ class EncryptedRow
             $return[$name] = $this->calcCompoundIndex($row, $compoundIndex);
         }
         return $return;
+    }
+
+    /**
+     * @param string $column
+     * @return array<string, BlindIndex>
+     */
+    public function getBlindIndexObjectsForColumn($column)
+    {
+        if (isset($this->blindIndexes[$column])) {
+            return $this->blindIndexes[$column];
+        }
+        return [];
+    }
+
+    /**
+     * @return array<string, CompoundIndex>
+     */
+    public function getCompoundIndexObjects()
+    {
+        return $this->compoundIndexes;
     }
 
     /**
@@ -642,6 +663,14 @@ class EncryptedRow
             default:
                 return (string) $data;
         }
+    }
+
+    /**
+     * @return BackendInterface
+     */
+    public function getBackend()
+    {
+        return $this->engine->getBackend();
     }
 
     /**

@@ -1,6 +1,7 @@
 <?php
 namespace ParagonIE\CipherSweet;
 
+use ParagonIE\CipherSweet\Contract\BackendInterface;
 use ParagonIE\CipherSweet\Exception\ArrayKeyException;
 use ParagonIE\CipherSweet\Exception\BlindIndexNotFoundException;
 use ParagonIE\CipherSweet\Exception\CryptoOperationException;
@@ -406,6 +407,14 @@ class EncryptedMultiRows
             }
         }
         return [$tables, $indexes];
+    }
+
+    /**
+     * @return BackendInterface
+     */
+    public function getBackend()
+    {
+        return $this->engine->getBackend();
     }
 
     /**
