@@ -50,6 +50,9 @@ or noncommercial, open source or proprietary, at no cost to you.
 * **Adaptability.** CipherSweet has a database- and product-agnostic design, so
   it should be easy to write an adapter to use CipherSweet in any PHP-based
   software.
+* **File/stream encryption.** CipherSweet has an API for encrypting files (or
+  other PHP streams) that provides authenticated encryption that defeats TOCTOU
+  attacks with minimal overhead. [Learn more](https://github.com/paragonie/ciphersweet/tree/master/docs#encryptedfile).
 
 ## Installing CipherSweet
 
