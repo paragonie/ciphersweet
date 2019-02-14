@@ -173,8 +173,7 @@ class EncryptedRow
     }
 
     /**
-     * Get all of the blind indexes and compound indexes defined for this
-     * object, calculated from the input array.
+     * Calculate a blind index (or compound blind index) output for this row.
      *
      * @param string $indexName
      * @param array $row
@@ -187,14 +186,16 @@ class EncryptedRow
      */
     public function getBlindIndex($indexName, array $row)
     {
-        if (isset($this->blindIndexes[$indexName])) {
-            /** @var BlindIndex $blindIndex */
-            $blindIndex = $this->blindIndexes[$indexName];
-            return $this->calcBlindIndex(
-                $row,
-                $indexName,
-                $blindIndex
-            );
+        foreach ($this->blindIndexes as $column => $blindIndexes) {
+            if (isset($blindIndexes[$indexName])) {
+                /** @var BlindIndex $blindIndex */
+                $blindIndex = $blindIndexes[$indexName];
+                return $this->calcBlindIndex(
+                    $row,
+                    $column,
+                    $blindIndex
+                );
+            }
         }
         if (isset($this->compoundIndexes[$indexName])) {
             return $this->calcCompoundIndex($row, $this->compoundIndexes[$indexName]);
