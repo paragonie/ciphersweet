@@ -17,7 +17,7 @@ class FIPSCryptoTest extends TestCase
     public function testEncrypt()
     {
         $fips = new FIPSCrypto();
-        $keyProvider = new ArrayProvider($fips, [
+        $keyProvider = new ArrayProvider([
             ArrayProvider::INDEX_SYMMETRIC_KEY => random_bytes(32)
         ]);
 

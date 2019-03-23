@@ -1,7 +1,6 @@
 <?php
 namespace ParagonIE\CipherSweet\Tests\KeyProvider;
 
-use ParagonIE\CipherSweet\Backend\ModernCrypto;
 use ParagonIE\CipherSweet\KeyProvider\ArrayProvider;
 use ParagonIE\ConstantTime\Hex;
 use PHPUnit\Framework\TestCase;
@@ -18,11 +17,9 @@ class ArrayProviderTest extends TestCase
      */
     public function testHappyPath()
     {
-        $backend = new ModernCrypto();
-
         $random = random_bytes(32);
 
-        $provider = new ArrayProvider($backend, [
+        $provider = new ArrayProvider([
             ArrayProvider::INDEX_SYMMETRIC_KEY =>
                 $random
         ]);

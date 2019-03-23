@@ -49,19 +49,19 @@ class FieldRotatorTest extends TestCase
     {
         $this->fipsRandom = new CipherSweet(
             new ArrayProvider(
-                new FIPSCrypto(),
                 [
                     ArrayProvider::INDEX_SYMMETRIC_KEY => \random_bytes(32)
                 ]
-            )
+            ),
+            new FIPSCrypto()
         );
         $this->naclRandom = new CipherSweet(
             new ArrayProvider(
-                new ModernCrypto(),
                 [
                     ArrayProvider::INDEX_SYMMETRIC_KEY => \random_bytes(32)
                 ]
-            )
+            ),
+            new ModernCrypto()
         );
     }
 

@@ -29,16 +29,13 @@ final class CipherSweet
      * CipherSweet constructor.
      *
      * @param KeyProviderInterface $keyProvider
-     * @param BackendInterface|null $backend
+     * @param BackendInterface $backend
      */
     public function __construct(
         KeyProviderInterface $keyProvider,
-        BackendInterface $backend = null
+        BackendInterface $backend
     ) {
         $this->keyProvider = $keyProvider;
-        if (\is_null($backend)) {
-            $backend = $this->keyProvider->getBackend();
-        }
         $this->backend = $backend;
     }
 

@@ -32,14 +32,6 @@ class RandomProvider implements KeyProviderInterface
     }
 
     /**
-     * @return BackendInterface
-     */
-    public function getBackend()
-    {
-        return $this->backend;
-    }
-
-    /**
      * @return SymmetricKey
      * @throws \Exception
      */

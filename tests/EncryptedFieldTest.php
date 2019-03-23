@@ -54,40 +54,40 @@ class EncryptedFieldTest extends TestCase
 
         $this->fipsEngine = new CipherSweet(
             new ArrayProvider(
-                $fips,
                 [
                     ArrayProvider::INDEX_SYMMETRIC_KEY => Hex::decode(
                         '4e1c44f87b4cdf21808762970b356891db180a9dd9850e7baf2a79ff3ab8a2fc'
                     )
                 ]
-            )
+            ),
+            $fips
         );
         $this->naclEngine = new CipherSweet(
             new ArrayProvider(
-                $nacl,
                 [
                     ArrayProvider::INDEX_SYMMETRIC_KEY => Hex::decode(
                         '4e1c44f87b4cdf21808762970b356891db180a9dd9850e7baf2a79ff3ab8a2fc'
                     )
                 ]
-            )
+            ),
+            $nacl
         );
 
         $this->fipsRandom = new CipherSweet(
             new ArrayProvider(
-                $fips,
                 [
                     ArrayProvider::INDEX_SYMMETRIC_KEY => \random_bytes(32)
                 ]
-            )
+            ),
+            $fips
         );
         $this->naclRandom = new CipherSweet(
             new ArrayProvider(
-                $nacl,
                 [
                     ArrayProvider::INDEX_SYMMETRIC_KEY => \random_bytes(32)
                 ]
-            )
+            ),
+            $nacl
         );
     }
 

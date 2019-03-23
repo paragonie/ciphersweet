@@ -32,21 +32,21 @@ class EncryptedFileTest extends TestCase
         $this->fips = new EncryptedFile(
             new CipherSweet(
                 new StringProvider(
-                    new FIPSCrypto(),
                      Hex::decode(
                         '4e1c44f87b4cdf21808762970b356891db180a9dd9850e7baf2a79ff3ab8a2fc'
                     )
-                )
+                ),
+                new FIPSCrypto()
             )
         );
         $this->nacl = new EncryptedFile(
             new CipherSweet(
                 new StringProvider(
-                    new ModernCrypto(),
                     Hex::decode(
                         '4e1c44f87b4cdf21808762970b356891db180a9dd9850e7baf2a79ff3ab8a2fc'
                     )
-                )
+                ),
+                new ModernCrypto()
             )
         );
     }

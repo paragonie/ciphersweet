@@ -17,7 +17,7 @@ class ModernCryptoTest extends TestCase
     public function testEncrypt()
     {
         $nacl = new ModernCrypto();
-        $keyProvider = new ArrayProvider($nacl, [
+        $keyProvider = new ArrayProvider([
             ArrayProvider::INDEX_SYMMETRIC_KEY => random_bytes(32)
         ]);
 

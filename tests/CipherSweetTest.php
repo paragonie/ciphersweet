@@ -35,19 +35,19 @@ class CipherSweetTest extends TestCase
 
         $fipsEngine = new CipherSweet(
             new ArrayProvider(
-                $fips,
                 [
                     ArrayProvider::INDEX_SYMMETRIC_KEY => $random
                 ]
-            )
+            ),
+            $fips
         );
         $naclEngine = new CipherSweet(
             new ArrayProvider(
-                $nacl,
                 [
                     ArrayProvider::INDEX_SYMMETRIC_KEY => $random
                 ]
-            )
+            ),
+            $nacl
         );
 
         $this->assertInstanceOf(FIPSCrypto::class, $fipsEngine->getBackend());

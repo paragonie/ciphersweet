@@ -2,7 +2,6 @@
 namespace ParagonIE\CipherSweet\KeyProvider;
 
 use ParagonIE\CipherSweet\Backend\Key\SymmetricKey;
-use ParagonIE\CipherSweet\Contract\BackendInterface;
 use ParagonIE\CipherSweet\Contract\KeyProviderInterface;
 use ParagonIE\CipherSweet\Exception\ArrayKeyException;
 use ParagonIE\CipherSweet\Exception\CryptoOperationException;
@@ -20,11 +19,6 @@ class ArrayProvider implements KeyProviderInterface
     const INDEX_SYMMETRIC_KEY = 'symmetric-key';
 
     /**
-     * @var BackendInterface
-     */
-    private $backend;
-
-    /**
      * @var string
      */
     private $rootSymmetricKey;
@@ -32,13 +26,12 @@ class ArrayProvider implements KeyProviderInterface
     /**
      * ArrayProvider constructor.
      *
-     * @param BackendInterface $backend
      * @param array<string, string> $config
      *
      * @throws ArrayKeyException
      * @throws CryptoOperationException
      */
-    public function __construct(BackendInterface $backend, array $config = [])
+    public function __construct(array $config = [])
     {
         if (!isset($config[self::INDEX_SYMMETRIC_KEY])) {
             throw new ArrayKeyException(
@@ -47,7 +40,6 @@ class ArrayProvider implements KeyProviderInterface
                     '" to be defined on array.'
             );
         }
-        $this->backend = $backend;
 
         /** @var string $rawKey */
         $rawKey = $config[self::INDEX_SYMMETRIC_KEY];
@@ -70,14 +62,6 @@ class ArrayProvider implements KeyProviderInterface
     public function __destruct()
     {
         Util::memzero($this->rootSymmetricKey);
-    }
-
-    /**
-     * @return BackendInterface
-     */
-    public function getBackend()
-    {
-        return $this->backend;
     }
 
     /**

@@ -48,32 +48,32 @@ class EncryptedMultiRowsTest extends TestCase
 
         $this->fipsEngine = new CipherSweet(
             new StringProvider(
-                $fips,
                 Hex::decode(
                     '4e1c44f87b4cdf21808762970b356891db180a9dd9850e7baf2a79ff3ab8a2fc'
                 )
-            )
+            ),
+            $fips
         );
         $this->naclEngine = new CipherSweet(
             new StringProvider(
-                $nacl,
                 Hex::decode(
                     '4e1c44f87b4cdf21808762970b356891db180a9dd9850e7baf2a79ff3ab8a2fc'
                 )
-            )
+            ),
+            $nacl
         );
 
         $this->fipsRandom = new CipherSweet(
             new StringProvider(
-                $fips,
                 \random_bytes(32)
-            )
+            ),
+            $fips
         );
         $this->naclRandom = new CipherSweet(
             new StringProvider(
-                $nacl,
                 \random_bytes(32)
-            )
+            ),
+            $nacl
         );
     }
 

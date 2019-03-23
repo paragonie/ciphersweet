@@ -2,7 +2,6 @@
 namespace ParagonIE\CipherSweet\Tests\KeyProvider;
 
 use ParagonIE\CipherSweet\Backend\Key\SymmetricKey;
-use ParagonIE\CipherSweet\Backend\ModernCrypto;
 use ParagonIE\CipherSweet\KeyProvider\FileProvider;
 use ParagonIE\ConstantTime\Base32;
 use PHPUnit\Framework\TestCase;
@@ -43,9 +42,7 @@ class FileProviderTest extends TestCase
      */
     public function testHappyPath()
     {
-        $backend = new ModernCrypto();
         $provider = new FileProvider(
-            $backend,
             __DIR__ . '/files/' . $this->prefix . '.symmetric'
         );
 
