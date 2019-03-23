@@ -58,7 +58,7 @@ class FileProvider implements KeyProviderInterface
             throw new KeyProviderException('Could not read symmetric key from file.');
         }
 
-        return new SymmetricKey($this->backend, $contents);
+        return new SymmetricKey($contents);
     }
 
     /**

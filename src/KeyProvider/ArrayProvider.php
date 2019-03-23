@@ -85,7 +85,7 @@ class ArrayProvider implements KeyProviderInterface
      */
     public function getSymmetricKey()
     {
-        return new SymmetricKey($this->backend, $this->rootSymmetricKey);
+        return new SymmetricKey($this->rootSymmetricKey);
     }
 
     /**

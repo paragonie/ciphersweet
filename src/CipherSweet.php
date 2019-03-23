@@ -84,7 +84,6 @@ final class CipherSweet
     public function getBlindIndexRootKey($tableName, $fieldName)
     {
         return new SymmetricKey(
-            $this->backend,
             Util::HKDF(
                 $this->keyProvider->getSymmetricKey(),
                 $tableName,
@@ -108,7 +107,6 @@ final class CipherSweet
     public function getFieldSymmetricKey($tableName, $fieldName)
     {
         return new SymmetricKey(
-            $this->backend,
             Util::HKDF(
                 $this->keyProvider->getSymmetricKey(),
                 $tableName,

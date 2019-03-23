@@ -1,7 +1,6 @@
 <?php
 namespace ParagonIE\CipherSweet\Backend\Key;
 
-use ParagonIE\CipherSweet\Contract\BackendInterface;
 use ParagonIE\CipherSweet\Util;
 
 /**
@@ -11,11 +10,6 @@ use ParagonIE\CipherSweet\Util;
 class SymmetricKey
 {
     /**
-     * @var BackendInterface $Backend
-     */
-    private $backend;
-
-    /**
      * @var string $keyMaterial
      */
     private $keyMaterial;
@@ -23,16 +17,15 @@ class SymmetricKey
     /**
      * SymmetricKey constructor.
      *
-     * @param BackendInterface $backend
      * @param string $rawKeyMaterial
      */
-    public function __construct(BackendInterface $backend, $rawKeyMaterial)
+    public function __construct($rawKeyMaterial)
     {
         /** @psalm-suppress RedundantConditionGivenDocblockType */
         if (!\is_string($rawKeyMaterial)) {
             throw new \TypeError('String expected');
         }
-        $this->backend = $backend;
+
         $this->keyMaterial = $rawKeyMaterial;
     }
 

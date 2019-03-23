@@ -260,7 +260,6 @@ class FIPSCrypto implements BackendInterface
     public function deriveKeyFromPassword($password, $salt)
     {
         return new SymmetricKey(
-            $this,
             \hash_pbkdf2(
                 'sha384',
                 $password,

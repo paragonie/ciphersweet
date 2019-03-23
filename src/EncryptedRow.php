@@ -557,7 +557,6 @@ class EncryptedRow
 
         /** @var SymmetricKey $subKey */
         $subKey = new SymmetricKey(
-            $backend,
             \hash_hmac(
                 'sha256',
                 Util::pack([$this->tableName, $column, $name]),
@@ -628,7 +627,6 @@ class EncryptedRow
 
         /** @var SymmetricKey $subKey */
         $subKey = new SymmetricKey(
-            $backend,
             \hash_hmac(
                 'sha256',
                 Util::pack([$this->tableName, Constants::COMPOUND_SPECIAL, $name]),

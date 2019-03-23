@@ -245,7 +245,6 @@ class EncryptedField
 
         $backend = $this->engine->getBackend();
         $subKey = new SymmetricKey(
-            $backend,
             \hash_hmac(
                 'sha256',
                 Util::pack([$this->tableName, $this->fieldName, $name]),
