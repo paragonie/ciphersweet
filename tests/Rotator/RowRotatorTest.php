@@ -12,6 +12,7 @@ use ParagonIE\CipherSweet\Exception\CryptoOperationException;
 use ParagonIE\CipherSweet\Exception\InvalidCiphertextException;
 use ParagonIE\CipherSweet\KeyProvider\ArrayProvider;
 use ParagonIE\CipherSweet\KeyRotation\RowRotator;
+use ParagonIE\CipherSweet\Tests\CreatesEngines;
 use ParagonIE\CipherSweet\Transformation\LastFourDigits;
 use PHPUnit\Framework\TestCase;
 
@@ -21,6 +22,8 @@ use PHPUnit\Framework\TestCase;
  */
 class RowRotatorTest extends TestCase
 {
+    use CreatesEngines;
+
     /**
      * @var CipherSweet $fipsEngine
      */
@@ -47,22 +50,8 @@ class RowRotatorTest extends TestCase
      */
     public function setUp()
     {
-        $this->fipsRandom = new CipherSweet(
-            new ArrayProvider(
-                [
-                    ArrayProvider::INDEX_SYMMETRIC_KEY => \random_bytes(32)
-                ]
-            ),
-            new FIPSCrypto()
-        );
-        $this->naclRandom = new CipherSweet(
-            new ArrayProvider(
-                [
-                    ArrayProvider::INDEX_SYMMETRIC_KEY => \random_bytes(32)
-                ]
-            ),
-            new ModernCrypto()
-        );
+        $this->fipsRandom = $this->createFipsEngine();
+        $this->naclRandom = $this->createModernEngine();
     }
 
     /**

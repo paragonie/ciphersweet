@@ -10,10 +10,8 @@ use ParagonIE\CipherSweet\Exception\ArrayKeyException;
 use ParagonIE\CipherSweet\Exception\BlindIndexNotFoundException;
 use ParagonIE\CipherSweet\Exception\CryptoOperationException;
 use ParagonIE\CipherSweet\Exception\InvalidCiphertextException;
-use ParagonIE\CipherSweet\KeyProvider\StringProvider;
 use ParagonIE\CipherSweet\Transformation\LastFourDigits;
 use ParagonIE\ConstantTime\Binary;
-use ParagonIE\ConstantTime\Hex;
 use PHPUnit\Framework\TestCase;
 use ParagonIE\CipherSweet\Tests\Transformation\FirstInitialLastName;
 
@@ -23,6 +21,8 @@ use ParagonIE\CipherSweet\Tests\Transformation\FirstInitialLastName;
  */
 class EncryptedRowTest extends TestCase
 {
+    use CreatesEngines;
+
     /**
      * @var CipherSweet $fipsEngine
      */
@@ -48,38 +48,11 @@ class EncryptedRowTest extends TestCase
      */
     public function setUp()
     {
-        $fips = new FIPSCrypto();
-        $nacl = new ModernCrypto();
+        $this->fipsEngine = $this->createFipsEngine('4e1c44f87b4cdf21808762970b356891db180a9dd9850e7baf2a79ff3ab8a2fc');
+        $this->naclEngine = $this->createModernEngine('4e1c44f87b4cdf21808762970b356891db180a9dd9850e7baf2a79ff3ab8a2fc');
 
-        $this->fipsEngine = new CipherSweet(
-            new StringProvider(
-                Hex::decode(
-                    '4e1c44f87b4cdf21808762970b356891db180a9dd9850e7baf2a79ff3ab8a2fc'
-                )
-            ),
-            $fips
-        );
-        $this->naclEngine = new CipherSweet(
-            new StringProvider(
-                Hex::decode(
-                    '4e1c44f87b4cdf21808762970b356891db180a9dd9850e7baf2a79ff3ab8a2fc'
-                )
-            ),
-            $nacl
-        );
-
-        $this->fipsRandom = new CipherSweet(
-            new StringProvider(
-                \random_bytes(32)
-            ),
-            $fips
-        );
-        $this->naclRandom = new CipherSweet(
-            new StringProvider(
-                \random_bytes(32)
-            ),
-            $nacl
-        );
+        $this->fipsRandom = $this->createFipsEngine();
+        $this->naclRandom = $this->createModernEngine();
     }
 
     /**
