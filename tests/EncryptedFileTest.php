@@ -36,6 +36,13 @@ class EncryptedFileTest extends TestCase
         );
     }
 
+    public function tearDown()
+    {
+        if (file_exists(__DIR__ . '/scratch.txt')) {
+            unlink(__DIR__ . '/scratch.txt');
+        }
+    }
+
     /**
      * @throws CryptoOperationException
      * @throws FilesystemException
