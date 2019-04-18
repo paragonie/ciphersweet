@@ -77,6 +77,23 @@ class EncryptedMultiRowsTest extends TestCase
         );
     }
 
+    public function testFlatInherits()
+    {
+        $engines = [$this->fipsEngine, $this->fipsRandom, $this->naclEngine, $this->naclRandom];
+        foreach ($engines as $engine) {
+            $mr = (new EncryptedMultiRows($engine, true))
+                ->addTable('foo')
+                ->addTable('bar');
+
+            foreach ($mr->listTables() as $table) {
+                $this->assertSame(
+                    $mr->getFlatIndexes(),
+                    $mr->getEncryptedRowObjectForTable($table)->getFlatIndexes()
+                );
+            }
+        }
+    }
+
     public function testEncryptedMultiRowsSetup()
     {
         $engines = [$this->fipsEngine, $this->fipsRandom, $this->naclEngine, $this->naclRandom];

@@ -25,14 +25,19 @@ class EncryptedField
     protected $engine;
 
     /**
-     * @var SymmetricKey $key
-     */
-    protected $key;
-
-    /**
      * @var string $fieldName
      */
     protected $fieldName = '';
+
+    /**
+     * @var bool $flatIndexes
+     */
+    protected $flatIndexes = false;
+
+    /**
+     * @var SymmetricKey $key
+     */
+    protected $key;
 
     /**
      * @var string $tableName
@@ -45,10 +50,11 @@ class EncryptedField
      * @param CipherSweet $engine
      * @param string $tableName
      * @param string $fieldName
+     * @param bool $useFlatIndexes
      *
      * @throws CryptoOperationException
      */
-    public function __construct(CipherSweet $engine, $tableName = '', $fieldName = '')
+    public function __construct(CipherSweet $engine, $tableName = '', $fieldName = '', $useFlatIndexes = false)
     {
         $this->engine = $engine;
         $this->tableName = $tableName;
@@ -57,6 +63,7 @@ class EncryptedField
             $this->tableName,
             $this->fieldName
         );
+        $this->flatIndexes = $useFlatIndexes;
     }
 
     /**
@@ -134,6 +141,16 @@ class EncryptedField
 
         /** @var BlindIndex $index */
         foreach ($this->blindIndexes as $name => $index) {
+            if ($this->flatIndexes) {
+                $output[$name] = Hex::encode(
+                    $this->getBlindIndexRaw(
+                        $plaintext,
+                        $name,
+                        $key
+                    )
+                );
+                continue;
+            }
             $k = $this->engine->getIndexTypeColumn(
                 $this->tableName,
                 $this->fieldName,
@@ -159,7 +176,7 @@ class EncryptedField
      *
      * @param string $plaintext
      * @param string $name
-     * @return array
+     * @return array|string
      *
      * @throws BlindIndexNotFoundException
      * @throws CryptoOperationException
@@ -170,6 +187,15 @@ class EncryptedField
             $this->tableName,
             $this->fieldName
         );
+        if ($this->flatIndexes) {
+            return Hex::encode(
+                $this->getBlindIndexRaw(
+                    $plaintext,
+                    $name,
+                    $key
+                )
+            );
+        }
 
         $k = $this->engine->getIndexTypeColumn(
             $this->tableName,
@@ -295,6 +321,14 @@ class EncryptedField
     }
 
     /**
+     * @return bool
+     */
+    public function getFlatIndexes()
+    {
+        return $this->flatIndexes;
+    }
+
+    /**
      * @return BackendInterface
      */
     public function getBackend()
@@ -308,5 +342,15 @@ class EncryptedField
     public function getEngine()
     {
         return $this->engine;
+    }
+
+    /**
+     * @param bool $bool
+     * @return self
+     */
+    public function setFlatIndexes($bool)
+    {
+        $this->flatIndexes = $bool;
+        return $this;
     }
 }

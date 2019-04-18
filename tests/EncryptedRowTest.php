@@ -233,6 +233,25 @@ class EncryptedRowTest extends TestCase
         $this->assertEquals('a88e74ada916ab9b', $indexes['contact_ssn_last_four']['value']);
         $this->assertEquals('9c3d53214ab71d7f', $indexes['contact_ssnlast4_hivstatus']['value']);
     }
+    /**
+     * @throws CryptoOperationException
+     * @throws ArrayKeyException
+     * @throws \SodiumException
+     */
+    public function testGetAllIndexesFlat()
+    {
+        $row = [
+            'extraneous' => 'this is unecnrypted',
+            'ssn' => '123-45-6789',
+            'hivstatus' => true
+        ];
+        $eF = $this->getExampleRow($this->fipsEngine, true);
+        $eF->setFlatIndexes(true);
+
+        $indexes = $eF->getAllBlindIndexes($row);
+        $this->assertEquals('a88e74ada916ab9b', $indexes['contact_ssn_last_four']);
+        $this->assertEquals('9c3d53214ab71d7f', $indexes['contact_ssnlast4_hivstatus']);
+    }
 
     /**
      * @throws ArrayKeyException
@@ -266,6 +285,8 @@ class EncryptedRowTest extends TestCase
     public function testPrepareForStorage()
     {
         $eF = $this->getExampleRow($this->fipsRandom, true);
+        $flat = $this->getExampleRow($this->fipsRandom, true);
+        $flat->setFlatIndexes(true);
 
         $rows = [
             [
@@ -295,6 +316,14 @@ class EncryptedRowTest extends TestCase
         ];
         foreach ($rows as $row) {
             list($store, $indexes) = $eF->prepareRowForStorage($row);
+            $this->assertTrue(\is_array($store));
+            $this->assertTrue(\is_string($store['ssn']));
+            $this->assertTrue(\is_string($store['hivstatus']));
+            $this->assertNotSame($row['ssn'], $store['ssn']);
+            $this->assertNotSame($row['hivstatus'], $store['hivstatus']);
+            $this->assertTrue(\is_array($indexes));
+
+            list($store, $indexes) = $flat->prepareRowForStorage($row);
             $this->assertTrue(\is_array($store));
             $this->assertTrue(\is_string($store['ssn']));
             $this->assertTrue(\is_string($store['hivstatus']));
