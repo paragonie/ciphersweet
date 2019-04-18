@@ -251,6 +251,15 @@ class EncryptedRowTest extends TestCase
         $indexes = $eF->getAllBlindIndexes($row);
         $this->assertEquals('a88e74ada916ab9b', $indexes['contact_ssn_last_four']);
         $this->assertEquals('9c3d53214ab71d7f', $indexes['contact_ssnlast4_hivstatus']);
+
+        $this->assertEquals(
+            'xbobk6kf7kqcm',
+            $eF->getBlindIndexType('contacts', 'contact_ssn_last_four')
+        );
+        $this->assertEquals(
+            'dozudszz2yu5k',
+            $eF->getCompoundIndexType('contact_ssnlast4_hivstatus')
+        );
     }
 
     /**

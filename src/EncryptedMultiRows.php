@@ -340,6 +340,36 @@ class EncryptedMultiRows
     }
 
     /**
+     * Get the "type" of a specific blind index (by table, column, and index name).
+     *
+     * @param string $table
+     * @param string $column
+     * @param string $name
+     * @return string
+     */
+    public function getBlindIndexType($table, $column, $name)
+    {
+        return $this->getEncryptedRowObjectForTable($table)
+        ->getBlindIndexType(
+            $column,
+            $name
+        );
+    }
+
+    /**
+     * Get the "type" of a specific blind index (by table and index name).
+     *
+     * @param string $table
+     * @param string $name
+     * @return string
+     */
+    public function getCompoundIndexType($table, $name)
+    {
+        return $this->getEncryptedRowObjectForTable($table)
+            ->getCompoundIndexType($name);
+    }
+
+    /**
      * Get the EncryptedRow instance for the given table in this multi-row
      * abstraction layer.
      *

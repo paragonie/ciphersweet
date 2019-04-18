@@ -258,6 +258,37 @@ class EncryptedRow
     }
 
     /**
+     * Get the "type" of a specific blind index (by column and index name).
+     *
+     * @param string $column
+     * @param string $name
+     * @return string
+     */
+    public function getBlindIndexType($column, $name)
+    {
+        return $this->engine->getIndexTypeColumn(
+            $this->tableName,
+            $column,
+            $name
+        );
+    }
+
+    /**
+     * Get the "type" of a specific compound index (by index name).
+     *
+     * @param string $name
+     * @return string
+     */
+    public function getCompoundIndexType($name)
+    {
+        return $this->engine->getIndexTypeColumn(
+            $this->tableName,
+            Constants::COMPOUND_SPECIAL,
+            $name
+        );
+    }
+
+    /**
      * @return array<string, CompoundIndex>
      */
     public function getCompoundIndexObjects()

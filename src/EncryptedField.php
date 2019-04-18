@@ -280,6 +280,23 @@ class EncryptedField
     }
 
     /**
+     * Get the "type" of a specific blind index (by name).
+     *
+     * More specific than the getBlindIndexTypes() method.
+     *
+     * @param string $name
+     * @return string
+     */
+    public function getBlindIndexType($name)
+    {
+        return $this->engine->getIndexTypeColumn(
+            $this->tableName,
+            $this->fieldName,
+            $name
+        );
+    }
+
+    /**
      * Get a list of all the blind index "type"s, corresponding with their
      * index names.
      *
