@@ -270,6 +270,15 @@ class EncryptedFieldTest extends TestCase
             $ssn->getBlindIndex('123-45-6789', 'contact_ssn')
         );
 
+        $this->assertEquals(
+            'idlzpypmia6qu',
+            $ssn->getBlindIndexType('contact_ssn_last_four')
+        );
+        $this->assertEquals(
+            'stfodrsbpd4ls',
+            $ssn->getBlindIndexType('contact_ssn')
+        );
+
         $random = $this->getExampleField($this->fipsRandom, true, true);
         $this->assertNotEquals(
             'ee10e07b213a922075a6ada22514528c',
@@ -393,6 +402,15 @@ class EncryptedFieldTest extends TestCase
         $this->assertEquals(
             '30c7cc68',
             $ssn->getBlindIndex('123-45-6789', 'contact_ssn')
+        );
+
+        $this->assertEquals(
+            '3dywyifwujcu2',
+            $ssn->getBlindIndexType('contact_ssn_last_four')
+        );
+        $this->assertEquals(
+            '2iztg3wbd7j5a',
+            $ssn->getBlindIndexType('contact_ssn')
         );
 
         $random = $this->getExampleField($this->naclRandom, true, true);

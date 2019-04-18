@@ -216,6 +216,33 @@ class EncryptedRowTest extends TestCase
     }
 
     /**
+     * @throws ArrayKeyException
+     * @throws BlindIndexNotFoundException
+     * @throws CryptoOperationException
+     * @throws \SodiumException
+     */
+    public function testGetIndexFromPartialInfo()
+    {
+        $row = [
+            'ssn' => '123-45-6789',
+            'hivstatus' => true
+        ];
+        $eF = $this->getExampleRow($this->fipsEngine, true);
+        $eF
+            ->setFlatIndexes(true)
+            ->addTextField('extraneous'); // We aren't providing this one in $row.
+
+        $indexes = $eF->getAllBlindIndexes($row);
+        $this->assertEquals('a88e74ada916ab9b', $indexes['contact_ssn_last_four']);
+        $this->assertEquals('9c3d53214ab71d7f', $indexes['contact_ssnlast4_hivstatus']);
+
+        $this->assertSame(
+            'a88e74ada916ab9b',
+            $eF->getBlindIndex('contact_ssn_last_four', $row)
+        );
+    }
+
+    /**
      * @throws CryptoOperationException
      * @throws ArrayKeyException
      * @throws \SodiumException
@@ -251,6 +278,15 @@ class EncryptedRowTest extends TestCase
         $indexes = $eF->getAllBlindIndexes($row);
         $this->assertEquals('a88e74ada916ab9b', $indexes['contact_ssn_last_four']);
         $this->assertEquals('9c3d53214ab71d7f', $indexes['contact_ssnlast4_hivstatus']);
+
+        $this->assertEquals(
+            'xbobk6kf7kqcm',
+            $eF->getBlindIndexType('contacts', 'contact_ssn_last_four')
+        );
+        $this->assertEquals(
+            'dozudszz2yu5k',
+            $eF->getCompoundIndexType('contact_ssnlast4_hivstatus')
+        );
     }
 
     /**
