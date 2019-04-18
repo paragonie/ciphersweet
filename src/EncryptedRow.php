@@ -34,6 +34,11 @@ class EncryptedRow
     protected $blindIndexes = [];
 
     /**
+     * @var bool $flatIndexes
+     */
+    protected $flatIndexes = false;
+
+    /**
      * @var array<string, CompoundIndex> $compoundIndexes
      */
     protected $compoundIndexes = [];
@@ -48,11 +53,13 @@ class EncryptedRow
      *
      * @param CipherSweet $engine
      * @param string $tableName
+     * @param bool $useFlatIndexes
      */
-    public function __construct(CipherSweet $engine, $tableName)
+    public function __construct(CipherSweet $engine, $tableName, $useFlatIndexes = false)
     {
         $this->engine = $engine;
         $this->tableName = $tableName;
+        $this->flatIndexes = $useFlatIndexes;
     }
 
     /**
@@ -178,7 +185,7 @@ class EncryptedRow
      *
      * @param string $indexName
      * @param array $row
-     * @return array<string, string>
+     * @return array<string, string>|string
      *
      * @throws ArrayKeyException
      * @throws BlindIndexNotFoundException
@@ -209,7 +216,7 @@ class EncryptedRow
      * object, calculated from the input array.
      *
      * @param array $row
-     * @return array<string, array<string, string>>
+     * @return array<string, array<string, string>|string>
      *
      * @throws ArrayKeyException
      * @throws Exception\CryptoOperationException
@@ -356,7 +363,7 @@ class EncryptedRow
      * Calling encryptRow() and getAllBlindIndexes() is equivalent.
      *
      * @param array<string, int|float|string|bool|null> $row
-     * @return array{0: array<string, string>, 1: array<string, array<string, string>>}
+     * @return array{0: array<string, string>, 1: array<string, array<string, string>|string>}
      *
      * @throws ArrayKeyException
      * @throws Exception\CryptoOperationException
@@ -400,7 +407,7 @@ class EncryptedRow
      * @param array $row
      * @param string $column
      * @param BlindIndex $index
-     * @return array<string, string>
+     * @return array<string, string>|string
      *
      * @throws ArrayKeyException
      * @throws Exception\CryptoOperationException
@@ -413,6 +420,16 @@ class EncryptedRow
             $this->tableName,
             $column
         );
+        if ($this->flatIndexes) {
+            return Hex::encode(
+                $this->calcBlindIndexRaw(
+                    $row,
+                    $column,
+                    $index,
+                    $key
+                )
+            );
+        }
 
         $k = $this->engine->getIndexTypeColumn(
             $this->tableName,
@@ -439,7 +456,7 @@ class EncryptedRow
      * @param array $row
      * @param CompoundIndex $index
      *
-     * @return array<string, string>
+     * @return array<string, string>|string
      * @throws Exception\CryptoOperationException
      */
     protected function calcCompoundIndex(array $row, CompoundIndex $index)
@@ -449,6 +466,15 @@ class EncryptedRow
             $this->tableName,
             Constants::COMPOUND_SPECIAL
         );
+        if ($this->flatIndexes) {
+            return Hex::encode(
+                $this->calcCompoundIndexRaw(
+                    $row,
+                    $index,
+                    $key
+                )
+            );
+        }
 
         $k = $this->engine->getIndexTypeColumn(
             $this->tableName,
@@ -679,5 +705,23 @@ class EncryptedRow
     public function getEngine()
     {
         return $this->engine;
+    }
+
+    /**
+     * @return bool
+     */
+    public function getFlatIndexes()
+    {
+        return $this->flatIndexes;
+    }
+
+    /**
+     * @param bool $bool
+     * @return self
+     */
+    public function setFlatIndexes($bool)
+    {
+        $this->flatIndexes = $bool;
+        return $this;
     }
 }

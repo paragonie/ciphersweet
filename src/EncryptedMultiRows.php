@@ -18,6 +18,11 @@ class EncryptedMultiRows
     protected $engine;
 
     /**
+     * @var bool $flatIndexes
+     */
+    protected $flatIndexes;
+
+    /**
      * @var array<string, EncryptedRow> $tables
      */
     protected $tables = [];
@@ -26,10 +31,12 @@ class EncryptedMultiRows
      * EncryptedFieldSet constructor.
      *
      * @param CipherSweet $engine
+     * @param bool $useFlatIndexes
      */
-    public function __construct(CipherSweet $engine)
+    public function __construct(CipherSweet $engine, $useFlatIndexes = false)
     {
         $this->engine = $engine;
+        $this->flatIndexes = $useFlatIndexes;
     }
 
     /**
@@ -269,7 +276,7 @@ class EncryptedMultiRows
      * @param string $tableName
      * @param string $indexName
      * @param array $row
-     * @return array<string, string>
+     * @return array<string, string>|string
      *
      * @throws ArrayKeyException
      * @throws BlindIndexNotFoundException
@@ -287,7 +294,7 @@ class EncryptedMultiRows
      *
      * @param string $tableName
      * @param array $row
-     * @return array<string, array<string, string>>
+     * @return array<string, array<string, string>|string>
      *
      * @throws ArrayKeyException
      * @throws CryptoOperationException
@@ -313,7 +320,7 @@ class EncryptedMultiRows
      * ]
      *
      * @param array<string, array> $rows
-     * @return array<string, array<string, array<string, string>>>
+     * @return array<string, array<string, array<string, string>|string>>
      *
      * @throws ArrayKeyException
      * @throws Exception\CryptoOperationException
@@ -346,6 +353,7 @@ class EncryptedMultiRows
         }
         /** @var EncryptedRow $encryptedRow */
         $encryptedRow = $this->tables[$tableName];
+        $encryptedRow->setFlatIndexes($this->flatIndexes);
         return $encryptedRow;
     }
 
@@ -384,7 +392,7 @@ class EncryptedMultiRows
      * ]
      *
      * @param array<string, array<string, string|int|float|bool|null>> $rows
-     * @return array{0:array<string, array<string, string>>, 1:array<string, array<string, array<string, string>>>}
+     * @return array{0:array<string, array<string, string>>, 1:array<string, array<string, array<string, string>|string>>}
      *
      * @throws ArrayKeyException
      * @throws CryptoOperationException
@@ -403,6 +411,7 @@ class EncryptedMultiRows
                     ->encryptRow($row);
                 $indexes[$table] = $this
                     ->getEncryptedRowObjectForTable($table)
+                    ->setFlatIndexes($this->flatIndexes)
                     ->getAllBlindIndexes($row);
             }
         }
@@ -423,5 +432,23 @@ class EncryptedMultiRows
     public function getEngine()
     {
         return $this->engine;
+    }
+
+    /**
+     * @return bool
+     */
+    public function getFlatIndexes()
+    {
+        return $this->flatIndexes;
+    }
+
+    /**
+     * @param bool $bool
+     * @return self
+     */
+    public function setFlatIndexes($bool)
+    {
+        $this->flatIndexes = $bool;
+        return $this;
     }
 }

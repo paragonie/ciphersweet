@@ -83,12 +83,16 @@ class ModernCrypto implements BackendInterface
         $nonce = Binary::safeSubstr($decoded, 0, self::NONCE_SIZE);
         $encrypted = Binary::safeSubstr($decoded, self::NONCE_SIZE);
 
-        return SodiumCompat::crypto_aead_xchacha20poly1305_ietf_decrypt(
+        $plaintext = SodiumCompat::crypto_aead_xchacha20poly1305_ietf_decrypt(
             $encrypted,
             $nonce . $aad,
             $nonce,
             $key->getRawKey()
         );
+        if (!is_string($plaintext)) {
+            throw new \SodiumException("Invalid ciphertext");
+        }
+        return $plaintext;
     }
 
     /**

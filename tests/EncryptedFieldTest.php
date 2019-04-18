@@ -240,6 +240,48 @@ class EncryptedFieldTest extends TestCase
      * @throws BlindIndexNotFoundException
      * @throws CryptoOperationException
      */
+    public function testFIPSBlindIndexFlatAndFast()
+    {
+        $ssn = $this->getExampleField($this->fipsEngine, false, true);
+        $ssn->setFlatIndexes(true);
+
+        $this->assertEquals(
+            '924b',
+            $ssn->getBlindIndex('111-11-1111', 'contact_ssn_last_four')
+        );
+        $this->assertEquals(
+            'be3b',
+            $ssn->getBlindIndex('111-11-2222', 'contact_ssn_last_four')
+        );
+        $this->assertEquals(
+            '3cd3',
+            $ssn->getBlindIndex('123-45-6788', 'contact_ssn_last_four')
+        );
+        $this->assertEquals(
+            '4bb1',
+            $ssn->getBlindIndex('123-45-6789', 'contact_ssn_last_four')
+        );
+        $this->assertEquals(
+            '256e1182',
+            $ssn->getBlindIndex('invalid guess 123', 'contact_ssn')
+        );
+        $this->assertEquals(
+            'd2a774dc',
+            $ssn->getBlindIndex('123-45-6789', 'contact_ssn')
+        );
+
+        $random = $this->getExampleField($this->fipsRandom, true, true);
+        $this->assertNotEquals(
+            'ee10e07b213a922075a6ada22514528c',
+            $random->getBlindIndex('123-45-6789', 'contact_ssn')
+        );
+    }
+
+    /**
+     * @throws BlindIndexNameCollisionException
+     * @throws BlindIndexNotFoundException
+     * @throws CryptoOperationException
+     */
     public function testModernBlindIndex()
     {
         if (!\ParagonIE_Sodium_Compat::crypto_pwhash_is_available()) {
@@ -278,6 +320,7 @@ class EncryptedFieldTest extends TestCase
             $random->getBlindIndex('123-45-6789', 'contact_ssn')
         );
     }
+
     /**
      * @throws BlindIndexNameCollisionException
      * @throws BlindIndexNotFoundException
@@ -314,6 +357,47 @@ class EncryptedFieldTest extends TestCase
         $random = $this->getExampleField($this->naclRandom, true, true);
         $this->assertNotEquals(
             ['type' => '2iztg3wbd7j5a', 'value' => '499db5085e715c2f167c1e2c02f1c80f'],
+            $random->getBlindIndex('123-45-6789', 'contact_ssn')
+        );
+    }
+
+    /**
+     * @throws BlindIndexNameCollisionException
+     * @throws BlindIndexNotFoundException
+     * @throws CryptoOperationException
+     */
+    public function testModernBlindIndexFlatAndFast()
+    {
+        $ssn = $this->getExampleField($this->naclEngine, false, true);
+        $ssn->setFlatIndexes(true);
+        $this->assertEquals(
+            '7843',
+            $ssn->getBlindIndex('111-11-1111', 'contact_ssn_last_four')
+        );
+        $this->assertEquals(
+            'd246',
+            $ssn->getBlindIndex('111-11-2222', 'contact_ssn_last_four')
+        );
+        $this->assertEquals(
+            '4882',
+            $ssn->getBlindIndex('123-45-6788', 'contact_ssn_last_four')
+        );
+        $this->assertEquals(
+            '92c8',
+            $ssn->getBlindIndex('123-45-6789', 'contact_ssn_last_four')
+        );
+        $this->assertEquals(
+            'b6fd11a1',
+            $ssn->getBlindIndex('invalid guess 123', 'contact_ssn')
+        );
+        $this->assertEquals(
+            '30c7cc68',
+            $ssn->getBlindIndex('123-45-6789', 'contact_ssn')
+        );
+
+        $random = $this->getExampleField($this->naclRandom, true, true);
+        $this->assertNotEquals(
+            '499db5085e715c2f167c1e2c02f1c80f',
             $random->getBlindIndex('123-45-6789', 'contact_ssn')
         );
     }
