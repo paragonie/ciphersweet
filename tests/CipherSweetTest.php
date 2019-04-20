@@ -4,8 +4,7 @@ namespace ParagonIE\CipherSweet\Tests;
 use ParagonIE\CipherSweet\Backend\FIPSCrypto;
 use ParagonIE\CipherSweet\Backend\ModernCrypto;
 use ParagonIE\CipherSweet\CipherSweet;
-use ParagonIE\CipherSweet\Contract\BackendInterface;
-use ParagonIE\CipherSweet\KeyProvider\ArrayProvider;
+use ParagonIE\CipherSweet\KeyProvider\StringProvider;
 use ParagonIE\ConstantTime\Hex;
 use PHPUnit\Framework\TestCase;
 
@@ -15,14 +14,6 @@ use PHPUnit\Framework\TestCase;
  */
 class CipherSweetTest extends TestCase
 {
-    public function testDefaultBackend()
-    {
-        $this->assertInstanceOf(
-            BackendInterface::class,
-            CipherSweet::getDefaultBackend()
-        );
-    }
-
     /**
      * @throws \ParagonIE\CipherSweet\Exception\ArrayKeyException
      * @throws \ParagonIE\CipherSweet\Exception\CryptoOperationException
@@ -31,24 +22,12 @@ class CipherSweetTest extends TestCase
     {
         $fips = new FIPSCrypto();
         $nacl = new ModernCrypto();
-        $random = \random_bytes(32);
 
-        $fipsEngine = new CipherSweet(
-            new ArrayProvider(
-                [
-                    ArrayProvider::INDEX_SYMMETRIC_KEY => $random
-                ]
-            ),
-            $fips
-        );
-        $naclEngine = new CipherSweet(
-            new ArrayProvider(
-                [
-                    ArrayProvider::INDEX_SYMMETRIC_KEY => $random
-                ]
-            ),
-            $nacl
-        );
+        $random = \random_bytes(32);
+        $provider = new StringProvider($random);
+
+        $fipsEngine = new CipherSweet($provider, $fips);
+        $naclEngine = new CipherSweet($provider, $nacl);
 
         $this->assertInstanceOf(FIPSCrypto::class, $fipsEngine->getBackend());
         $this->assertInstanceOf(ModernCrypto::class, $naclEngine->getBackend());

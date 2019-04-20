@@ -2,7 +2,7 @@
 namespace ParagonIE\CipherSweet\Tests\Backend;
 
 use ParagonIE\CipherSweet\Backend\ModernCrypto;
-use ParagonIE\CipherSweet\KeyProvider\ArrayProvider;
+use ParagonIE\CipherSweet\KeyProvider\StringProvider;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -17,9 +17,7 @@ class ModernCryptoTest extends TestCase
     public function testEncrypt()
     {
         $nacl = new ModernCrypto();
-        $keyProvider = new ArrayProvider([
-            ArrayProvider::INDEX_SYMMETRIC_KEY => random_bytes(32)
-        ]);
+        $keyProvider = new StringProvider(random_bytes(32));
 
         $message = 'This is just a test message';
         $cipher = $nacl->encrypt($message, $keyProvider->getSymmetricKey());
