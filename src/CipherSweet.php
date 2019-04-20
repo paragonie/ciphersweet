@@ -50,6 +50,7 @@ final class CipherSweet
      * @param string $fieldName
      * @param string $indexName
      * @return string
+     * @throws \SodiumException
      */
     public function getIndexTypeColumn(
         $tableName,
