@@ -2,6 +2,7 @@
 namespace ParagonIE\CipherSweet;
 
 use ParagonIE\CipherSweet\Backend\Key\SymmetricKey;
+use ParagonIE\CipherSweet\Backend\ModernCrypto;
 use ParagonIE\CipherSweet\Contract\BackendInterface;
 use ParagonIE\CipherSweet\Contract\KeyProviderInterface;
 use ParagonIE\CipherSweet\Exception\CryptoOperationException;
@@ -30,10 +31,10 @@ final class CipherSweet
      */
     public function __construct(
         KeyProviderInterface $keyProvider,
-        BackendInterface $backend
+        BackendInterface $backend = null
     ) {
         $this->keyProvider = $keyProvider;
-        $this->backend = $backend;
+        $this->backend = $backend ?: new ModernCrypto;
     }
 
     /**
