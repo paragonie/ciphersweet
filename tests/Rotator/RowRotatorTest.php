@@ -1,8 +1,6 @@
 <?php
 namespace ParagonIE\CipherSweet\Tests\Rotator;
 
-use ParagonIE\CipherSweet\Backend\FIPSCrypto;
-use ParagonIE\CipherSweet\Backend\ModernCrypto;
 use ParagonIE\CipherSweet\BlindIndex;
 use ParagonIE\CipherSweet\CipherSweet;
 use ParagonIE\CipherSweet\EncryptedRow;
@@ -10,7 +8,6 @@ use ParagonIE\CipherSweet\Exception\ArrayKeyException;
 use ParagonIE\CipherSweet\Exception\BlindIndexNameCollisionException;
 use ParagonIE\CipherSweet\Exception\CryptoOperationException;
 use ParagonIE\CipherSweet\Exception\InvalidCiphertextException;
-use ParagonIE\CipherSweet\KeyProvider\ArrayProvider;
 use ParagonIE\CipherSweet\KeyRotation\RowRotator;
 use ParagonIE\CipherSweet\Tests\CreatesEngines;
 use ParagonIE\CipherSweet\Transformation\LastFourDigits;
