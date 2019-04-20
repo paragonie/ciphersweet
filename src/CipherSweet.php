@@ -27,7 +27,7 @@ final class CipherSweet
      * CipherSweet constructor.
      *
      * @param KeyProviderInterface $keyProvider
-     * @param BackendInterface $backend
+     * @param BackendInterface|null $backend
      */
     public function __construct(
         KeyProviderInterface $keyProvider,
