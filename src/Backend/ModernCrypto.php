@@ -209,7 +209,6 @@ class ModernCrypto implements BackendInterface
     public function deriveKeyFromPassword($password, $salt)
     {
         return new SymmetricKey(
-            $this,
             SodiumCompat::crypto_pwhash(
                 32,
                 $password,

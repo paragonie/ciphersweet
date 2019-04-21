@@ -4,12 +4,8 @@ namespace ParagonIE\CipherSweet\Tests;
 use ParagonIE\CipherSweet\BlindIndex;
 use ParagonIE\CipherSweet\CipherSweet;
 use ParagonIE\CipherSweet\EncryptedMultiRows;
-use ParagonIE\CipherSweet\Backend\FIPSCrypto;
-use ParagonIE\CipherSweet\Backend\ModernCrypto;
 use ParagonIE\CipherSweet\Exception\InvalidCiphertextException;
-use ParagonIE\CipherSweet\KeyProvider\StringProvider;
 use ParagonIE\CipherSweet\Transformation\Lowercase;
-use ParagonIE\ConstantTime\Hex;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -18,6 +14,8 @@ use PHPUnit\Framework\TestCase;
  */
 class EncryptedMultiRowsTest extends TestCase
 {
+    use CreatesEngines;
+
     /**
      * @var CipherSweet $fipsEngine
      */
@@ -43,38 +41,11 @@ class EncryptedMultiRowsTest extends TestCase
      */
     public function setUp()
     {
-        $fips = new FIPSCrypto();
-        $nacl = new ModernCrypto();
+        $this->fipsEngine = $this->createFipsEngine('4e1c44f87b4cdf21808762970b356891db180a9dd9850e7baf2a79ff3ab8a2fc');
+        $this->naclEngine = $this->createModernEngine('4e1c44f87b4cdf21808762970b356891db180a9dd9850e7baf2a79ff3ab8a2fc');
 
-        $this->fipsEngine = new CipherSweet(
-            new StringProvider(
-                $fips,
-                Hex::decode(
-                    '4e1c44f87b4cdf21808762970b356891db180a9dd9850e7baf2a79ff3ab8a2fc'
-                )
-            )
-        );
-        $this->naclEngine = new CipherSweet(
-            new StringProvider(
-                $nacl,
-                Hex::decode(
-                    '4e1c44f87b4cdf21808762970b356891db180a9dd9850e7baf2a79ff3ab8a2fc'
-                )
-            )
-        );
-
-        $this->fipsRandom = new CipherSweet(
-            new StringProvider(
-                $fips,
-                \random_bytes(32)
-            )
-        );
-        $this->naclRandom = new CipherSweet(
-            new StringProvider(
-                $nacl,
-                \random_bytes(32)
-            )
-        );
+        $this->fipsRandom = $this->createFipsEngine();
+        $this->naclRandom = $this->createModernEngine();
     }
 
     public function testFlatInherits()

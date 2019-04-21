@@ -1,8 +1,6 @@
 <?php
 namespace ParagonIE\CipherSweet\Tests\Rotator;
 
-use ParagonIE\CipherSweet\Backend\FIPSCrypto;
-use ParagonIE\CipherSweet\Backend\ModernCrypto;
 use ParagonIE\CipherSweet\BlindIndex;
 use ParagonIE\CipherSweet\CipherSweet;
 use ParagonIE\CipherSweet\EncryptedMultiRows;
@@ -10,8 +8,8 @@ use ParagonIE\CipherSweet\Exception\ArrayKeyException;
 use ParagonIE\CipherSweet\Exception\BlindIndexNameCollisionException;
 use ParagonIE\CipherSweet\Exception\CryptoOperationException;
 use ParagonIE\CipherSweet\Exception\InvalidCiphertextException;
-use ParagonIE\CipherSweet\KeyProvider\ArrayProvider;
 use ParagonIE\CipherSweet\KeyRotation\MultiRowsRotator;
+use ParagonIE\CipherSweet\Tests\CreatesEngines;
 use ParagonIE\CipherSweet\Transformation\Lowercase;
 use PHPUnit\Framework\TestCase;
 
@@ -21,6 +19,8 @@ use PHPUnit\Framework\TestCase;
  */
 class MultiRowsRotatorTest extends TestCase
 {
+    use CreatesEngines;
+
     /**
      * @var CipherSweet $fipsEngine
      */
@@ -47,22 +47,8 @@ class MultiRowsRotatorTest extends TestCase
      */
     public function setUp()
     {
-        $this->fipsRandom = new CipherSweet(
-            new ArrayProvider(
-                new FIPSCrypto(),
-                [
-                    ArrayProvider::INDEX_SYMMETRIC_KEY => \random_bytes(32)
-                ]
-            )
-        );
-        $this->naclRandom = new CipherSweet(
-            new ArrayProvider(
-                new ModernCrypto(),
-                [
-                    ArrayProvider::INDEX_SYMMETRIC_KEY => \random_bytes(32)
-                ]
-            )
-        );
+        $this->fipsRandom = $this->createFipsEngine();
+        $this->naclRandom = $this->createModernEngine();
     }
 
     /**

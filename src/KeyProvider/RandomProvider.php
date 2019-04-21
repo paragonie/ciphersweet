@@ -32,14 +32,6 @@ class RandomProvider implements KeyProviderInterface
     }
 
     /**
-     * @return BackendInterface
-     */
-    public function getBackend()
-    {
-        return $this->backend;
-    }
-
-    /**
      * @return SymmetricKey
      * @throws \Exception
      */
@@ -47,12 +39,10 @@ class RandomProvider implements KeyProviderInterface
     {
         if ($this->backend instanceof FIPSCrypto) {
             return new SymmetricKey(
-                $this->backend,
                 \random_bytes(32)
             );
         } elseif ($this->backend instanceof ModernCrypto) {
             return new SymmetricKey(
-                $this->backend,
                 \ParagonIE_Sodium_Compat::crypto_secretbox_keygen()
             );
         }

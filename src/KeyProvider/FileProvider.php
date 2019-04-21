@@ -2,7 +2,6 @@
 namespace ParagonIE\CipherSweet\KeyProvider;
 
 use ParagonIE\CipherSweet\Backend\Key\SymmetricKey;
-use ParagonIE\CipherSweet\Contract\BackendInterface;
 use ParagonIE\CipherSweet\Contract\KeyProviderInterface;
 use ParagonIE\CipherSweet\Exception\KeyProviderException;
 
@@ -13,11 +12,6 @@ use ParagonIE\CipherSweet\Exception\KeyProviderException;
 class FileProvider implements KeyProviderInterface
 {
     /**
-     * @var BackendInterface $backend
-     */
-    protected $backend;
-
-    /**
      * @var string|null $symmetricKeyPath
      */
     protected $symmetricKeyPath = null;
@@ -25,23 +19,12 @@ class FileProvider implements KeyProviderInterface
     /**
      * FileProvider constructor.
      *
-     * @param BackendInterface $backend
      * @param string|null $symmetricKeyPath
      */
     public function __construct(
-        BackendInterface $backend,
         $symmetricKeyPath = null
     ) {
-        $this->backend = $backend;
         $this->symmetricKeyPath = $symmetricKeyPath;
-    }
-
-    /**
-     * @return BackendInterface
-     */
-    public function getBackend()
-    {
-        return $this->backend;
     }
 
     /**
@@ -58,7 +41,7 @@ class FileProvider implements KeyProviderInterface
             throw new KeyProviderException('Could not read symmetric key from file.');
         }
 
-        return new SymmetricKey($this->backend, $contents);
+        return new SymmetricKey($contents);
     }
 
     /**

@@ -2,7 +2,6 @@
 namespace ParagonIE\CipherSweet\KeyProvider;
 
 use ParagonIE\CipherSweet\Backend\Key\SymmetricKey;
-use ParagonIE\CipherSweet\Contract\BackendInterface;
 use ParagonIE\CipherSweet\Contract\KeyProviderInterface;
 use ParagonIE\CipherSweet\Exception\CryptoOperationException;
 use ParagonIE\CipherSweet\Util;
@@ -17,11 +16,6 @@ use ParagonIE\ConstantTime\Hex;
 class StringProvider implements KeyProviderInterface
 {
     /**
-     * @var BackendInterface $backend
-     */
-    private $backend;
-
-    /**
      * @var string $rootSymmetricKey
      */
     private $rootSymmetricKey;
@@ -29,14 +23,12 @@ class StringProvider implements KeyProviderInterface
     /**
      * StringProvider constructor.
      *
-     * @param BackendInterface $backend
      * @param string $rawKey
      *
      * @throws CryptoOperationException
      */
-    public function __construct(BackendInterface $backend, $rawKey = '')
+    public function __construct($rawKey = '')
     {
-        $this->backend = $backend;
         if (Binary::safeStrlen($rawKey) === 64) {
             $this->rootSymmetricKey = Hex::decode($rawKey);
         } elseif (Binary::safeStrlen($rawKey) === 44) {
@@ -59,19 +51,11 @@ class StringProvider implements KeyProviderInterface
     }
 
     /**
-     * @return BackendInterface
-     */
-    public function getBackend()
-    {
-        return $this->backend;
-    }
-
-    /**
      * @return SymmetricKey
      */
     public function getSymmetricKey()
     {
-        return new SymmetricKey($this->backend, $this->rootSymmetricKey);
+        return new SymmetricKey($this->rootSymmetricKey);
     }
 
     /**

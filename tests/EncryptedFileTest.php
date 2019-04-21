@@ -1,13 +1,9 @@
 <?php
 namespace ParagonIE\CipherSweet\Tests;
 
-use ParagonIE\CipherSweet\Backend\FIPSCrypto;
-use ParagonIE\CipherSweet\Backend\ModernCrypto;
-use ParagonIE\CipherSweet\CipherSweet;
 use ParagonIE\CipherSweet\EncryptedFile;
 use ParagonIE\CipherSweet\Exception\CryptoOperationException;
 use ParagonIE\CipherSweet\Exception\FilesystemException;
-use ParagonIE\CipherSweet\KeyProvider\StringProvider;
 use ParagonIE\ConstantTime\Binary;
 use ParagonIE\ConstantTime\Hex;
 use PHPUnit\Framework\TestCase;
@@ -18,6 +14,8 @@ use PHPUnit\Framework\TestCase;
  */
 class EncryptedFileTest extends TestCase
 {
+    use CreatesEngines;
+
     /** @var EncryptedFile $fips */
     private $fips;
 
@@ -30,25 +28,19 @@ class EncryptedFileTest extends TestCase
     public function setUp()
     {
         $this->fips = new EncryptedFile(
-            new CipherSweet(
-                new StringProvider(
-                    new FIPSCrypto(),
-                     Hex::decode(
-                        '4e1c44f87b4cdf21808762970b356891db180a9dd9850e7baf2a79ff3ab8a2fc'
-                    )
-                )
-            )
+            $this->createFipsEngine('4e1c44f87b4cdf21808762970b356891db180a9dd9850e7baf2a79ff3ab8a2fc')
         );
+
         $this->nacl = new EncryptedFile(
-            new CipherSweet(
-                new StringProvider(
-                    new ModernCrypto(),
-                    Hex::decode(
-                        '4e1c44f87b4cdf21808762970b356891db180a9dd9850e7baf2a79ff3ab8a2fc'
-                    )
-                )
-            )
+            $this->createModernEngine('4e1c44f87b4cdf21808762970b356891db180a9dd9850e7baf2a79ff3ab8a2fc')
         );
+    }
+
+    public function tearDown()
+    {
+        if (file_exists(__DIR__ . '/scratch.txt')) {
+            unlink(__DIR__ . '/scratch.txt');
+        }
     }
 
     /**

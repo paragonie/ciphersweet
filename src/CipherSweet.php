@@ -1,13 +1,11 @@
 <?php
 namespace ParagonIE\CipherSweet;
 
-use ParagonIE\CipherSweet\Backend\FIPSCrypto;
 use ParagonIE\CipherSweet\Backend\Key\SymmetricKey;
 use ParagonIE\CipherSweet\Backend\ModernCrypto;
 use ParagonIE\CipherSweet\Contract\BackendInterface;
 use ParagonIE\CipherSweet\Contract\KeyProviderInterface;
 use ParagonIE\CipherSweet\Exception\CryptoOperationException;
-use ParagonIE_Sodium_Compat as SodiumCompat;
 
 /**
  * Class CipherSweet
@@ -36,10 +34,7 @@ final class CipherSweet
         BackendInterface $backend = null
     ) {
         $this->keyProvider = $keyProvider;
-        if (\is_null($backend)) {
-            $backend = $this->keyProvider->getBackend();
-        }
-        $this->backend = $backend;
+        $this->backend = $backend ?: new ModernCrypto;
     }
 
     /**
@@ -55,6 +50,7 @@ final class CipherSweet
      * @param string $fieldName
      * @param string $indexName
      * @return string
+     * @throws \SodiumException
      */
     public function getIndexTypeColumn(
         $tableName,
@@ -84,7 +80,6 @@ final class CipherSweet
     public function getBlindIndexRootKey($tableName, $fieldName)
     {
         return new SymmetricKey(
-            $this->backend,
             Util::HKDF(
                 $this->keyProvider->getSymmetricKey(),
                 $tableName,
@@ -108,36 +103,11 @@ final class CipherSweet
     public function getFieldSymmetricKey($tableName, $fieldName)
     {
         return new SymmetricKey(
-            $this->backend,
             Util::HKDF(
                 $this->keyProvider->getSymmetricKey(),
                 $tableName,
                 Constants::DS_FENC . $fieldName
             )
         );
-    }
-
-    /**
-     * Return the default backend for a given environment. Note that the
-     * stability of the result of this static method should not be depended on.
-     *
-     * @return BackendInterface
-     */
-    public static function getDefaultBackend()
-    {
-        if (SodiumCompat::crypto_pwhash_is_available()) {
-            if (PHP_VERSION_ID >= 70000 && \extension_loaded('sodium')) {
-                return new ModernCrypto();
-            }
-            if (PHP_VERSION_ID >= 70000 && \extension_loaded('libsodium')) {
-                // This is a little weird but OK
-                return new ModernCrypto();
-            }
-            if (PHP_VERSION_ID < 70000 && \extension_loaded('libsodium')) {
-                return new ModernCrypto();
-            }
-        }
-        // FIPS mode will always work... but it only uses FIPS algorithms.
-        return new FIPSCrypto();
     }
 }
