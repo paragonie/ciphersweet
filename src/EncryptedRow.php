@@ -192,7 +192,7 @@ class EncryptedRow
      * @throws ArrayKeyException
      * @throws BlindIndexNotFoundException
      * @throws Exception\CryptoOperationException
-     * @throws \SodiumException
+     * @throws SodiumException
      */
     public function getBlindIndex($indexName, array $row)
     {
@@ -222,7 +222,7 @@ class EncryptedRow
      *
      * @throws ArrayKeyException
      * @throws Exception\CryptoOperationException
-     * @throws \SodiumException
+     * @throws SodiumException
      */
     public function getAllBlindIndexes(array $row)
     {
@@ -309,7 +309,7 @@ class EncryptedRow
      * @param array<string, string> $row
      * @return array<string, string|int|float|bool|null>
      * @throws Exception\CryptoOperationException
-     * @throws \SodiumException
+     * @throws SodiumException
      */
     public function decryptRow(array $row)
     {
@@ -349,7 +349,7 @@ class EncryptedRow
      * @return array<string, string>
      * @throws ArrayKeyException
      * @throws Exception\CryptoOperationException
-     * @throws \SodiumException
+     * @throws SodiumException
      */
     public function encryptRow(array $row)
     {
@@ -541,7 +541,7 @@ class EncryptedRow
      * @return string
      * @throws Exception\CryptoOperationException
      * @throws ArrayKeyException
-     * @throws \SodiumException
+     * @throws SodiumException
      */
     protected function calcBlindIndexRaw(
         array $row,
@@ -668,7 +668,7 @@ class EncryptedRow
      * @param string $data
      * @param string $type
      * @return int|string|float|bool|null
-     * @throws \SodiumException
+     * @throws SodiumException
      */
     protected function convertFromString($data, $type)
     {
@@ -696,7 +696,7 @@ class EncryptedRow
      * @param int|string|float|bool|null $data
      * @param string $type
      * @return string
-     * @throws \SodiumException
+     * @throws SodiumException
      */
     protected function convertToString($data, $type)
     {

@@ -219,7 +219,7 @@ class EncryptedMultiRows
      * @return array<string, array<string, string|int|float|bool|null>>
      *
      * @throws CryptoOperationException
-     * @throws \SodiumException
+     * @throws SodiumException
      */
     public function decryptManyRows(array $rows)
     {
@@ -254,7 +254,7 @@ class EncryptedMultiRows
      *
      * @throws ArrayKeyException
      * @throws CryptoOperationException
-     * @throws \SodiumException
+     * @throws SodiumException
      */
     public function encryptManyRows(array $rows)
     {
@@ -282,7 +282,7 @@ class EncryptedMultiRows
      * @throws ArrayKeyException
      * @throws BlindIndexNotFoundException
      * @throws CryptoOperationException
-     * @throws \SodiumException
+     * @throws SodiumException
      */
     public function getBlindIndex($tableName, $indexName, array $row)
     {
@@ -299,7 +299,7 @@ class EncryptedMultiRows
      *
      * @throws ArrayKeyException
      * @throws CryptoOperationException
-     * @throws \SodiumException
+     * @throws SodiumException
      */
     public function getBlindIndexesForTable($tableName, array $row)
     {
@@ -325,7 +325,7 @@ class EncryptedMultiRows
      *
      * @throws ArrayKeyException
      * @throws Exception\CryptoOperationException
-     * @throws \SodiumException
+     * @throws SodiumException
      */
     public function getAllBlindIndexes(array $rows)
     {
@@ -429,7 +429,7 @@ class EncryptedMultiRows
      *
      * @throws ArrayKeyException
      * @throws CryptoOperationException
-     * @throws \SodiumException
+     * @throws SodiumException
      */
     public function prepareForStorage(array $rows)
     {
