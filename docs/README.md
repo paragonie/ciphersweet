@@ -251,6 +251,28 @@ var_dump($ciphertext, $indexes);
 string(73) "nacl:jIRj08YiifK86YlMBfulWXbatpowNYf4_vgjultNT1Tnx2XH9ecs1TqD59MPs67Dp3ui"
 array(2) {
   ["contact_ssn_last_four"]=>
+  string(4) "2acb"
+  ["contact_ssn"]=>
+  string(8) "311314c1"
+}
+*/
+```
+
+If you want the old "typed" index style, simply call `setTypedIndexes(true)` on any
+`EncryptedField`, `EncryptedRow` or `EncryptedMultiRows` object.
+
+```php
+$ssn->setTypedIndexes(true);
+/** 
+ * @var string $ciphertext
+ * @var array<string, string> $indexes
+ */
+list ($ciphertext, $indexes) = $ssn->prepareForStorage($contactInfo['ssn']);
+var_dump($ciphertext, $indexes);
+/*
+string(73) "nacl:jIRj08YiifK86YlMBfulWXbatpowNYf4_vgjultNT1Tnx2XH9ecs1TqD59MPs67Dp3ui"
+array(2) {
+  ["contact_ssn_last_four"]=>
   array(2) {
     ["type"]=>
     string(13) "3dywyifwujcu2"
@@ -264,27 +286,6 @@ array(2) {
     ["value"]=>
     string(8) "311314c1"
   }
-}
-*/
-```
-
-Since version 1.10.0, you can call `setFlatIndexes(true)` on any `EncryptedField`, `EncryptedRow`,
-and `EncryptedMultiRows` object to only get the flat version.
-
-```php
-/** 
- * @var string $ciphertext
- * @var array<string, string> $indexes
- */
-list ($ciphertext, $indexes) = $ssn->prepareForStorage($contactInfo['ssn']);
-var_dump($ciphertext, $indexes);
-/*
-string(73) "nacl:jIRj08YiifK86YlMBfulWXbatpowNYf4_vgjultNT1Tnx2XH9ecs1TqD59MPs67Dp3ui"
-array(2) {
-  ["contact_ssn_last_four"]=>
-  string(4) "2acb"
-  ["contact_ssn"]=>
-  string(8) "311314c1"
 }
 */
 ```
@@ -332,31 +333,16 @@ Which should result in the following (for the example key):
 ```php
 var_dump($lastFour);
 /*
-array(2) {
-  ["type"]=>
-  string(13) "3dywyifwujcu2"
-  ["value"]=>
-  string(4) "2acb"
-}
+string(4) "2acb"
 */
 
 var_dump($indexes);
 /*
 array(2) {
   ["contact_ssn_last_four"]=>
-  array(2) {
-    ["type"]=>
-    string(13) "3dywyifwujcu2"
-    ["value"]=>
-    string(4) "2acb"
-  }
+  string(4) "2acb"
   ["contact_ssn"]=>
-  array(2) {
-    ["type"]=>
-    string(13) "2iztg3wbd7j5a"
-    ["value"]=>
-    string(8) "311314c1"
-  }
+  string(8) "311314c1"
 }
 */
 ```
@@ -432,19 +418,9 @@ array(2) {
   [1]=>
   array(2) {
     ["contact_ssn_last_four"]=>
-    array(2) {
-      ["type"]=>
-      string(13) "3dywyifwujcu2"
-      ["value"]=>
-      string(8) "2acbcd1c"
-    }
+    string(8) "2acbcd1c"
     ["contact_ssnlast4_hivstatus"]=>
-    array(2) {
-      ["type"]=>
-      string(13) "nqtcc56kcf4qg"
-      ["value"]=>
-      string(8) "cbfd03c0"
-    }
+    string(8) "cbfd03c0"
   }
 }
 */
@@ -455,8 +431,8 @@ in a row, and create compound blind indexes based on multiple pieces of
 data in the dataset rather than a single field, without writing a ton of
 glue code.
 
-Since version 1.10.0, you can call `setFlatIndexes(true)` on any `EncryptedField`, `EncryptedRow`,
-and `EncryptedMultiRows` object to only get the flat version.
+If you want the old "typed" index style, simply call `setTypedIndexes(true)` on any
+`EncryptedField`, `EncryptedRow` or `EncryptedMultiRows` object.
 
 ```php
 // Use flat indexes
@@ -484,9 +460,19 @@ array(2) {
   [1]=>
   array(2) {
     ["contact_ssn_last_four"]=>
-    string(8) "2acbcd1c"
+    array(2) {
+      ["type"]=>
+      string(13) "3dywyifwujcu2"
+      ["value"]=>
+      string(8) "2acbcd1c"
+    }
     ["contact_ssnlast4_hivstatus"]=>
-    string(8) "cbfd03c0"
+    array(2) {
+      ["type"]=>
+      string(13) "nqtcc56kcf4qg"
+      ["value"]=>
+      string(8) "cbfd03c0"
+    }
   }
 }
 */
@@ -609,26 +595,11 @@ array(2) {
   [1]=>
   array(3) {
     ["contact_ssn_last_four"]=>
-    array(2) {
-      ["type"]=>
-      string(13) "idlzpypmia6qu"
-      ["value"]=>
-      string(8) "a88e74ad"
-    }
+    string(8) "a88e74ad"
     ["contact_ssnlast4_hivstatus"]=>
-    array(2) {
-      ["type"]=>
-      string(13) "dozudszz2yu5k"
-      ["value"]=>
-      string(8) "417daacf"
-    }
+    string(8) "417daacf"
     ["contact_first_init_last_name"]=>
-    array(2) {
-      ["type"]=>
-      string(13) "w6dsrxbathjze"
-      ["value"]=>
-      string(16) "81f9316ceccea014"
-    }
+    string(16) "81f9316ceccea014"
   }
 }
 */
@@ -715,19 +686,9 @@ array(2) {
   [1]=>
   array(2) {
     ["contact_ssn_last_four"]=>
-    array(2) {
-      ["type"]=>
-      string(13) "idlzpypmia6qu"
-      ["value"]=>
-      string(8) "a88e74ad"
-    }
+    string(8) "a88e74ad"
     ["contact_first_init_last_name"]=>
-    array(2) {
-      ["type"]=>
-      string(13) "w6dsrxbathjze"
-      ["value"]=>
-      string(16) "32ee2a30de9ef264"
-    }
+    string(16) "32ee2a30de9ef264"
   }
 }
 */
@@ -880,12 +841,7 @@ array(2) {
     ["contacts"]=>
     array(1) {
       ["contact_first_init_last_name"]=>
-      array(2) {
-        ["type"]=>
-        string(13) "w6dsrxbathjze"
-        ["value"]=>
-        string(16) "546b1ffd1f83c37a"
-      }
+      string(16) "546b1ffd1f83c37a"
     }
     ["foobar"]=>
     array(0) {

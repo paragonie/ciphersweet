@@ -56,8 +56,8 @@ $db->insert(
         'name' => $contactInfo['name'],
         'email' => $contactInfo['email'],
         'ssn' => $ciphertext,
-        'ssn_idx' => $indexes['contact_ssn']['value'],
-        'ssn_last_four_idx' => $indexes['contact_ssn_last_four']['value']
+        'ssn_idx' => $indexes['contact_ssn'],
+        'ssn_last_four_idx' => $indexes['contact_ssn_last_four']
     ]
 );
 

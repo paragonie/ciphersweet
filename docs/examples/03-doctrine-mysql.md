@@ -168,8 +168,8 @@ list ($ciphertext, $indexes) = $ssnField->prepareForStorage($contactInfo['ssn'])
 
 $contact = new Contact($contactInfo['name'], $contactInfo['email'], $ciphertext);
 $contact = $contact->withIndexes(
-    $indexes['contact_ssn']['value'],
-    $indexes['contact_ssn_last_four']['value']
+    $indexes['contact_ssn'],
+    $indexes['contact_ssn_last_four']
 );
 
 $entityManager->persist($contact);
@@ -181,7 +181,7 @@ $indexValue = $ssnField->getBlindIndex($contactInfo['ssn'], 'contact_ssn_last_fo
 $repository = $entityManager->getRepository('Contact');
 $results = $repository->findBy(
     [
-        'ssn_last_four_idx' => $indexValue['value']
+        'ssn_last_four_idx' => $indexValue
     ]
 );
 

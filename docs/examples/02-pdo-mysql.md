@@ -87,8 +87,8 @@ $stmt = $pdo->prepare($insertQuery);
 $stmt->bindValue('name', $contactInfo['name'], PDO::PARAM_STR);
 $stmt->bindValue('email', $contactInfo['email'], PDO::PARAM_STR);
 $stmt->bindValue('ssn', $ciphertext, PDO::PARAM_STR);
-$stmt->bindValue('ssn_idx', $indexes['contact_ssn']['value'], PDO::PARAM_STR);
-$stmt->bindValue('ssn_last_four_idx', $indexes['contact_ssn_last_four']['value'], PDO::PARAM_STR);
+$stmt->bindValue('ssn_idx', $indexes['contact_ssn'], PDO::PARAM_STR);
+$stmt->bindValue('ssn_last_four_idx', $indexes['contact_ssn_last_four'], PDO::PARAM_STR);
 $stmt->execute();
 
 # SEARCHING AND DECRYPTING:
@@ -96,7 +96,7 @@ $indexValue = $ssnField->getBlindIndex($contactInfo['ssn'], 'contact_ssn_last_fo
 
 $selectQuery = 'SELECT id, name, email, ssn FROM contacts WHERE ssn_last_four_idx = :ssn_last_four_idx';
 $stmt = $pdo->prepare($selectQuery);
-$stmt->bindValue('ssn_last_four_idx', $indexValue['value'], PDO::PARAM_STR);
+$stmt->bindValue('ssn_last_four_idx', $indexValue, PDO::PARAM_STR);
 $stmt->execute();
 $results = $stmt->fetchAll();
 
