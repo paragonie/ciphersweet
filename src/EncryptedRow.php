@@ -36,9 +36,9 @@ class EncryptedRow
     protected $blindIndexes = [];
 
     /**
-     * @var bool $flatIndexes
+     * @var bool $typedIndexes
      */
-    protected $flatIndexes = false;
+    protected $typedIndexes = false;
 
     /**
      * @var array<string, CompoundIndex> $compoundIndexes
@@ -55,13 +55,13 @@ class EncryptedRow
      *
      * @param CipherSweet $engine
      * @param string $tableName
-     * @param bool $useFlatIndexes
+     * @param bool $useTypedIndexes
      */
-    public function __construct(CipherSweet $engine, $tableName, $useFlatIndexes = false)
+    public function __construct(CipherSweet $engine, $tableName, $useTypedIndexes = false)
     {
         $this->engine = $engine;
         $this->tableName = $tableName;
-        $this->flatIndexes = $useFlatIndexes;
+        $this->typedIndexes = !$useTypedIndexes;
     }
 
     /**
@@ -455,7 +455,7 @@ class EncryptedRow
             $this->tableName,
             $column
         );
-        if ($this->flatIndexes) {
+        if (!$this->typedIndexes) {
             return Hex::encode(
                 $this->calcBlindIndexRaw(
                     $row,
@@ -502,7 +502,7 @@ class EncryptedRow
             $this->tableName,
             Constants::COMPOUND_SPECIAL
         );
-        if ($this->flatIndexes) {
+        if (!$this->typedIndexes) {
             return Hex::encode(
                 $this->calcCompoundIndexRaw(
                     $row,
@@ -746,7 +746,7 @@ class EncryptedRow
      */
     public function getFlatIndexes()
     {
-        return $this->flatIndexes;
+        return !$this->typedIndexes;
     }
 
     /**
@@ -755,7 +755,25 @@ class EncryptedRow
      */
     public function setFlatIndexes($bool)
     {
-        $this->flatIndexes = $bool;
+        $this->typedIndexes = !$bool;
+        return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function getTypedIndexes()
+    {
+        return $this->typedIndexes;
+    }
+
+    /**
+     * @param bool $bool
+     * @return self
+     */
+    public function setTypedIndexes($bool)
+    {
+        $this->typedIndexes = $bool;
         return $this;
     }
 }

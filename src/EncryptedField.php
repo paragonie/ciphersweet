@@ -31,9 +31,9 @@ class EncryptedField
     protected $fieldName = '';
 
     /**
-     * @var bool $flatIndexes
+     * @var bool $typedIndexes
      */
-    protected $flatIndexes = false;
+    protected $typedIndexes = false;
 
     /**
      * @var SymmetricKey $key
@@ -51,11 +51,11 @@ class EncryptedField
      * @param CipherSweet $engine
      * @param string $tableName
      * @param string $fieldName
-     * @param bool $useFlatIndexes
+     * @param bool $useTypedIndexes
      *
      * @throws CryptoOperationException
      */
-    public function __construct(CipherSweet $engine, $tableName = '', $fieldName = '', $useFlatIndexes = false)
+    public function __construct(CipherSweet $engine, $tableName = '', $fieldName = '', $useTypedIndexes = false)
     {
         $this->engine = $engine;
         $this->tableName = $tableName;
@@ -64,7 +64,7 @@ class EncryptedField
             $this->tableName,
             $this->fieldName
         );
-        $this->flatIndexes = $useFlatIndexes;
+        $this->typedIndexes = $useTypedIndexes;
     }
 
     /**
@@ -144,7 +144,7 @@ class EncryptedField
 
         /** @var BlindIndex $index */
         foreach ($this->blindIndexes as $name => $index) {
-            if ($this->flatIndexes) {
+            if (!$this->typedIndexes) {
                 $output[$name] = Hex::encode(
                     $this->getBlindIndexRaw(
                         $plaintext,
@@ -191,7 +191,7 @@ class EncryptedField
             $this->tableName,
             $this->fieldName
         );
-        if ($this->flatIndexes) {
+        if (!$this->typedIndexes) {
             return Hex::encode(
                 $this->getBlindIndexRaw(
                     $plaintext,
@@ -347,7 +347,15 @@ class EncryptedField
      */
     public function getFlatIndexes()
     {
-        return $this->flatIndexes;
+        return !$this->typedIndexes;
+    }
+
+    /**
+     * @return bool
+     */
+    public function getTypedIndexes()
+    {
+        return $this->typedIndexes;
     }
 
     /**
@@ -372,7 +380,17 @@ class EncryptedField
      */
     public function setFlatIndexes($bool)
     {
-        $this->flatIndexes = $bool;
+        $this->typedIndexes = !$bool;
+        return $this;
+    }
+
+    /**
+     * @param bool $bool
+     * @return self
+     */
+    public function setTypedIndexes($bool)
+    {
+        $this->typedIndexes = $bool;
         return $this;
     }
 }

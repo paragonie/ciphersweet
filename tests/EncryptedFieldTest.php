@@ -126,6 +126,7 @@ class EncryptedFieldTest extends TestCase
     public function testFIPSBlindIndex()
     {
         $ssn = $this->getExampleField($this->fipsEngine);
+        $ssn->setTypedIndexes(true);
 
         $this->assertEquals(
             ['type' => 'idlzpypmia6qu', 'value' => '334b'],
@@ -167,6 +168,7 @@ class EncryptedFieldTest extends TestCase
     public function testFIPSBlindIndexFast()
     {
         $ssn = $this->getExampleField($this->fipsEngine, false, true);
+        $ssn->setTypedIndexes(true);
 
         $this->assertEquals(
             ['type' => 'idlzpypmia6qu', 'value' => '924b'],
@@ -208,7 +210,6 @@ class EncryptedFieldTest extends TestCase
     public function testFIPSBlindIndexFlatAndFast()
     {
         $ssn = $this->getExampleField($this->fipsEngine, false, true);
-        $ssn->setFlatIndexes(true);
 
         $this->assertEquals(
             '924b',
@@ -263,6 +264,7 @@ class EncryptedFieldTest extends TestCase
             return;
         }
         $ssn = $this->getExampleField($this->naclEngine);
+        $ssn->setTypedIndexes(true);
         $this->assertEquals(
             ['type' => '3dywyifwujcu2', 'value' => '32ae'],
             $ssn->getBlindIndex('111-11-1111', 'contact_ssn_last_four')
@@ -303,6 +305,7 @@ class EncryptedFieldTest extends TestCase
     public function testModernBlindIndexFast()
     {
         $ssn = $this->getExampleField($this->naclEngine, false, true);
+        $ssn->setTypedIndexes(true);
         $this->assertEquals(
             ['type' => '3dywyifwujcu2', 'value' => '7843'],
             $ssn->getBlindIndex('111-11-1111', 'contact_ssn_last_four')
@@ -343,7 +346,6 @@ class EncryptedFieldTest extends TestCase
     public function testModernBlindIndexFlatAndFast()
     {
         $ssn = $this->getExampleField($this->naclEngine, false, true);
-        $ssn->setFlatIndexes(true);
         $this->assertEquals(
             '7843',
             $ssn->getBlindIndex('111-11-1111', 'contact_ssn_last_four')

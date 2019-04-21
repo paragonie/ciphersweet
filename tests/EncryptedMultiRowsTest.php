@@ -58,8 +58,8 @@ class EncryptedMultiRowsTest extends TestCase
 
             foreach ($mr->listTables() as $table) {
                 $this->assertSame(
-                    $mr->getFlatIndexes(),
-                    $mr->getEncryptedRowObjectForTable($table)->getFlatIndexes()
+                    $mr->getTypedIndexes(),
+                    $mr->getEncryptedRowObjectForTable($table)->getTypedIndexes()
                 );
             }
         }
@@ -142,6 +142,7 @@ class EncryptedMultiRowsTest extends TestCase
                 'column1' => 654322
             ]
         ];
+        $mr->setTypedIndexes(true);
         list($outRow, $indexes) = $mr->prepareForStorage($rows);
         $decrypted = $mr->decryptManyRows($outRow);
         $this->assertNotSame($outRow, $decrypted, 'prepareForStorage() encryption');
