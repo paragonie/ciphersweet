@@ -229,7 +229,7 @@ $contactInfo = [
 
 /** 
  * @var string $ciphertext
- * @var array<string, string> $indexes
+ * @var array<string, array<string, string>> $indexes
  */
 list ($ciphertext, $indexes) = $ssn->prepareForStorage($contactInfo['ssn']);
 ```
@@ -264,6 +264,27 @@ array(2) {
     ["value"]=>
     string(8) "311314c1"
   }
+}
+*/
+```
+
+Since version 1.10.0, you can call `setFlatIndexes(true)` on any `EncryptedField`, `EncryptedRow`,
+and `EncryptedMultiRows` object to only get the flat version.
+
+```php
+/** 
+ * @var string $ciphertext
+ * @var array<string, string> $indexes
+ */
+list ($ciphertext, $indexes) = $ssn->prepareForStorage($contactInfo['ssn']);
+var_dump($ciphertext, $indexes);
+/*
+string(73) "nacl:jIRj08YiifK86YlMBfulWXbatpowNYf4_vgjultNT1Tnx2XH9ecs1TqD59MPs67Dp3ui"
+array(2) {
+  ["contact_ssn_last_four"]=>
+  string(4) "2acb"
+  ["contact_ssn"]=>
+  string(8) "311314c1"
 }
 */
 ```
@@ -308,7 +329,7 @@ $lastFour = $ssn->getBlindIndex('123-45-6789', 'contact_ssn_last_four');
 
 Which should result in the following (for the example key):
 
-```
+```php
 var_dump($lastFour);
 /*
 array(2) {
@@ -433,6 +454,43 @@ With the `EncryptedRow` API, you can encrypt a subset of all of the fields
 in a row, and create compound blind indexes based on multiple pieces of
 data in the dataset rather than a single field, without writing a ton of
 glue code.
+
+Since version 1.10.0, you can call `setFlatIndexes(true)` on any `EncryptedField`, `EncryptedRow`,
+and `EncryptedMultiRows` object to only get the flat version.
+
+```php
+// Use flat indexes
+$row->setFlatIndexes(true);
+
+// Notice: You're passing an entire array at once, not a string
+$prepared = $row->prepareRowForStorage([
+    'extraneous' => true,
+    'ssn' => '123-45-6789',
+    'hivstatus' => false
+]);
+
+var_dump($prepared);
+/*
+array(2) {
+  [0]=>
+  array(3) {
+    ["extraneous"]=>
+    bool(true)
+    ["ssn"]=>
+    string(73) "nacl:wVMElYqnHrGB4hU118MTuANZXWHZjbsd0uK2N0Exz72mrV8sLrI_oU94vgsWlWJc84-u"
+    ["hivstatus"]=>
+    string(61) "nacl:ctWDJBn-NgeWc2mqEWfakvxkG7qCmIKfPpnA7jXHdbZ2CPgnZF0Yzwg="
+  }
+  [1]=>
+  array(2) {
+    ["contact_ssn_last_four"]=>
+    string(8) "2acbcd1c"
+    ["contact_ssnlast4_hivstatus"]=>
+    string(8) "cbfd03c0"
+  }
+}
+*/
+```
 
 #### EncryptedRow with a CompoundIndex using a custom Transform of Multiple Fields
 
