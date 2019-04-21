@@ -5,7 +5,9 @@ use ParagonIE\CipherSweet\Backend\Key\SymmetricKey;
 use ParagonIE\CipherSweet\Contract\BackendInterface;
 use ParagonIE\CipherSweet\Exception\ArrayKeyException;
 use ParagonIE\CipherSweet\Exception\BlindIndexNotFoundException;
+use ParagonIE\CipherSweet\Exception\CryptoOperationException;
 use ParagonIE\ConstantTime\Hex;
+use SodiumException;
 
 /**
  * Class EncryptedRow
@@ -263,6 +265,7 @@ class EncryptedRow
      * @param string $column
      * @param string $name
      * @return string
+     * @throws SodiumException
      */
     public function getBlindIndexType($column, $name)
     {
@@ -278,6 +281,7 @@ class EncryptedRow
      *
      * @param string $name
      * @return string
+     * @throws SodiumException
      */
     public function getCompoundIndexType($name)
     {
@@ -398,7 +402,7 @@ class EncryptedRow
      *
      * @throws ArrayKeyException
      * @throws Exception\CryptoOperationException
-     * @throws \SodiumException
+     * @throws SodiumException
      */
     public function prepareRowForStorage(array $row)
     {
@@ -442,7 +446,7 @@ class EncryptedRow
      *
      * @throws ArrayKeyException
      * @throws Exception\CryptoOperationException
-     * @throws \SodiumException
+     * @throws SodiumException
      */
     protected function calcBlindIndex(array $row, $column, BlindIndex $index)
     {
@@ -488,7 +492,8 @@ class EncryptedRow
      * @param CompoundIndex $index
      *
      * @return array<string, string>|string
-     * @throws Exception\CryptoOperationException
+     * @throws CryptoOperationException
+     * @throws SodiumException
      */
     protected function calcCompoundIndex(array $row, CompoundIndex $index)
     {

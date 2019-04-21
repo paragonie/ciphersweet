@@ -5,6 +5,7 @@ use ParagonIE\CipherSweet\Contract\BackendInterface;
 use ParagonIE\CipherSweet\Exception\ArrayKeyException;
 use ParagonIE\CipherSweet\Exception\BlindIndexNotFoundException;
 use ParagonIE\CipherSweet\Exception\CryptoOperationException;
+use SodiumException;
 
 /**
  * Class EncryptedMultiRows
@@ -346,6 +347,7 @@ class EncryptedMultiRows
      * @param string $column
      * @param string $name
      * @return string
+     * @throws SodiumException
      */
     public function getBlindIndexType($table, $column, $name)
     {
@@ -362,6 +364,7 @@ class EncryptedMultiRows
      * @param string $table
      * @param string $name
      * @return string
+     * @throws SodiumException
      */
     public function getCompoundIndexType($table, $name)
     {

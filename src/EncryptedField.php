@@ -7,6 +7,7 @@ use ParagonIE\CipherSweet\Exception\BlindIndexNameCollisionException;
 use ParagonIE\CipherSweet\Exception\BlindIndexNotFoundException;
 use ParagonIE\CipherSweet\Exception\CryptoOperationException;
 use ParagonIE\ConstantTime\Hex;
+use SodiumException;
 
 /**
  * Class EncryptedField
@@ -75,6 +76,7 @@ class EncryptedField
      *
      * @throws BlindIndexNotFoundException
      * @throws CryptoOperationException
+     * @throws SodiumException
      */
     public function prepareForStorage($plaintext, $aad = '')
     {
@@ -130,6 +132,7 @@ class EncryptedField
      *
      * @throws BlindIndexNotFoundException
      * @throws CryptoOperationException
+     * @throws SodiumException
      */
     public function getAllBlindIndexes($plaintext)
     {
@@ -180,6 +183,7 @@ class EncryptedField
      *
      * @throws BlindIndexNotFoundException
      * @throws CryptoOperationException
+     * @throws SodiumException
      */
     public function getBlindIndex($plaintext, $name)
     {
@@ -285,6 +289,7 @@ class EncryptedField
      *
      * @param string $name
      * @return string
+     * @throws SodiumException
      */
     public function getBlindIndexType($name)
     {
@@ -300,6 +305,7 @@ class EncryptedField
      * index names.
      *
      * @return array<string, string>
+     * @throws SodiumException
      */
     public function getBlindIndexTypes()
     {
