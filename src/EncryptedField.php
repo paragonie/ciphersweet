@@ -55,8 +55,12 @@ class EncryptedField
      *
      * @throws CryptoOperationException
      */
-    public function __construct(CipherSweet $engine, $tableName = '', $fieldName = '', $useTypedIndexes = false)
-    {
+    public function __construct(
+        CipherSweet $engine,
+        $tableName = '',
+        $fieldName = '',
+        $useTypedIndexes = false
+    ) {
         $this->engine = $engine;
         $this->tableName = $tableName;
         $this->fieldName = $fieldName;
@@ -142,9 +146,29 @@ class EncryptedField
             $this->fieldName
         );
 
-        /** @var BlindIndex $index */
-        foreach ($this->blindIndexes as $name => $index) {
-            if (!$this->typedIndexes) {
+        if ($this->typedIndexes) {
+            /** @var BlindIndex $index */
+            foreach ($this->blindIndexes as $name => $index) {
+                $k = $this->engine->getIndexTypeColumn(
+                    $this->tableName,
+                    $this->fieldName,
+                    $name
+                );
+                $output[$name] = [
+                    'type' => $k,
+                    'value' =>
+                        Hex::encode(
+                            $this->getBlindIndexRaw(
+                                $plaintext,
+                                $name,
+                                $key
+                            )
+                        )
+                ];
+            }
+        } else {
+            /** @var BlindIndex $index */
+            foreach ($this->blindIndexes as $name => $index) {
                 $output[$name] = Hex::encode(
                     $this->getBlindIndexRaw(
                         $plaintext,
@@ -152,24 +176,7 @@ class EncryptedField
                         $key
                     )
                 );
-                continue;
             }
-            $k = $this->engine->getIndexTypeColumn(
-                $this->tableName,
-                $this->fieldName,
-                $name
-            );
-            $output[$name] = [
-                'type' => $k,
-                'value' =>
-                Hex::encode(
-                    $this->getBlindIndexRaw(
-                        $plaintext,
-                        $name,
-                        $key
-                    )
-                )
-            ];
         }
         return $output;
     }
@@ -191,32 +198,31 @@ class EncryptedField
             $this->tableName,
             $this->fieldName
         );
-        if (!$this->typedIndexes) {
-            return Hex::encode(
-                $this->getBlindIndexRaw(
-                    $plaintext,
-                    $name,
-                    $key
-                )
+        if ($this->typedIndexes) {
+            $k = $this->engine->getIndexTypeColumn(
+                $this->tableName,
+                $this->fieldName,
+                $name
             );
-        }
-
-        $k = $this->engine->getIndexTypeColumn(
-            $this->tableName,
-            $this->fieldName,
-            $name
-        );
-        return [
-            'type' => $k,
-            'value' =>
-                Hex::encode(
-                    $this->getBlindIndexRaw(
-                        $plaintext,
-                        $name,
-                        $key
+            return [
+                'type' => $k,
+                'value' =>
+                    Hex::encode(
+                        $this->getBlindIndexRaw(
+                            $plaintext,
+                            $name,
+                            $key
+                        )
                     )
-                )
-        ];
+            ];
+        }
+        return Hex::encode(
+            $this->getBlindIndexRaw(
+                $plaintext,
+                $name,
+                $key
+            )
+        );
     }
 
     /**

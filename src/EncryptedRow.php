@@ -455,34 +455,33 @@ class EncryptedRow
             $this->tableName,
             $column
         );
-        if (!$this->typedIndexes) {
-            return Hex::encode(
-                $this->calcBlindIndexRaw(
-                    $row,
-                    $column,
-                    $index,
-                    $key
-                )
+        if ($this->typedIndexes) {
+            $k = $this->engine->getIndexTypeColumn(
+                $this->tableName,
+                $column,
+                $name
             );
-        }
-
-        $k = $this->engine->getIndexTypeColumn(
-            $this->tableName,
-            $column,
-            $name
-        );
-        return [
-            'type' => $k,
-            'value' =>
-                Hex::encode(
-                    $this->calcBlindIndexRaw(
-                        $row,
-                        $column,
-                        $index,
-                        $key
+            return [
+                'type' => $k,
+                'value' =>
+                    Hex::encode(
+                        $this->calcBlindIndexRaw(
+                            $row,
+                            $column,
+                            $index,
+                            $key
+                        )
                     )
-                )
-        ];
+            ];
+        }
+        return Hex::encode(
+            $this->calcBlindIndexRaw(
+                $row,
+                $column,
+                $index,
+                $key
+            )
+        );
     }
 
     /**
@@ -502,32 +501,31 @@ class EncryptedRow
             $this->tableName,
             Constants::COMPOUND_SPECIAL
         );
-        if (!$this->typedIndexes) {
-            return Hex::encode(
-                $this->calcCompoundIndexRaw(
-                    $row,
-                    $index,
-                    $key
-                )
+        if ($this->typedIndexes) {
+            $k = $this->engine->getIndexTypeColumn(
+                $this->tableName,
+                Constants::COMPOUND_SPECIAL,
+                $name
             );
-        }
-
-        $k = $this->engine->getIndexTypeColumn(
-            $this->tableName,
-            Constants::COMPOUND_SPECIAL,
-            $name
-        );
-        return [
-            'type' => $k,
-            'value' =>
-                Hex::encode(
-                    $this->calcCompoundIndexRaw(
-                        $row,
-                        $index,
-                        $key
+            return [
+                'type' => $k,
+                'value' =>
+                    Hex::encode(
+                        $this->calcCompoundIndexRaw(
+                            $row,
+                            $index,
+                            $key
+                        )
                     )
-                )
-        ];
+            ];
+        }
+        return Hex::encode(
+            $this->calcCompoundIndexRaw(
+                $row,
+                $index,
+                $key
+            )
+        );
     }
 
     /**
