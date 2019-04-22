@@ -123,13 +123,12 @@ CREATE TABLE IF NOT EXISTS contacts (
 $entityManager->getConnection()->query($createTableQuery);
 
 $provider = new StringProvider(
-    new ModernCrypto(),
     // Example key, chosen randomly, hex-encoded:
     ParagonIE\ConstantTime\Hex::encode(random_bytes(32))
 );
 
 /** @var CipherSweet $engine */
-$engine = new CipherSweet($provider);
+$engine = new CipherSweet($provider, new ModernCrypto());
 
 $ssnField = (new EncryptedField($engine, 'contacts', 'ssn'))
     // Add a blind index for the "last 4 of SSN":

@@ -39,13 +39,12 @@ CREATE TABLE IF NOT EXISTS contacts (
 $pdo->query($createTableQuery);
 
 $provider = new StringProvider(
-    new ModernCrypto(),
     // Example key, chosen randomly, hex-encoded:
     '4e1c44f87b4cdf21808762970b356891db180a9dd9850e7baf2a79ff3ab8a2fc'
 );
 
 /** @var CipherSweet $engine */
-$engine = new CipherSweet($provider);
+$engine = new CipherSweet($provider, new ModernCrypto());
 
 $ssnField = (new EncryptedField($engine, 'contacts', 'ssn'))
     // Add a blind index for the "last 4 of SSN":

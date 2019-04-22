@@ -107,19 +107,17 @@ string containing your encryption key:
 
 ```php
 <?php
-use ParagonIE\CipherSweet\Backend\ModernCrypto;
 use ParagonIE\CipherSweet\KeyProvider\StringProvider;
 
 $provider = new StringProvider(
-    new ModernCrypto(),
     // Example key, chosen randomly, hex-encoded:
     '4e1c44f87b4cdf21808762970b356891db180a9dd9850e7baf2a79ff3ab8a2fc'
 );
 ```
 
 You can pass a raw binary string, hex-encoded string, or
-base64url-encoded string to the second parameter of the `StringProvider`
-constructor, provided the decoded key is 256 bits.
+base64url-encoded string to the `StringProvider` constructor,
+provided the decoded key is 256 bits.
 
 Attempting to pass a key of an invalid size (i.e. not 256-bit) will
 result in a `CryptoOperationException` being thrown. The recommended
@@ -144,12 +142,11 @@ use ParagonIE\CipherSweet\CipherSweet;
 use ParagonIE\CipherSweet\KeyProvider\StringProvider;
 
 $provider = new StringProvider(
-    new ModernCrypto(),
     // Example key, chosen randomly, hex-encoded:
     '4e1c44f87b4cdf21808762970b356891db180a9dd9850e7baf2a79ff3ab8a2fc'
 );
 
-$engine = new CipherSweet($provider);
+$engine = new CipherSweet($provider, new ModernCrypto());
 ```
 
 If you're using FIPSCrypto instead of ModernCrypto, you just need to pass
@@ -164,11 +161,10 @@ use ParagonIE\CipherSweet\CipherSweet;
 use ParagonIE\CipherSweet\KeyProvider\StringProvider;
 
 $provider = new StringProvider(
-    new FIPSCrypto(),
     // Example key, chosen randomly, hex-encoded:
     '4e1c44f87b4cdf21808762970b356891db180a9dd9850e7baf2a79ff3ab8a2fc'
 );
-$engine = new CipherSweet($provider);
+$engine = new CipherSweet($provider, new FIPSCrypto());
 ```
 
 ## Basic CipherSweet Usage
@@ -245,7 +241,7 @@ The `type` indicator is handy if you're storing all your blind indexes in a
 separate table rather than in an additional column in the same table. In the
 latter case, you only need the `value` string for each index.
 
-```
+```php
 var_dump($ciphertext, $indexes);
 /*
 string(73) "nacl:jIRj08YiifK86YlMBfulWXbatpowNYf4_vgjultNT1Tnx2XH9ecs1TqD59MPs67Dp3ui"
@@ -757,11 +753,10 @@ use ParagonIE\CipherSweet\KeyProvider\StringProvider;
 use ParagonIE\CipherSweet\EncryptedMultiRows;
 
 $provider = new StringProvider(
-    new FIPSCrypto(),
     // Example key, chosen randomly, hex-encoded:
     'a981d3894b5884f6965baea64a09bb5b4b59c10e857008fc814923cf2f2de558'
 );
-$engine = new CipherSweet($provider);
+$engine = new CipherSweet($provider, new FIPSCrypto());
 $rowSet = (new EncryptedMultiRows($engine))
     ->addTextField('contacts', 'first_name')
     ->addTextField('contacts', 'last_name')
