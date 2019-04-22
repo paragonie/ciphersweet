@@ -2,6 +2,7 @@
 namespace ParagonIE\CipherSweet\Contract;
 
 use ParagonIE\CipherSweet\Backend\Key\SymmetricKey;
+use ParagonIE\CipherSweet\Constants;
 
 /**
  * Interface BackendInterface
