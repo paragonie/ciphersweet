@@ -74,6 +74,10 @@ Security experts may be interested in [the security properties of our design](ht
 Please feel free to [create an issue](https://github.com/paragonie/ciphersweet/issues/new)
 if you'd like to integrate CipherSweet with your software.
 
+## CipherSweet in Other Languages
+
+* [JavaScript (Node.js)](https://github.com/paragonie/ciphersweet-js)
+
 ## Why "CipherSweet"?
 
 CipherSweet was originally intended for use in [SuiteCRM](https://github.com/salesagility/SuiteCRM)
