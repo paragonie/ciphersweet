@@ -583,8 +583,6 @@ class EncryptedRow
             $this->convertToString($unconverted, $fieldType)
         );
 
-        /** @var BlindIndex $index */
-        $index = $this->blindIndexes[$column][$name];
         if ($index->getFastHash()) {
             return $backend->blindIndexFast(
                 $plaintext,
@@ -641,8 +639,6 @@ class EncryptedRow
         /** @var string $plaintext */
         $plaintext = $index->getPacked($row);
 
-        /** @var CompoundIndex $index */
-        $index = $this->compoundIndexes[$name];
 
         if ($index->getFastHash()) {
             return $backend->blindIndexFast(

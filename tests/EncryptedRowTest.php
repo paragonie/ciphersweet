@@ -213,6 +213,17 @@ class EncryptedRowTest extends TestCase
             'a88e74ada916ab9b',
             $eF->getBlindIndex('contact_ssn_last_four', $row)
         );
+
+        if (\ParagonIE_Sodium_Compat::crypto_pwhash_is_available()) {
+            $eM = $this->getExampleRow($this->naclEngine, true);
+            $eM
+                ->setFlatIndexes(true)
+                ->addTextField('extraneous'); // We aren't providing this one in $row.
+
+            $indexes = $eM->getAllBlindIndexes($row);
+            $this->assertEquals('2acbcd1c7c55c1db', $indexes['contact_ssn_last_four']);
+            $this->assertEquals('1b8c1e1f8e122bd3', $indexes['contact_ssnlast4_hivstatus']);
+        }
     }
 
     /**
