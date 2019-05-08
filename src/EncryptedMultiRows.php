@@ -4,6 +4,7 @@ namespace ParagonIE\CipherSweet;
 use ParagonIE\CipherSweet\Contract\BackendInterface;
 use ParagonIE\CipherSweet\Exception\ArrayKeyException;
 use ParagonIE\CipherSweet\Exception\BlindIndexNotFoundException;
+use ParagonIE\CipherSweet\Exception\CipherSweetException;
 use ParagonIE\CipherSweet\Exception\CryptoOperationException;
 use SodiumException;
 
@@ -45,9 +46,13 @@ class EncryptedMultiRows
      *
      * @param string $tableName
      * @return self
+     * @throws CipherSweetException
      */
     public function addTable($tableName)
     {
+        if (array_key_exists($tableName, $this->tables)) {
+            throw new CipherSweetException('Table already exists');
+        }
         $this->tables[$tableName] = new EncryptedRow($this->engine, $tableName);
         return $this;
     }
@@ -60,6 +65,7 @@ class EncryptedMultiRows
      * @param string $type
      * @param string $aadSource
      * @return self
+     * @throws CipherSweetException
      */
     public function addField(
         $tableName,
@@ -79,6 +85,7 @@ class EncryptedMultiRows
      * @param string $fieldName
      * @param string $aadSource
      * @return self
+     * @throws CipherSweetException
      */
     public function addBooleanField($tableName, $fieldName, $aadSource = '')
     {
@@ -97,6 +104,7 @@ class EncryptedMultiRows
      * @param string $fieldName
      * @param string $aadSource
      * @return self
+     * @throws CipherSweetException
      */
     public function addFloatField($tableName, $fieldName, $aadSource = '')
     {
@@ -115,6 +123,7 @@ class EncryptedMultiRows
      * @param string $fieldName
      * @param string $aadSource
      * @return self
+     * @throws CipherSweetException
      */
     public function addIntegerField($tableName, $fieldName, $aadSource = '')
     {
@@ -133,6 +142,7 @@ class EncryptedMultiRows
      * @param string $fieldName
      * @param string $aadSource
      * @return self
+     * @throws CipherSweetException
      */
     public function addTextField($tableName, $fieldName, $aadSource = '')
     {
@@ -151,6 +161,7 @@ class EncryptedMultiRows
      * @param string $column
      * @param BlindIndex $index
      * @return self
+     * @throws CipherSweetException
      */
     public function addBlindIndex($tableName, $column, BlindIndex $index)
     {
@@ -165,6 +176,7 @@ class EncryptedMultiRows
      * @param string $tableName
      * @param CompoundIndex $index
      * @return self
+     * @throws CipherSweetException
      */
     public function addCompoundIndex($tableName,CompoundIndex $index)
     {
@@ -183,6 +195,7 @@ class EncryptedMultiRows
      * @param bool $fastHash
      * @param array $hashConfig
      * @return CompoundIndex
+     * @throws CipherSweetException
      */
     public function createCompoundIndex(
         $tableName,
@@ -220,6 +233,7 @@ class EncryptedMultiRows
      *
      * @throws CryptoOperationException
      * @throws SodiumException
+     * @throws CipherSweetException
      */
     public function decryptManyRows(array $rows)
     {
@@ -255,6 +269,7 @@ class EncryptedMultiRows
      * @throws ArrayKeyException
      * @throws CryptoOperationException
      * @throws SodiumException
+     * @throws CipherSweetException
      */
     public function encryptManyRows(array $rows)
     {
@@ -283,6 +298,7 @@ class EncryptedMultiRows
      * @throws BlindIndexNotFoundException
      * @throws CryptoOperationException
      * @throws SodiumException
+     * @throws CipherSweetException
      */
     public function getBlindIndex($tableName, $indexName, array $row)
     {
@@ -300,6 +316,7 @@ class EncryptedMultiRows
      * @throws ArrayKeyException
      * @throws CryptoOperationException
      * @throws SodiumException
+     * @throws CipherSweetException
      */
     public function getBlindIndexesForTable($tableName, array $row)
     {
@@ -326,6 +343,7 @@ class EncryptedMultiRows
      * @throws ArrayKeyException
      * @throws Exception\CryptoOperationException
      * @throws SodiumException
+     * @throws CipherSweetException
      */
     public function getAllBlindIndexes(array $rows)
     {
@@ -348,14 +366,15 @@ class EncryptedMultiRows
      * @param string $name
      * @return string
      * @throws SodiumException
+     * @throws CipherSweetException
      */
     public function getBlindIndexType($table, $column, $name)
     {
         return $this->getEncryptedRowObjectForTable($table)
-        ->getBlindIndexType(
-            $column,
-            $name
-        );
+            ->getBlindIndexType(
+                $column,
+                $name
+            );
     }
 
     /**
@@ -365,6 +384,7 @@ class EncryptedMultiRows
      * @param string $name
      * @return string
      * @throws SodiumException
+     * @throws CipherSweetException
      */
     public function getCompoundIndexType($table, $name)
     {
@@ -378,6 +398,7 @@ class EncryptedMultiRows
      *
      * @param string $tableName
      * @return EncryptedRow
+     * @throws CipherSweetException
      */
     public function getEncryptedRowObjectForTable($tableName = '')
     {
@@ -403,6 +424,7 @@ class EncryptedMultiRows
      * @param string $fieldName
      * @param string $aadSource
      * @return self
+     * @throws CipherSweetException
      */
     public function setAadSourceField($tableName, $fieldName, $aadSource)
     {
@@ -430,6 +452,7 @@ class EncryptedMultiRows
      * @throws ArrayKeyException
      * @throws CryptoOperationException
      * @throws SodiumException
+     * @throws CipherSweetException
      */
     public function prepareForStorage(array $rows)
     {

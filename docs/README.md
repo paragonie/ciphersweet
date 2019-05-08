@@ -146,13 +146,12 @@ $provider = new StringProvider(
     '4e1c44f87b4cdf21808762970b356891db180a9dd9850e7baf2a79ff3ab8a2fc'
 );
 
-$engine = new CipherSweet($provider, new ModernCrypto());
+$engine = new CipherSweet($provider);
 ```
 
 If you're using FIPSCrypto instead of ModernCrypto, you just need to pass
-it once to the `KeyProvider` and the rest is handled for you.
-
-There is no need to pass `ModernCrypto` or `FIPSCrypto` multiple times.
+it to the second argument of the `CipherSweet` constructor. If you do not
+specify a backend, it will default to `ModernCrypto`.
 
 ```php
 <?php
