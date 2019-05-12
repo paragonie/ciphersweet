@@ -54,7 +54,7 @@ class FieldRotator implements KeyRotationInterface
             return true;
         }
         try {
-            $this->new->decryptValue($ciphertext);
+            $this->new->decryptValue($ciphertext, $aad);
             return false;
         } catch (\Exception $ex) {
         }
