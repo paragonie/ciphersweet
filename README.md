@@ -30,10 +30,10 @@ or noncommercial, open source or proprietary, at no cost to you.
   diverse range of compliance requirements. More can be added as needed:
   * `ModernCrypto` uses [libsodium](https://download.libsodium.org/doc/), the de
     facto standard encryption library for software developers.
-    [Algorithm details](https://github.com/paragonie/ciphersweet/blob/master/docs/SECURITY.md#moderncrypto).
+    [Algorithm details](https://ciphersweet.paragonie.com/security#moderncrypto).
   * `FIPSCrypto` only uses the cryptographic algorithms covered by the
     FIPS 140-2 recommendations to avoid auditing complexity.
-    [Algorithm details](https://github.com/paragonie/ciphersweet/blob/master/docs/SECURITY.md#fipscrypto).
+    [Algorithm details](https://ciphersweet.paragonie.com/security#fipscrypto).
 * **Key separation.** Each column is encrypted with a different key, all of which are derived from
   your master encryption key using secure key-splitting algorithms.
 * **Key management integration.** CipherSweet supports integration with Key
@@ -41,7 +41,7 @@ or noncommercial, open source or proprietary, at no cost to you.
 * **Searchable Encryption.** CipherSweet uses
   [blind indexing](https://paragonie.com/blog/2017/05/building-searchable-encrypted-databases-with-php-and-sql#solution-literal-search)
   with the fuzzier and Bloom filter strategies to allow fast ciphertext search
-  with [minimal data leakage](https://github.com/paragonie/ciphersweet/tree/master/docs#blind-index-planning). 
+  with [minimal data leakage](https://ciphersweet.paragonie.com/php/blind-index-planning). 
   * Each blind index on each column uses a distinct key from your encryption key
     and each other blind index key.
   * This doesn't allow for `LIKE` operators or regular expression searching, but
@@ -52,7 +52,7 @@ or noncommercial, open source or proprietary, at no cost to you.
   software.
 * **File/stream encryption.** CipherSweet has an API for encrypting files (or
   other PHP streams) that provides authenticated encryption that defeats TOCTOU
-  attacks with minimal overhead. [Learn more](https://github.com/paragonie/ciphersweet/tree/master/docs#encryptedfile).
+  attacks with minimal overhead. [Learn more](https://ciphersweet.paragonie.com/internals/file-encryption).
 
 ## Installing CipherSweet
 
@@ -64,10 +64,10 @@ composer require paragonie/ciphersweet
 
 ## Using CipherSweet
 
-Please refer to **[the documentation](https://github.com/paragonie/ciphersweet/tree/master/docs)**
+Please refer to **[the documentation](https://ciphersweet.paragonie.com)**
 to learn how to use CipherSweet.
 
-Security experts may be interested in [the security properties of our design](https://github.com/paragonie/ciphersweet/blob/master/docs/SECURITY.md).
+Security experts may be interested in [the security properties of our design](https://ciphersweet.paragonie.com/security).
 
 ### Integration Support
 
