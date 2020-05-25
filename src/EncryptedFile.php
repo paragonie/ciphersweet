@@ -297,7 +297,7 @@ class EncryptedFile
      */
     public function isFileEncrypted($filename)
     {
-        return $this->isStreamEncrypted($this->getStreamForFile($filename));
+        return $this->isStreamEncrypted($this->getStreamForFile($filename, 'rb'));
     }
 
     /**
