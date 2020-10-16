@@ -321,6 +321,7 @@ class ModernCrypto implements BackendInterface
             // Truncation attack against decryption after MAC validation
             throw new CryptoOperationException('Race condition');
         }
+        \rewind($outputFP);
         return true;
     }
 
@@ -400,6 +401,7 @@ class ModernCrypto implements BackendInterface
         \fseek($outputFP, 5, SEEK_SET);
         \fwrite($outputFP, $authTag, 16);
         \fseek($outputFP, $end, SEEK_SET);
+        \rewind($outputFP);
         return true;
     }
 
