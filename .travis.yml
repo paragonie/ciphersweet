@@ -26,9 +26,8 @@ matrix:
     - php: "master"
 
 install:
-    - composer self-update
-    - if [[ $USE_PSALM -eq 1 ]]; then composer require --dev "vimeo/psalm:^3"; fi
-    - composer update
+    - travis_retry composer install
+    - if [[ $USE_PSALM -eq 1 ]]; then travis_retry composer require --dev "vimeo/psalm:^3"; fi
 
 script:
     - vendor/bin/phpunit
