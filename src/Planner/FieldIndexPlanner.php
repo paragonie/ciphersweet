@@ -27,6 +27,7 @@ class FieldIndexPlanner
      *
      * @param EncryptedField $field
      * @return self
+     * @psalm-suppress UnsafeInstantiation
      */
     public static function fromEncryptedField(EncryptedField $field)
     {

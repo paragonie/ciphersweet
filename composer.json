@@ -30,7 +30,7 @@
     }
   },
   "require": {
-    "php": "^5.5|^7",
+    "php": "^5.5|^7|^8",
     "ext-json": "*",
     "ext-openssl": "*",
     "paragonie/constant_time_encoding": "^1.0.4|^2",

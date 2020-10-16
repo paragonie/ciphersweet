@@ -290,8 +290,11 @@ abstract class Util
 
     /**
      * @param string $string
+     * @param-out null $string
      * @return void
      * @throws \SodiumException
+     * @psalm-suppress ReferenceConstraintViolation
+     * @psalm-suppress InvalidOperand
      */
     public static function memzero(&$string)
     {
@@ -301,8 +304,7 @@ abstract class Util
             \Sodium\memzero($string);
         } else {
             // Worst-case scenario: Best-ditch effort to wipe memory
-            $m = \str_repeat("\xff", (int)Binary::safeStrlen($string));
-            $string ^= ($string ^ $m);
+            $string ^= $string;
             unset($string);
         }
     }
