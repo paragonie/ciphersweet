@@ -370,7 +370,7 @@ abstract class Util
     /**
      * @return bool|null
      */
-    private static final function getWrongEndianness()
+    private static function getWrongEndianness()
     {
         $x = \pack('d', 1.618);
         if ($x === "\x17\xd9\xce\xf7\x53\xe3\xf9\x3f") {
