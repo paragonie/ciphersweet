@@ -19,11 +19,14 @@ matrix:
       env: USE_PSALM=1
     - php: "7.4"
       env: USE_PSALM=1
+    - php: "8.0"
+      env: USE_PSALM=1
     - php: "nightly"
       env: USE_PSALM=1
     - php: "master"
       env: USE_PSALM=1
   allow_failures:
+    - php: "8.0"
     - php: "nightly"
     - php: "master"
 
