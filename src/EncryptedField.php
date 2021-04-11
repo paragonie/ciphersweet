@@ -5,6 +5,7 @@ use ParagonIE\CipherSweet\Backend\Key\SymmetricKey;
 use ParagonIE\CipherSweet\Contract\BackendInterface;
 use ParagonIE\CipherSweet\Exception\BlindIndexNameCollisionException;
 use ParagonIE\CipherSweet\Exception\BlindIndexNotFoundException;
+use ParagonIE\CipherSweet\Exception\CipherSweetException;
 use ParagonIE\CipherSweet\Exception\CryptoOperationException;
 use ParagonIE\ConstantTime\Hex;
 use SodiumException;
@@ -54,6 +55,7 @@ class EncryptedField
      * @param bool $useTypedIndexes
      *
      * @throws CryptoOperationException
+     * @throws CipherSweetException
      */
     public function __construct(
         CipherSweet $engine,
@@ -96,6 +98,10 @@ class EncryptedField
      * @param string $plaintext
      * @param string $aad       Additional authenticated data
      * @return string
+     *
+     * @throws CryptoOperationException
+     * @throws Exception\CipherSweetException
+     * @throws SodiumException
      */
     public function encryptValue($plaintext, $aad = '')
     {
@@ -115,6 +121,10 @@ class EncryptedField
      * @param string $ciphertext
      * @param string $aad       Additional authenticated data
      * @return string
+     *
+     * @throws Exception\CipherSweetException
+     * @throws Exception\InvalidCiphertextException
+     * @throws SodiumException
      */
     public function decryptValue($ciphertext, $aad = '')
     {

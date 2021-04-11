@@ -4,6 +4,7 @@ namespace ParagonIE\CipherSweet\Backend;
 use ParagonIE\CipherSweet\Backend\Key\SymmetricKey;
 use ParagonIE\CipherSweet\Constants;
 use ParagonIE\CipherSweet\Contract\BackendInterface;
+use ParagonIE\CipherSweet\Contract\MultiTenantSafeBackendInterface;
 use ParagonIE\CipherSweet\Exception\CryptoOperationException;
 use ParagonIE\CipherSweet\Exception\InvalidCiphertextException;
 use ParagonIE\CipherSweet\Util;
@@ -13,7 +14,6 @@ use ParagonIE\ConstantTime\Binary;
 use ParagonIE_Sodium_Compat as SodiumCompat;
 use ParagonIE\Sodium\Core\ChaCha20;
 use ParagonIE\Sodium\Core\HChaCha20;
-use ParagonIE\Sodium\Core\XChaCha20;
 use ParagonIE_Sodium_Core_Util as SodiumUtil;
 
 /**
@@ -23,7 +23,7 @@ use ParagonIE_Sodium_Core_Util as SodiumUtil;
  *
  * @package ParagonIE\CipherSweet\Backend
  */
-class BoringCrypto implements BackendInterface
+class BoringCrypto implements BackendInterface, MultiTenantSafeBackendInterface
 {
     const MAGIC_HEADER = "brng:";
     const NONCE_SIZE = 24;
@@ -72,7 +72,7 @@ class BoringCrypto implements BackendInterface
         } catch (\Exception $ex) {
             throw new CryptoOperationException('CSPRNG failure', 0, $ex);
         }
-        $ciphertext = XChaCha20::streamXorIc(
+        $ciphertext = \sodium_crypto_stream_xchacha20_xor(
             $plaintext,
             $nonce,
             $this->getEncryptionKey($key)->getRawKey()
@@ -128,7 +128,7 @@ class BoringCrypto implements BackendInterface
             throw new \SodiumException("Invalid ciphertext");
         }
 
-        return XChaCha20::streamXorIc(
+        return \sodium_crypto_stream_xchacha20_xor(
             $encrypted,
             $nonce,
             $this->getEncryptionKey($key)->getRawKey()

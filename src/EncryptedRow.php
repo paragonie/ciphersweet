@@ -316,6 +316,10 @@ class EncryptedRow
         $return = $row;
         $backend = $this->engine->getBackend();
         foreach ($this->fieldsToEncrypt as $field => $type) {
+            if ($this->engine->isMultiTenantSupported()) {
+                $tenant = $this->engine->getTenantFromRow($row);
+                $this->engine->setActiveTenant($tenant);
+            }
             $key = $this->engine->getFieldSymmetricKey(
                 $this->tableName,
                 $field
@@ -365,6 +369,10 @@ class EncryptedRow
             }
             /** @var string $plaintext */
             $plaintext = $this->convertToString($row[$field], $type);
+            if ($this->engine->isMultiTenantSupported()) {
+                $tenant = $this->engine->getTenantFromRow($row);
+                $this->engine->setActiveTenant($tenant);
+            }
             $key = $this->engine->getFieldSymmetricKey(
                 $this->tableName,
                 $field

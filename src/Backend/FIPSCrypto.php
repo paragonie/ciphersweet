@@ -4,6 +4,7 @@ namespace ParagonIE\CipherSweet\Backend;
 use ParagonIE\CipherSweet\Constants;
 use ParagonIE\CipherSweet\Contract\BackendInterface;
 use ParagonIE\CipherSweet\Backend\Key\SymmetricKey;
+use ParagonIE\CipherSweet\Contract\MultiTenantSafeBackendInterface;
 use ParagonIE\CipherSweet\Exception\CryptoOperationException;
 use ParagonIE\CipherSweet\Exception\InvalidCiphertextException;
 use ParagonIE\CipherSweet\Util;
@@ -26,7 +27,7 @@ use ParagonIE_Sodium_Core_Util as SodiumUtil;
  *
  * @package ParagonIE\CipherSweet\Backend
  */
-class FIPSCrypto implements BackendInterface
+class FIPSCrypto implements BackendInterface, MultiTenantSafeBackendInterface
 {
     const MAGIC_HEADER = "fips:";
     const MAC_SIZE = 48;
