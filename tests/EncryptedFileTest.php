@@ -16,6 +16,9 @@ class EncryptedFileTest extends TestCase
 {
     use CreatesEngines;
 
+    /** @var EncryptedFile $brng */
+    private $brng;
+
     /** @var EncryptedFile $fips */
     private $fips;
 
@@ -33,6 +36,10 @@ class EncryptedFileTest extends TestCase
 
         $this->nacl = new EncryptedFile(
             $this->createModernEngine('4e1c44f87b4cdf21808762970b356891db180a9dd9850e7baf2a79ff3ab8a2fc')
+        );
+
+        $this->brng = new EncryptedFile(
+            $this->createBoringEngine('4e1c44f87b4cdf21808762970b356891db180a9dd9850e7baf2a79ff3ab8a2fc')
         );
     }
 
@@ -200,6 +207,92 @@ class EncryptedFileTest extends TestCase
         $decrypted = $this->nacl->getStreamForFile('php://temp');
         $this->nacl->decryptStreamWithPassword($output, $decrypted, $password);
         $this->assertFalse($this->nacl->isStreamEncrypted($decrypted));
+
+        \fseek($input, 0, SEEK_SET);
+        \fseek($decrypted, 0, SEEK_SET);
+
+        $this->assertSame(
+            Hex::encode(\stream_get_contents($input)),
+            Hex::encode(\stream_get_contents($decrypted))
+        );
+    }
+
+    /**
+     * @throws CryptoOperationException
+     * @throws FilesystemException
+     * @throws \SodiumException
+     */
+    public function testBoringEncryptStream()
+    {
+        $message = "Paragon Initiative Enterprises\n" . \random_bytes(256);
+
+        $input = $this->brng->getStreamForFile('php://temp');
+        \fwrite($input, $message);
+        $this->assertFalse($this->brng->isStreamEncrypted($input));
+
+        $output = $this->brng->getStreamForFile('php://temp');
+        $this->brng->encryptStream($input, $output);
+        $this->assertTrue($this->brng->isStreamEncrypted($output));
+
+        \fseek($output, 0, SEEK_SET);
+        $header = \fread($output, 5);
+        \fseek($output, 0, SEEK_SET);
+
+        $this->assertSame(
+            $this->brng->getEngine()->getBackend()->getPrefix(),
+            $header,
+            'Encrypted stream does not have the correct header'
+        );
+
+        $decrypted = $this->brng->getStreamForFile('php://temp');
+        $this->brng->decryptStream($output, $decrypted);
+        $this->assertFalse($this->brng->isStreamEncrypted($decrypted));
+
+        \fseek($input, 0, SEEK_SET);
+        \fseek($decrypted, 0, SEEK_SET);
+
+        $this->assertSame(
+            Hex::encode(\stream_get_contents($input)),
+            Hex::encode(\stream_get_contents($decrypted))
+        );
+    }
+
+    /**
+     * @throws CryptoOperationException
+     * @throws FilesystemException
+     * @throws \SodiumException
+     */
+    public function testBoringPasswordEncryptStream()
+    {
+        if (!\ParagonIE_Sodium_Compat::crypto_pwhash_is_available()) {
+            // We cannot
+            $this->markTestSkipped('Cannot test this without libsodium');
+            return;
+        }
+        $message = "Paragon Initiative Enterprises\n" . \random_bytes(256);
+        $password = 'correct horse battery staple';
+
+        $input = $this->brng->getStreamForFile('php://temp');
+        \fwrite($input, $message);
+        $this->assertFalse($this->brng->isStreamEncrypted($input));
+
+        $output = $this->brng->getStreamForFile('php://temp');
+        $this->brng->encryptStreamWithPassword($input, $output, $password);
+        $this->assertTrue($this->brng->isStreamEncrypted($output));
+
+        \fseek($output, 0, SEEK_SET);
+        $header = \fread($output, 5);
+        \fseek($output, 0, SEEK_SET);
+
+        $this->assertSame(
+            $this->brng->getEngine()->getBackend()->getPrefix(),
+            $header,
+            'Encrypted stream does not have the correct header'
+        );
+
+        $decrypted = $this->brng->getStreamForFile('php://temp');
+        $this->brng->decryptStreamWithPassword($output, $decrypted, $password);
+        $this->assertFalse($this->brng->isStreamEncrypted($decrypted));
 
         \fseek($input, 0, SEEK_SET);
         \fseek($decrypted, 0, SEEK_SET);
