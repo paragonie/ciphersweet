@@ -14,10 +14,10 @@ use ParagonIE\CipherSweet\Exception\CipherSweetException;
 class MultiTenantProvider implements KeyProviderInterface, MultiTenantAwareProviderInterface
 {
     /** @var array<array-key, KeyProviderInterface> $tenants */
-    private $tenants = [];
+    protected $tenants = [];
 
     /** @var array-key|null $active */
-    private $active;
+    protected $active;
 
     /**
      * MultiTenantProvider constructor.
@@ -28,7 +28,7 @@ class MultiTenantProvider implements KeyProviderInterface, MultiTenantAwareProvi
     public function __construct(array $keyProviders, $active = null)
     {
         foreach ($keyProviders as $name => $keyProvider) {
-            $this->tenants[$name] = $keyProviders;
+            $this->tenants[$name] = $keyProvider;
         }
         $this->active = $active;
     }
@@ -110,5 +110,16 @@ class MultiTenantProvider implements KeyProviderInterface, MultiTenantAwareProvi
             throw new CipherSweetException('This is not implemented. Please override in a child class.');
         }
         return $this->active;
+    }
+
+    /**
+     * OVERRIDE THIS in your own class!
+     *
+     * @param array $row
+     * @return array
+     */
+    public function injectTenantMetadata(array $row)
+    {
+        return $row;
     }
 }

@@ -28,4 +28,22 @@ interface MultiTenantAwareProviderInterface
      * @return self
      */
     public function setActiveTenant($index);
+
+    /**
+     * OVERRIDE THIS in your own class!
+     *
+     * Given a row of data, determine which tenant should be selected.
+     *
+     * @param array $row
+     * @return string
+     *
+     * @throws CipherSweetException
+     */
+    public function getTenantFromRow(array $row);
+
+    /**
+     * @param array $row
+     * @return array
+     */
+    public function injectTenantMetadata(array $row);
 }

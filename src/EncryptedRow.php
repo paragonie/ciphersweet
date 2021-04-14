@@ -3,8 +3,10 @@ namespace ParagonIE\CipherSweet;
 
 use ParagonIE\CipherSweet\Backend\Key\SymmetricKey;
 use ParagonIE\CipherSweet\Contract\BackendInterface;
+use ParagonIE\CipherSweet\Contract\MultiTenantAwareProviderInterface;
 use ParagonIE\CipherSweet\Exception\ArrayKeyException;
 use ParagonIE\CipherSweet\Exception\BlindIndexNotFoundException;
+use ParagonIE\CipherSweet\Exception\CipherSweetException;
 use ParagonIE\CipherSweet\Exception\CryptoOperationException;
 use ParagonIE\ConstantTime\Hex;
 use SodiumException;
@@ -315,11 +317,11 @@ class EncryptedRow
     {
         $return = $row;
         $backend = $this->engine->getBackend();
+        if ($this->engine->isMultiTenantSupported()) {
+            $tenant = $this->engine->getTenantFromRow($row);
+            $this->engine->setActiveTenant($tenant);
+        }
         foreach ($this->fieldsToEncrypt as $field => $type) {
-            if ($this->engine->isMultiTenantSupported()) {
-                $tenant = $this->engine->getTenantFromRow($row);
-                $this->engine->setActiveTenant($tenant);
-            }
             $key = $this->engine->getFieldSymmetricKey(
                 $this->tableName,
                 $field
@@ -332,7 +334,7 @@ class EncryptedRow
                 $plaintext = $backend->decrypt(
                     $row[$field],
                     $key,
-                    $row[$this->aadSourceField[$field]]
+                    (string) $row[$this->aadSourceField[$field]]
                 );
             } else {
                 $plaintext = $backend->decrypt($row[$field], $key);
@@ -352,7 +354,8 @@ class EncryptedRow
      *
      * @return array<string, string>
      * @throws ArrayKeyException
-     * @throws Exception\CryptoOperationException
+     * @throws CryptoOperationException
+     * @throws CipherSweetException
      * @throws SodiumException
      */
     public function encryptRow(array $row)
@@ -369,10 +372,6 @@ class EncryptedRow
             }
             /** @var string $plaintext */
             $plaintext = $this->convertToString($row[$field], $type);
-            if ($this->engine->isMultiTenantSupported()) {
-                $tenant = $this->engine->getTenantFromRow($row);
-                $this->engine->setActiveTenant($tenant);
-            }
             $key = $this->engine->getFieldSymmetricKey(
                 $this->tableName,
                 $field
@@ -392,6 +391,9 @@ class EncryptedRow
             }
         }
         /** @var array<string, string> $return */
+        if ($this->engine->isMultiTenantSupported()) {
+            return $this->engine->injectTenantMetadata($return);
+        }
         return $return;
     }
 

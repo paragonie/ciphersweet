@@ -184,8 +184,23 @@ final class CipherSweet
         /** @param MultiTenantAwareProviderInterface $kp */
         if ($this->keyProvider instanceof MultiTenantAwareProviderInterface) {
             $this->keyProvider->setActiveTenant($name);
+            return;
         }
         throw new CipherSweetException('Your Key Provider is not multi-tenant aware');
+    }
+
+    /**
+     * @param array $row
+     * @return array
+     * @throws CipherSweetException
+     */
+    public function injectTenantMetadata(array $row)
+    {
+        if ($this->keyProvider instanceof MultiTenantAwareProviderInterface) {
+            $kp = $this->keyProvider;
+            return $kp->injectTenantMetadata($row);
+        }
+        throw new CipherSweetException('Multi-tenant is not supported');
     }
 
     /**

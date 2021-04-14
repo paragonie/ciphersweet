@@ -78,6 +78,9 @@ class BoringCrypto implements BackendInterface, MultiTenantSafeBackendInterface
             $this->getEncryptionKey($key)->getRawKey()
         );
         $cipherLength = SodiumUtil::strlen($ciphertext);
+        if (is_null($aad)) {
+            $aad = '';
+        }
         $aadLength = SodiumUtil::strlen($aad);
         // T := BLAKE2b-MAC (nonce || len(aad) || aad || len(C) || C)
         $mac = SodiumCompat::crypto_generichash(
@@ -118,6 +121,9 @@ class BoringCrypto implements BackendInterface, MultiTenantSafeBackendInterface
 
         // T := BLAKE2b-MAC ( len(aad) || aad || len(C) || C)
         $cipherLength = SodiumUtil::strlen($encrypted);
+        if (is_null($aad)) {
+            $aad = '';
+        }
         $aadLength = SodiumUtil::strlen($aad);
         $calcMac = SodiumCompat::crypto_generichash(
             ((string) static::MAGIC_HEADER) . $nonce . $aadLength . $aad . $cipherLength . $encrypted,
