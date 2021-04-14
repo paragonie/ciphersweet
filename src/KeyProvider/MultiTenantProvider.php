@@ -58,6 +58,7 @@ class MultiTenantProvider implements KeyProviderInterface, MultiTenantAwareProvi
      * @param array-key $name
      * @return KeyProviderInterface
      * @throws CipherSweetException
+     * @psalm-suppress PossiblyNullArrayOffset
      */
     public function getTenant($name)
     {

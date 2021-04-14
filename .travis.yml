@@ -12,11 +12,11 @@ matrix:
     - php: "7.0"
       env: USE_PSALM=0
     - php: "7.1"
-      env: USE_PSALM=1
+      env: USE_PSALM=0
     - php: "7.2"
-      env: USE_PSALM=1
+      env: USE_PSALM=0
     - php: "7.3"
-      env: USE_PSALM=1
+      env: USE_PSALM=0
     - php: "7.4"
       env: USE_PSALM=1
     - php: "8.0"
@@ -32,7 +32,7 @@ matrix:
 
 install:
     - travis_retry composer install
-    - if [[ $USE_PSALM -eq 1 ]]; then travis_retry composer require --dev "vimeo/psalm:^3"; fi
+    - if [[ $USE_PSALM -eq 1 ]]; then travis_retry composer require --dev "vimeo/psalm:^4"; fi
 
 script:
     - vendor/bin/phpunit

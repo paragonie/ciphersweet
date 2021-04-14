@@ -161,7 +161,7 @@ final class CipherSweet
 
     /**
      * @param array $row
-     * @return KeyProviderInterface|string
+     * @return string
      * @throws CipherSweetException
      */
     public function getTenantFromRow(array $row)

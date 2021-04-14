@@ -9,7 +9,13 @@
     <issueHandlers>
         <MoreSpecificImplementedParamType errorLevel="suppress" /><!-- this is fine -->
         <RedundantConditionGivenDocblockType errorLevel="suppress" /><!-- we're being explicit -->
+        <RedundantCastGivenDocblockType errorLevel="suppress" /><!-- we're being explicit -->
         <InternalMethod errorLevel="suppress" /><!-- it's internal to sodium_compat but we still need to use it -->
         <DocblockTypeContradiction errorLevel="info" /><!-- We're still supporting PHP 5 -->
+        <UnnecessaryVarAnnotation errorLevel="suppress" />
+        <UnusedFunctionCall errorLevel="info" />
+        <UnusedVariable errorLevel="info" />
+	    <RedundantCast errorLevel="suppress" />
+        <MixedReturnTypeCoercion errorLevel="info" />
     </issueHandlers>
 </psalm>

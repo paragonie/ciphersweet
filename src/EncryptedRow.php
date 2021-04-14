@@ -8,6 +8,7 @@ use ParagonIE\CipherSweet\Exception\ArrayKeyException;
 use ParagonIE\CipherSweet\Exception\BlindIndexNotFoundException;
 use ParagonIE\CipherSweet\Exception\CipherSweetException;
 use ParagonIE\CipherSweet\Exception\CryptoOperationException;
+use ParagonIE\CipherSweet\Exception\InvalidCiphertextException;
 use ParagonIE\ConstantTime\Hex;
 use SodiumException;
 
@@ -310,7 +311,9 @@ class EncryptedRow
      *
      * @param array<string, string> $row
      * @return array<string, string|int|float|bool|null>
-     * @throws Exception\CryptoOperationException
+     * @throws CipherSweetException
+     * @throws CryptoOperationException
+     * @throws InvalidCiphertextException
      * @throws SodiumException
      */
     public function decryptRow(array $row)
