@@ -74,7 +74,11 @@ class EncryptedField
     }
 
     /**
-     * @param array-key $tenantIndex
+     * Only usable in multi-tenant setups.
+     *
+     * Sets the active tenant and re-derives the encryption key for this field.
+     *
+     * @param string $tenantIndex
      * @return self
      * @throws CipherSweetException
      * @throws CryptoOperationException

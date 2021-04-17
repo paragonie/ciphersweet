@@ -161,15 +161,16 @@ final class CipherSweet
 
     /**
      * @param array $row
+     * @param string $tableName
      * @return string
      * @throws CipherSweetException
      */
-    public function getTenantFromRow(array $row)
+    public function getTenantFromRow(array $row, $tableName = '')
     {
         /** @param MultiTenantAwareProviderInterface $kp */
         if ($this->keyProvider instanceof MultiTenantAwareProviderInterface) {
             $kp = $this->keyProvider;
-            return $kp->getTenantFromRow($row);
+            return $kp->getTenantFromRow($row, $tableName);
         }
         throw new CipherSweetException('Your Key Provider is not multi-tenant aware');
     }
@@ -191,14 +192,15 @@ final class CipherSweet
 
     /**
      * @param array $row
+     * @param string $tableName
      * @return array
      * @throws CipherSweetException
      */
-    public function injectTenantMetadata(array $row)
+    public function injectTenantMetadata(array $row, $tableName = '')
     {
         if ($this->keyProvider instanceof MultiTenantAwareProviderInterface) {
             $kp = $this->keyProvider;
-            return $kp->injectTenantMetadata($row);
+            return $kp->injectTenantMetadata($row, $tableName);
         }
         throw new CipherSweetException('Multi-tenant is not supported');
     }

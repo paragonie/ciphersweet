@@ -35,15 +35,17 @@ interface MultiTenantAwareProviderInterface
      * Given a row of data, determine which tenant should be selected.
      *
      * @param array $row
+     * @param string $tableName
      * @return string
      *
      * @throws CipherSweetException
      */
-    public function getTenantFromRow(array $row);
+    public function getTenantFromRow(array $row, $tableName);
 
     /**
      * @param array $row
+     * @param string $tableName
      * @return array
      */
-    public function injectTenantMetadata(array $row);
+    public function injectTenantMetadata(array $row, $tableName);
 }

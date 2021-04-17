@@ -320,7 +320,7 @@ class EncryptedRow
         $return = $row;
         $backend = $this->engine->getBackend();
         if ($this->engine->isMultiTenantSupported()) {
-            $tenant = $this->engine->getTenantFromRow($row);
+            $tenant = $this->engine->getTenantFromRow($row, $this->tableName);
             $this->engine->setActiveTenant($tenant);
         }
         foreach ($this->fieldsToEncrypt as $field => $type) {
@@ -394,7 +394,7 @@ class EncryptedRow
         }
         /** @var array<string, string> $return */
         if ($this->engine->isMultiTenantSupported()) {
-            return $this->engine->injectTenantMetadata($return);
+            return $this->engine->injectTenantMetadata($return, $this->tableName);
         }
         return $return;
     }
@@ -413,7 +413,8 @@ class EncryptedRow
      * @return array{0: array<string, string>, 1: array<string, array<string, string>|string>}
      *
      * @throws ArrayKeyException
-     * @throws Exception\CryptoOperationException
+     * @throws CipherSweetException
+     * @throws CryptoOperationException
      * @throws SodiumException
      */
     public function prepareRowForStorage(array $row)

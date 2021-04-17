@@ -1,7 +1,6 @@
 <?php
 namespace ParagonIE\CipherSweet\KeyProvider;
 
-
 use ParagonIE\CipherSweet\Backend\Key\SymmetricKey;
 use ParagonIE\CipherSweet\Contract\KeyProviderInterface;
 use ParagonIE\CipherSweet\Contract\MultiTenantAwareProviderInterface;
@@ -101,11 +100,12 @@ class MultiTenantProvider implements KeyProviderInterface, MultiTenantAwareProvi
      * Given a row of data, determine which tenant should be selected.
      *
      * @param array $row
+     * @param string $tableName
      * @return string
      *
      * @throws CipherSweetException
      */
-    public function getTenantFromRow(array $row)
+    public function getTenantFromRow(array $row, $tableName)
     {
         if (!$this->active) {
             throw new CipherSweetException('This is not implemented. Please override in a child class.');
@@ -117,9 +117,10 @@ class MultiTenantProvider implements KeyProviderInterface, MultiTenantAwareProvi
      * OVERRIDE THIS in your own class!
      *
      * @param array $row
+     * @param string $tableName
      * @return array
      */
-    public function injectTenantMetadata(array $row)
+    public function injectTenantMetadata(array $row, $tableName)
     {
         return $row;
     }
