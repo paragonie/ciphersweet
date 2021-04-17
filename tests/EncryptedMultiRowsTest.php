@@ -37,9 +37,10 @@ class EncryptedMultiRowsTest extends TestCase
     protected $naclRandom;
 
     /**
+     * @before
      * @throws \Exception
      */
-    public function setUp()
+    public function before()
     {
         $this->fipsEngine = $this->createFipsEngine('4e1c44f87b4cdf21808762970b356891db180a9dd9850e7baf2a79ff3ab8a2fc');
         $this->naclEngine = $this->createModernEngine('4e1c44f87b4cdf21808762970b356891db180a9dd9850e7baf2a79ff3ab8a2fc');

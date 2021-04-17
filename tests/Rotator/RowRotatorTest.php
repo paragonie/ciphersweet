@@ -42,10 +42,11 @@ class RowRotatorTest extends TestCase
     protected $naclRandom;
 
     /**
+     * @before
      * @throws ArrayKeyException
      * @throws CryptoOperationException
      */
-    public function setUp()
+    public function before()
     {
         $this->fipsRandom = $this->createFipsEngine();
         $this->naclRandom = $this->createModernEngine();

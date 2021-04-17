@@ -18,9 +18,10 @@ class FileProviderTest extends TestCase
     private $prefix;
 
     /**
+     * @before
      * @throws \SodiumException
      */
-    public function setUp()
+    public function before()
     {
         $this->prefix = Base32::encodeUnpadded(random_bytes(16));
 
@@ -31,7 +32,10 @@ class FileProviderTest extends TestCase
         );
     }
 
-    public function tearDown()
+    /**
+     * @afterClass
+     */
+    public function afterClass()
     {
         \unlink(__DIR__ . '/files/' . $this->prefix . '.symmetric');
         parent::tearDown();

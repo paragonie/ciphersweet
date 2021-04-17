@@ -5,7 +5,9 @@ use ParagonIE\CipherSweet\Backend\Key\SymmetricKey;
 use ParagonIE\CipherSweet\Contract\BackendInterface;
 use ParagonIE\CipherSweet\Exception\ArrayKeyException;
 use ParagonIE\CipherSweet\Exception\BlindIndexNotFoundException;
+use ParagonIE\CipherSweet\Exception\CipherSweetException;
 use ParagonIE\CipherSweet\Exception\CryptoOperationException;
+use ParagonIE\CipherSweet\Exception\InvalidCiphertextException;
 use ParagonIE\ConstantTime\Hex;
 use SodiumException;
 
@@ -308,13 +310,19 @@ class EncryptedRow
      *
      * @param array<string, string> $row
      * @return array<string, string|int|float|bool|null>
-     * @throws Exception\CryptoOperationException
+     * @throws CipherSweetException
+     * @throws CryptoOperationException
+     * @throws InvalidCiphertextException
      * @throws SodiumException
      */
     public function decryptRow(array $row)
     {
         $return = $row;
         $backend = $this->engine->getBackend();
+        if ($this->engine->isMultiTenantSupported()) {
+            $tenant = $this->engine->getTenantFromRow($row, $this->tableName);
+            $this->engine->setActiveTenant($tenant);
+        }
         foreach ($this->fieldsToEncrypt as $field => $type) {
             $key = $this->engine->getFieldSymmetricKey(
                 $this->tableName,
@@ -328,7 +336,7 @@ class EncryptedRow
                 $plaintext = $backend->decrypt(
                     $row[$field],
                     $key,
-                    $row[$this->aadSourceField[$field]]
+                    (string) $row[$this->aadSourceField[$field]]
                 );
             } else {
                 $plaintext = $backend->decrypt($row[$field], $key);
@@ -348,7 +356,8 @@ class EncryptedRow
      *
      * @return array<string, string>
      * @throws ArrayKeyException
-     * @throws Exception\CryptoOperationException
+     * @throws CryptoOperationException
+     * @throws CipherSweetException
      * @throws SodiumException
      */
     public function encryptRow(array $row)
@@ -384,6 +393,9 @@ class EncryptedRow
             }
         }
         /** @var array<string, string> $return */
+        if ($this->engine->isMultiTenantSupported()) {
+            return $this->engine->injectTenantMetadata($return, $this->tableName);
+        }
         return $return;
     }
 
@@ -401,7 +413,8 @@ class EncryptedRow
      * @return array{0: array<string, string>, 1: array<string, array<string, string>|string>}
      *
      * @throws ArrayKeyException
-     * @throws Exception\CryptoOperationException
+     * @throws CipherSweetException
+     * @throws CryptoOperationException
      * @throws SodiumException
      */
     public function prepareRowForStorage(array $row)
