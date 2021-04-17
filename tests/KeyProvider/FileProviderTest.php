@@ -38,7 +38,6 @@ class FileProviderTest extends TestCase
     public function afterClass()
     {
         \unlink(__DIR__ . '/files/' . $this->prefix . '.symmetric');
-        parent::tearDown();
     }
 
     /**
