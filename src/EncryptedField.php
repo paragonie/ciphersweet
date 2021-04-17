@@ -74,6 +74,25 @@ class EncryptedField
     }
 
     /**
+     * @param array-key $tenantIndex
+     * @return self
+     * @throws CipherSweetException
+     * @throws CryptoOperationException
+     */
+    public function setActiveTenant($tenantIndex)
+    {
+        if (!$this->engine->isMultiTenantSupported()) {
+            throw new CipherSweetException('This is only available for multi-tenant-aware engines/providers.');
+        }
+        $this->engine->setActiveTenant($tenantIndex);
+        $this->key = $this->engine->getFieldSymmetricKey(
+            $this->tableName,
+            $this->fieldName
+        );
+        return $this;
+    }
+
+    /**
      * Encrypt a value and calculate all of its blind indices in one go.
      *
      * @param string $plaintext

@@ -5,8 +5,12 @@ use ParagonIE\CipherSweet\Backend\BoringCrypto;
 use ParagonIE\CipherSweet\Backend\FIPSCrypto;
 use ParagonIE\CipherSweet\CipherSweet;
 use ParagonIE\CipherSweet\CompoundIndex;
+use ParagonIE\CipherSweet\EncryptedField;
 use ParagonIE\CipherSweet\EncryptedRow;
+use ParagonIE\CipherSweet\Exception\ArrayKeyException;
 use ParagonIE\CipherSweet\Exception\CipherSweetException;
+use ParagonIE\CipherSweet\Exception\CryptoOperationException;
+use ParagonIE\CipherSweet\Exception\InvalidCiphertextException;
 use ParagonIE\CipherSweet\KeyProvider\StringProvider;
 use ParagonIE\CipherSweet\Transformation\LastFourDigits;
 use PHPUnit\Framework\TestCase;
@@ -51,11 +55,39 @@ class MultiTenantTest extends TestCase
     }
 
     /**
+     * @throws CipherSweetException
+     * @throws CryptoOperationException
+     * @throws InvalidCiphertextException
+     * @throws \SodiumException
+     */
+    public function testEncryptField()
+    {
+        foreach ([$this->csBoring, $this->csFips] as $cs) {
+            $EF = new EncryptedField($cs, 'table', 'column');
+            $EF->setActiveTenant('foo');
+            $cipher = $EF->encryptValue('test plaintext', 'aad');
+            $plain = $EF->decryptValue($cipher, 'aad');
+            $this->assertSame('test plaintext', $plain);
+
+            $EF->setActiveTenant('bar');
+            $decryptFailed = false;
+            try {
+                $EF->decryptValue($cipher, 'aad');
+            } catch (\SodiumException $ex) {
+                $decryptFailed = true;
+            } catch (CipherSweetException $ex) {
+                $decryptFailed = true;
+            }
+            $this->assertTrue($decryptFailed, 'Swapping out tenant identifiers should fail decryption');
+        }
+    }
+
+    /**
      * Test that the EncryptedRow feature correctly interacts with multi-tenant data stores.
      *
      * @throws CipherSweetException
-     * @throws \ParagonIE\CipherSweet\Exception\ArrayKeyException
-     * @throws \ParagonIE\CipherSweet\Exception\CryptoOperationException
+     * @throws ArrayKeyException
+     * @throws CryptoOperationException
      * @throws \SodiumException
      */
     public function testEncryptRow()
