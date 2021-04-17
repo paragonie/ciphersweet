@@ -26,9 +26,10 @@ class EncryptedFileTest extends TestCase
     private $nacl;
 
     /**
+     * @before
      * @throws CryptoOperationException
      */
-    public function setUp()
+    public function before()
     {
         $this->fips = new EncryptedFile(
             $this->createFipsEngine('4e1c44f87b4cdf21808762970b356891db180a9dd9850e7baf2a79ff3ab8a2fc')
@@ -43,7 +44,10 @@ class EncryptedFileTest extends TestCase
         );
     }
 
-    public function tearDown()
+    /**
+     * @afterClass
+     */
+    public function afterClass()
     {
         if (file_exists(__DIR__ . '/scratch.txt')) {
             unlink(__DIR__ . '/scratch.txt');

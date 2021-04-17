@@ -1,5 +1,6 @@
 # CipherSweet
 
+![Build Status](https://github.com/paragonie/ciphersweet/actions/workflows/ci.yml/badge.svg)
 [![Linux Build Status](https://travis-ci.org/paragonie/ciphersweet.svg?branch=master)](https://travis-ci.org/paragonie/ciphersweet)
 [![Latest Stable Version](https://poser.pugx.org/paragonie/ciphersweet/v/stable)](https://packagist.org/packages/paragonie/ciphersweet)
 [![Latest Unstable Version](https://poser.pugx.org/paragonie/ciphersweet/v/unstable)](https://packagist.org/packages/paragonie/ciphersweet)

@@ -1,5 +1,6 @@
 <?xml version="1.0"?>
 <psalm
+    autoloader="autoload-ci.php"
     totallyTyped="true"
 >
     <projectFiles>
@@ -17,5 +18,6 @@
         <UnusedVariable errorLevel="info" />
 	    <RedundantCast errorLevel="suppress" />
         <MixedReturnTypeCoercion errorLevel="info" />
+        <UnresolvableInclude errorLevel="info" />
     </issueHandlers>
 </psalm>
