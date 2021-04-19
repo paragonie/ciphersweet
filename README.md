@@ -1,6 +1,6 @@
 # CipherSweet
 
-[![Build Status](https://github.com/paragonie/ciphersweet/actions/workflows/ci.yml/badge.svg)](https://github.com/ciphersweet/actions)
+[![Build Status](https://github.com/paragonie/ciphersweet/actions/workflows/ci.yml/badge.svg)](https://github.com/paragonie/ciphersweet/actions)
 [![Latest Stable Version](https://poser.pugx.org/paragonie/ciphersweet/v/stable)](https://packagist.org/packages/paragonie/ciphersweet)
 [![Latest Unstable Version](https://poser.pugx.org/paragonie/ciphersweet/v/unstable)](https://packagist.org/packages/paragonie/ciphersweet)
 [![License](https://poser.pugx.org/paragonie/ciphersweet/license)](https://packagist.org/packages/paragonie/ciphersweet)
