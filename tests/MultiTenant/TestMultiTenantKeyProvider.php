@@ -1,9 +1,6 @@
 <?php
 namespace ParagonIE\CipherSweet\Tests\MultiTenant;
 
-use ParagonIE\CipherSweet\Backend\Key\SymmetricKey;
-use ParagonIE\CipherSweet\Contract\KeyProviderInterface;
-use ParagonIE\CipherSweet\Contract\MultiTenantAwareProviderInterface;
 use ParagonIE\CipherSweet\Exception\CipherSweetException;
 use ParagonIE\CipherSweet\KeyProvider\MultiTenantProvider;
 use ParagonIE\ConstantTime\Base64UrlSafe;
@@ -14,11 +11,6 @@ use ParagonIE\ConstantTime\Base64UrlSafe;
  */
 class TestMultiTenantKeyProvider extends MultiTenantProvider
 {
-    public function __construct(array $keyProviders, $active = null)
-    {
-        parent::__construct($keyProviders, $active);
-    }
-
     /**
      * Given a row of data, determine which tenant should be selected.
      *
