@@ -335,6 +335,15 @@ class EncryptedFileTest extends TestCase
         $this->nacl->decryptFile($path, $path);
         $this->assertSame($message, \file_get_contents($path));
 
+        $this->brng->encryptFile($path, $path);
+        $contents = \file_get_contents($path);
+        $this->assertSame(
+            Binary::safeSubstr($contents, 0, 5),
+            $this->brng->getEngine()->getBackend()->getPrefix()
+        );
+        $this->brng->decryptFile($path, $path);
+        $this->assertSame($message, \file_get_contents($path));
+
         $password = 'correct horse battery staple';
 
         $this->fips->encryptFileWithPassword($path, $path, $password);
