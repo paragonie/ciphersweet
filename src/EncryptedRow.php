@@ -328,6 +328,10 @@ class EncryptedRow
                 $this->tableName,
                 $field
             );
+            if (is_null($row[$field])) {
+                $return[$field] = null;
+                continue;
+            }
             if (
                 !empty($this->aadSourceField[$field])
                     &&
