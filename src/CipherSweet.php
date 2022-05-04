@@ -49,6 +49,16 @@ final class CipherSweet
     }
 
     /**
+     * Obtain the Key Provider that was passed to the constructor.
+     *
+     * @return KeyProviderInterface
+     */
+    public function getKeyProvider()
+    {
+        return $this->keyProvider;
+    }
+
+    /**
      * @param string $tableName
      * @param string $fieldName
      * @param string $indexName
