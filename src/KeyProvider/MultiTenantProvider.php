@@ -64,7 +64,7 @@ class MultiTenantProvider implements KeyProviderInterface, MultiTenantAwareProvi
         if (!\array_key_exists($name, $this->tenants)) {
             throw new CipherSweetException('Tenant does not exist');
         }
-        return $this->tenants[$this->active];
+        return $this->tenants[$name];
     }
 
     /**
