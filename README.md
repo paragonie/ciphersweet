@@ -12,6 +12,9 @@ for implementing [searchable field-level encryption](https://paragonie.com/blog/
 
 **Requires PHP 8.1 or newer**.
 
+If you want to use CipherSweet on an older version of PHP (5.5+), use 
+[CipherSweet v3](https://github.com/paragonie/ciphersweet/tree/v3.x).
+
 Before adding searchable encryption support to your project, make sure you understand
 the [appropriate threat model](https://adamcaudill.com/2016/07/20/threat-modeling-for-applications/)
 for your use case. At a minimum, you will want your application and database
@@ -60,7 +63,13 @@ or noncommercial, open source or proprietary, at no cost to you.
 Use Composer.
 
 ```bash
-composer require paragonie/ciphersweet
+composer require paragonie/ciphersweet:^4
+```
+
+If you're intending to use CipherSweet on an older version of PHP, use the v3 branch:
+
+```bash
+composer require paragonie/ciphersweet:^3
 ```
 
 ## Using CipherSweet
