@@ -125,14 +125,17 @@ class EncryptedRow
     }
 
     /**
+     * Define a JSON field that will be encrypted.
+     *
      * @param string $fieldName
      * @param JsonFieldMap $fieldMap
+     * @param string $aadSource Field name to source AAD from
      * @return self
      */
-    public function addJsonField($fieldName, JsonFieldMap $fieldMap)
+    public function addJsonField($fieldName, JsonFieldMap $fieldMap, $aadSource = '')
     {
         $this->jsonMaps[$fieldName] = $fieldMap;
-        return $this->addField($fieldName, Constants::TYPE_JSON);
+        return $this->addField($fieldName, Constants::TYPE_JSON, $aadSource);
     }
 
     /**

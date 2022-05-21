@@ -136,6 +136,28 @@ class EncryptedMultiRows
     }
 
     /**
+     * Mark a column to be encryption as a JSON blob.
+     *
+     * @param string $tableName
+     * @param string $fieldName
+     * @param JsonFieldMap $fieldMap
+     * @param string $aadSource
+     * @return self
+     *
+     * @throws CipherSweetException
+     */
+    public function addJsonField(
+        $tableName,
+        $fieldName,
+        JsonFieldMap $fieldMap,
+        $aadSource = ''
+    ) {
+        $this->getEncryptedRowObjectForTable($tableName)
+            ->addJsonField($fieldName, $fieldMap, $aadSource);
+        return $this;
+    }
+
+    /**
      * Mark a column to be encrypted as text input.
      *
      * @param string $tableName

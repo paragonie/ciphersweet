@@ -4,9 +4,14 @@ namespace ParagonIE\CipherSweet\Tests;
 use ParagonIE\CipherSweet\BlindIndex;
 use ParagonIE\CipherSweet\CipherSweet;
 use ParagonIE\CipherSweet\EncryptedMultiRows;
+use ParagonIE\CipherSweet\Exception\ArrayKeyException;
+use ParagonIE\CipherSweet\Exception\CipherSweetException;
+use ParagonIE\CipherSweet\Exception\CryptoOperationException;
 use ParagonIE\CipherSweet\Exception\InvalidCiphertextException;
+use ParagonIE\CipherSweet\JsonFieldMap;
 use ParagonIE\CipherSweet\Transformation\Lowercase;
 use PHPUnit\Framework\TestCase;
+use SodiumException;
 
 /**
  * Class EncryptedMultiRowsTest
@@ -27,6 +32,11 @@ class EncryptedMultiRowsTest extends TestCase
     protected $naclEngine;
 
     /**
+     * @var CipherSweet $boringEngine
+     */
+    protected $boringEngine;
+
+    /**
      * @var CipherSweet $fipsRandom
      */
     protected $fipsRandom;
@@ -37,6 +47,12 @@ class EncryptedMultiRowsTest extends TestCase
     protected $naclRandom;
 
     /**
+     * @var CipherSweet $boringRandom
+     */
+    protected $boringRandom;
+
+    /**
+     * @beforeClass
      * @before
      * @throws \Exception
      */
@@ -44,9 +60,11 @@ class EncryptedMultiRowsTest extends TestCase
     {
         $this->fipsEngine = $this->createFipsEngine('4e1c44f87b4cdf21808762970b356891db180a9dd9850e7baf2a79ff3ab8a2fc');
         $this->naclEngine = $this->createModernEngine('4e1c44f87b4cdf21808762970b356891db180a9dd9850e7baf2a79ff3ab8a2fc');
+        $this->boringEngine = $this->createBoringEngine('4e1c44f87b4cdf21808762970b356891db180a9dd9850e7baf2a79ff3ab8a2fc');
 
         $this->fipsRandom = $this->createFipsEngine();
         $this->naclRandom = $this->createModernEngine();
+        $this->boringRandom = $this->createBoringEngine();
     }
 
     public function testFlatInherits()
@@ -96,9 +114,12 @@ class EncryptedMultiRowsTest extends TestCase
     /**
      * @return EncryptedMultiRows
      */
-    public function getMultiRows()
+    public function getMultiRows($engine = null)
     {
-        $mr = (new EncryptedMultiRows($this->fipsEngine))
+        if (empty($engine)) {
+            $engine = $this->fipsEngine;
+        }
+        $mr = (new EncryptedMultiRows($engine))
             ->addTable('foo')
             ->addTable('bar');
         $mr->addIntegerField('foo', 'column1')
@@ -106,6 +127,12 @@ class EncryptedMultiRowsTest extends TestCase
             ->addBooleanField('foo', 'column3');
         $mr->addIntegerField('bar', 'column1');
         $mr->addIntegerField('baz', 'column1');
+
+        $map = (new JsonFieldMap())
+            ->addTextField('qux')
+            ->addIntegerField('quux');
+
+        $mr->addJsonField('foo', 'column4', $map);
 
         $mr->addBlindIndex(
             'foo',
@@ -116,36 +143,20 @@ class EncryptedMultiRowsTest extends TestCase
     }
 
     /**
-     * @throws \ParagonIE\CipherSweet\Exception\ArrayKeyException
-     * @throws \ParagonIE\CipherSweet\Exception\CryptoOperationException
-     * @throws \SodiumException
+     * @throws ArrayKeyException
+     * @throws CryptoOperationException
+     * @throws CipherSweetException
+     * @throws SodiumException
      */
     public function testUsage()
     {
         $mr = $this->getMultiRows();
+        $rows = $this->getDummyPlaintext();
 
-        $rows = [
-            'foo' => [
-                'id' => 123456,
-                'column1' => 654321,
-                'column2' => 'paragonie',
-                'column3' => true,
-                'extra' => 'test'
-            ],
-            'bar' => [
-                'id' => 554353,
-                'foo_id' => 123456,
-                'column1' => 654321
-            ],
-            'baz' => [
-                'id' => 3174521,
-                'foo_id' => 123456,
-                'column1' => 654322
-            ]
-        ];
         $mr->setTypedIndexes(true);
         list($outRow, $indexes) = $mr->prepareForStorage($rows);
         $decrypted = $mr->decryptManyRows($outRow);
+        $this->assertIsNotArray($outRow['foo']['column4'], 'column4 not encrypted');
         $this->assertNotSame($outRow, $decrypted, 'prepareForStorage() encryption');
         $this->assertSame($rows, $decrypted, 'prepareForStorage() decryption');
         $this->assertEquals($indexes, [
@@ -184,5 +195,92 @@ class EncryptedMultiRowsTest extends TestCase
         } catch (\Exception $ex) {
             $this->assertInstanceOf(InvalidCiphertextException::class, $ex);
         }
+    }
+
+    private function getDummyPlaintext()
+    {
+        return [
+            'foo' => [
+                'id' => 123456,
+                'column1' => 654321,
+                'column2' => 'paragonie',
+                'column3' => true,
+                'column4' => ['qux' => 'paragon', 'quux' => 1234],
+                'extra' => 'test'
+            ],
+            'bar' => [
+                'id' => 554353,
+                'foo_id' => 123456,
+                'column1' => 654321
+            ],
+            'baz' => [
+                'id' => 3174521,
+                'foo_id' => 123456,
+                'column1' => 654322
+            ]
+        ];
+    }
+
+    /**
+     * @dataProvider engineProvider
+     *
+     * @throws ArrayKeyException
+     * @throws CryptoOperationException
+     * @throws CipherSweetException
+     * @throws SodiumException
+     */
+    public function testXAllEngines(CipherSweet $engine = null)
+    {
+        $mr = $this->getMultiRows($engine);
+        $rows = $this->getDummyPlaintext();
+
+        $mr->setTypedIndexes(true);
+        list($outRow, $indexes) = $mr->prepareForStorage($rows);
+        $decrypted = $mr->decryptManyRows($outRow);
+        $this->assertIsNotArray($outRow['foo']['column4'], 'column4 not encrypted');
+        $this->assertNotSame($outRow, $decrypted, 'prepareForStorage() encryption');
+        $this->assertSame($rows, $decrypted, 'prepareForStorage() decryption');
+
+        $decrypt2 = $mr->decryptManyRows($outRow);
+        $this->assertSame($decrypted, $decrypt2, 'Both decryption APIs must produce the same output');
+
+        $indexes2 = $mr->getAllBlindIndexes($rows);
+        $this->assertSame($indexes, $indexes2, 'Both blind index APIs must produce the same output');
+
+        // Additional authenticated data (sourced from ID column)
+        $mr2 = $this->getMultiRows()
+            ->setAadSourceField('foo', 'column1', 'id');
+        $outRow2 = $mr2->encryptManyRows($rows);
+        $decrypted2 = $mr2->decryptManyRows($outRow2);
+
+        $this->assertSame($rows, $decrypted2, 'Decryption must be the same');
+        try {
+            $mr->decryptManyRows($outRow2);
+            $this->fail('AAD stripping was permitted');
+        } catch (\Exception $ex) {
+            $this->assertInstanceOf(InvalidCiphertextException::class, $ex);
+        }
+        try {
+            $mr2->decryptManyRows($outRow);
+            $this->fail('AAD stripping was permitted');
+        } catch (\Exception $ex) {
+            $this->assertInstanceOf(InvalidCiphertextException::class, $ex);
+        }
+    }
+
+    public function engineProvider()
+    {
+        if (!isset($this->fipsEngine)) {
+            $this->before();
+        }
+
+        return [
+            [$this->fipsEngine],
+            [$this->fipsRandom],
+            [$this->naclEngine],
+            [$this->naclRandom],
+            [$this->boringEngine],
+            [$this->boringRandom]
+        ];
     }
 }
