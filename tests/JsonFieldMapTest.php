@@ -4,7 +4,6 @@ namespace ParagonIE\CipherSweet\Tests;
 use ParagonIE\CipherSweet\Constants;
 use ParagonIE\CipherSweet\JsonFieldMap;
 use PHPUnit\Framework\TestCase;
-use PHPUnit\Util\Json;
 
 /**
  * @psalm-suppress
