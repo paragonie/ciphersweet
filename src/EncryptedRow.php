@@ -17,6 +17,8 @@ use SodiumException;
  */
 class EncryptedRow
 {
+    use TypeEncodingTrait;
+
     /**
      * @var CipherSweet $engine
      */
@@ -26,6 +28,9 @@ class EncryptedRow
      * @var array<string, string> $fieldsToEncrypt
      */
     protected $fieldsToEncrypt = [];
+
+    /** @var array<string, JsonFieldMap> $jsonMaps */
+    protected $jsonMaps = [];
 
     /**
      * @var array<string, string> $aadSourceField
@@ -117,6 +122,17 @@ class EncryptedRow
     public function addIntegerField($fieldName, $aadSource = '')
     {
         return $this->addField($fieldName, Constants::TYPE_INT, $aadSource);
+    }
+
+    /**
+     * @param string $fieldName
+     * @param JsonFieldMap $fieldMap
+     * @return self
+     */
+    public function addJsonField($fieldName, JsonFieldMap $fieldMap)
+    {
+        $this->jsonMaps[$fieldName] = $fieldMap;
+        return $this->addField($fieldName, Constants::TYPE_JSON);
     }
 
     /**
@@ -303,17 +319,39 @@ class EncryptedRow
     }
 
     /**
+     * @param string $name
+     * @return JsonFieldMap
+     *
+     * @throws CipherSweetException
+     */
+    public function getJsonFieldMap($name)
+    {
+        if (!\array_key_exists($name, $this->fieldsToEncrypt)) {
+            throw new CipherSweetException("Field does not exist: {$name}");
+        }
+        if ($this->fieldsToEncrypt[$name] !== Constants::TYPE_JSON) {
+            throw new CipherSweetException("Field {$name} is not a JSON field");
+        }
+        if (!\array_key_exists($name, $this->jsonMaps)) {
+            throw new CipherSweetException("JSON Map not found for field {$name}");
+        }
+        return $this->jsonMaps[$name];
+    }
+
+    /**
      * Decrypt all of the appropriate fields in the given array.
      *
      * If any columns are defined in this object to be decrypted, the value
      * will be decrypted in-place in the returned array.
      *
      * @param array<string, string> $row
-     * @return array<string, string|int|float|bool|null>
+     * @return array<string, string|int|float|bool|null|scalar[]>
      * @throws CipherSweetException
      * @throws CryptoOperationException
      * @throws InvalidCiphertextException
      * @throws SodiumException
+     *
+     * @psalm-suppress InvalidReturnStatement
      */
     public function decryptRow(array $row)
     {
@@ -332,6 +370,13 @@ class EncryptedRow
                 $return[$field] = null;
                 continue;
             }
+            if ($type === Constants::TYPE_JSON && !empty($this->jsonMaps[$field])) {
+                // JSON is a special case
+                $jsonEncryptor = new EncryptedJsonField($backend, $key, $this->jsonMaps[$field]);
+                $return[$field] = $jsonEncryptor->decryptJson($row[$field]);
+                continue;
+            }
+
             if (
                 !empty($this->aadSourceField[$field])
                     &&
@@ -376,12 +421,19 @@ class EncryptedRow
                     ' on array, nothing given.'
                 );
             }
-            /** @var string $plaintext */
-            $plaintext = $this->convertToString($row[$field], $type);
             $key = $this->engine->getFieldSymmetricKey(
                 $this->tableName,
                 $field
             );
+            if ($type === Constants::TYPE_JSON && !empty($this->jsonMaps[$field])) {
+                // JSON is a special case
+                $jsonEncryptor = new EncryptedJsonField($backend, $key, $this->jsonMaps[$field]);
+                /** @psalm-suppress InvalidArgument */
+                $return[$field] = $jsonEncryptor->encryptJson($row[$field]);
+                continue;
+            }
+            /** @var string $plaintext */
+            $plaintext = $this->convertToString($row[$field], $type);
             if (
                 !empty($this->aadSourceField[$field])
                     &&
@@ -670,70 +722,6 @@ class EncryptedRow
             $index->getFilterBitLength(),
             $index->getHashConfig()
         );
-    }
-
-    /**
-     * Convert data from decrypted ciphertext into the intended data type
-     * (i.e. the format of the original plaintext before being converted).
-     *
-     * @param string $data
-     * @param string $type
-     * @return int|string|float|bool|null
-     * @throws SodiumException
-     */
-    protected function convertFromString($data, $type)
-    {
-        switch ($type) {
-            case Constants::TYPE_BOOLEAN:
-                return Util::chrToBool($data);
-            case Constants::TYPE_FLOAT:
-                return Util::stringToFloat($data);
-            case Constants::TYPE_INT:
-                return Util::stringToInt($data);
-            default:
-                return (string) $data;
-        }
-    }
-
-    /**
-     * Convert multiple data types to a string prior to encryption.
-     *
-     * The main goals here are:
-     *
-     * 1. Convert several data types to a string.
-     * 2. Leak no information about the original value in the
-     *    output string length.
-     *
-     * @param int|string|float|bool|null $data
-     * @param string $type
-     * @return string
-     * @throws SodiumException
-     */
-    protected function convertToString($data, $type)
-    {
-        switch ($type) {
-            // Will return a 1-byte string:
-            case Constants::TYPE_BOOLEAN:
-                if (!\is_null($data) && !\is_bool($data)) {
-                    $data = !empty($data);
-                }
-                return Util::boolToChr($data);
-            // Will return a fixed-length string:
-            case Constants::TYPE_FLOAT:
-                if (!\is_float($data)) {
-                    throw new \TypeError('Expected a float');
-                }
-                return Util::floatToString($data);
-            // Will return a fixed-length string:
-            case Constants::TYPE_INT:
-                if (!\is_int($data)) {
-                    throw new \TypeError('Expected an integer');
-                }
-                return Util::intToString($data);
-            // Will return the original string, untouched:
-            default:
-                return (string) $data;
-        }
     }
 
     /**
