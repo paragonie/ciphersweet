@@ -247,13 +247,15 @@ class EncryptedJsonField
     ) {
         // Walk down the path
         $curr = &$field;
+        $depth = 0;
         foreach ($path as $next) {
             if (!\array_key_exists($next, $curr)) {
-                $this->throwIfStrict(true);
+                $this->throwIfStrict($next, $depth, true);
                 return;
             }
             /** @var array<array-key, mixed|array>|null $curr */
             $curr =& $curr[$next];
+            ++$depth;
         }
         if (\is_null($curr)) {
             return;
@@ -283,14 +285,16 @@ class EncryptedJsonField
     ) {
         // Walk down the path
         $curr = &$field;
+        $depth = 0;
         foreach ($path as $next) {
             if (!\array_key_exists($next, $curr)) {
-                $this->throwIfStrict();
+                $this->throwIfStrict($next, $depth);
                 return;
             }
 
             /** @var array<array-key, mixed|array>|null $curr */
             $curr =& $curr[$next];
+            ++$depth;
         }
         if (\is_null($curr)) {
             return;
@@ -303,12 +307,14 @@ class EncryptedJsonField
     }
 
     /**
+     * @param array-key $key
+     * @param int $depth
      * @param bool $decrypting
      * @return void
      *
      * @throws CipherSweetException
      */
-    private function throwIfStrict($decrypting = false)
+    private function throwIfStrict($key, $depth, $decrypting = false)
     {
         if (!$this->strict) {
             /* NOP */
@@ -317,7 +323,7 @@ class EncryptedJsonField
 
         $pre = $decrypting ? 'de' : 'en';
         throw new CipherSweetException(
-            "Required JSON field was missing on {$pre}cryptJSON() in strict mode"
+            "Required JSON field {$key} was missing at depth {$depth} on {$pre}cryptJSON() in strict mode"
         );
     }
 }
