@@ -59,7 +59,7 @@ or noncommercial, open source or proprietary, at no cost to you.
 Use Composer.
 
 ```bash
-composer require paragonie/ciphersweet
+composer require paragonie/ciphersweet:^3
 ```
 
 ## Using CipherSweet
