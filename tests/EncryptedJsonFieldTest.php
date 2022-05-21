@@ -182,14 +182,30 @@ class EncryptedJsonFieldTest extends TestCase
             ->addIntegerField('age');
 
         $ejf = EncryptedJsonField::create($engine, $map, 'table', 'extra');
-        $ejf->setStrictMode(true);
+
+        // Set strict mode to OFF
+        $ejf->setStrictMode(false);
 
         $plaintext = $this->getDummyPlaintext();
+        $encArray = json_decode($ejf->encryptJson($plaintext), true);
+
+        // Verify that we successfully encrypted the fields:
+        $this->assertNotSame($plaintext['name'], $encArray['name']);
+        $this->assertNotSame($plaintext['active'], $encArray['active']);
+        $this->assertNotSame($plaintext['age'], $encArray['age']);
 
         // Remove an item
-        $encArray = json_decode($ejf->encryptJson($plaintext), true);
         unset($encArray['age']);
         $encrypted = json_encode($encArray);
+
+        // Verify that we can decrypt with strict mode turned off
+        $decrypted = $ejf->decryptJson($encrypted);
+        $this->assertArrayNotHasKey('age', $decrypted);
+        $this->assertSame($plaintext['name'], $decrypted['name']);
+        $this->assertSame($plaintext['active'], $decrypted['active']);
+
+        // Now turn strict mode back on and let the exceptions fly
+        $ejf->setStrictMode(true);
         $this->expectException(CipherSweetException::class);
         $ejf->decryptJson($encrypted);
         $this->fail("The previous call to decryptJSON() should have failed");

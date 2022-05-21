@@ -35,7 +35,7 @@ class EncryptedJsonField
         BackendInterface $backend,
         SymmetricKey $rootKey,
         JsonFieldMap $fieldMap,
-        $strict = false
+        $strict = true
     ) {
         $this->backend = $backend;
         $this->rootKey = $rootKey;
@@ -59,7 +59,7 @@ class EncryptedJsonField
         JsonFieldMap $fieldMap,
         $tableName,
         $fieldName,
-        $strict = false
+        $strict = true
     ) {
         return new self(
             $engine->getBackend(),

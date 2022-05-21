@@ -142,6 +142,7 @@ class EncryptedMultiRows
      * @param string $fieldName
      * @param JsonFieldMap $fieldMap
      * @param string $aadSource
+     * @param bool $strict
      * @return self
      *
      * @throws CipherSweetException
@@ -150,10 +151,11 @@ class EncryptedMultiRows
         $tableName,
         $fieldName,
         JsonFieldMap $fieldMap,
-        $aadSource = ''
+        $aadSource = '',
+        $strict = true
     ) {
         $this->getEncryptedRowObjectForTable($tableName)
-            ->addJsonField($fieldName, $fieldMap, $aadSource);
+            ->addJsonField($fieldName, $fieldMap, $aadSource, $strict);
         return $this;
     }
 
