@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 namespace ParagonIE\CipherSweet;
 
 use ParagonIE\CipherSweet\Contract\RowTransformationInterface;
@@ -14,42 +15,27 @@ class CompoundIndex
     /**
      * @var array<int, string> $columns
      */
-    protected $columns;
+    protected array $columns;
 
-    /**
-     * @var bool $fastHash
-     */
-    protected $fastHash;
+    protected bool $fastHash;
 
-    /**
-     * @var array $hashConfig
-     */
-    protected $hashConfig;
+    protected array $hashConfig;
 
-    /**
-     * @var string $name
-     */
-    protected $name;
+    protected string $name;
 
-    /**
-     * @var int $outputLength
-     */
-    protected $filterBits = 256;
+    protected int $filterBits = 256;
 
     /**
      * @var array<string, array<int, TransformationInterface>>
      */
-    protected $columnTransforms = [];
+    protected array $columnTransforms = [];
 
     /**
      * @var array<int, RowTransformationInterface>
      */
-    protected $rowTransforms = [];
+    protected array $rowTransforms = [];
 
-    /**
-     * @var Compound
-     */
-    private static $compounder;
+    private static ?Compound $compounder = null;
 
     /**
      * CompoundIndex constructor.
@@ -61,10 +47,10 @@ class CompoundIndex
      * @param array $hashConfig
      */
     public function __construct(
-        $name,
+        string $name,
         array $columns = [],
-        $filterBits = 256,
-        $fastHash = false,
+        int $filterBits = 256,
+        bool $fastHash = false,
         array $hashConfig = []
     ) {
         $this->name = $name;
@@ -77,20 +63,15 @@ class CompoundIndex
     /**
      * @return Compound
      */
-    public static function getCompounder()
+    public static function getCompounder(): Compound
     {
-        if (!self::$compounder) {
+        if (is_null(self::$compounder)) {
             self::$compounder = new Compound();
         }
         return self::$compounder;
     }
 
-    /**
-     * @param string $column
-     * @param TransformationInterface $tf
-     * @return self
-     */
-    public function addTransform($column, TransformationInterface $tf)
+    public function addTransform(string $column, TransformationInterface $tf): static
     {
         $this->columnTransforms[$column][] = $tf;
         return $this;
@@ -98,11 +79,8 @@ class CompoundIndex
 
     /**
      * Add a Row-Level Transform. This replaces the Compounder.
-     *
-     * @param RowTransformationInterface $tf
-     * @return self
      */
-    public function addRowTransform(RowTransformationInterface $tf)
+    public function addRowTransform(RowTransformationInterface $tf): static
     {
         $this->rowTransforms[] = $tf;
         return $this;
@@ -111,7 +89,7 @@ class CompoundIndex
     /**
      * @return array<int, string>
      */
-    public function getColumns()
+    public function getColumns(): array
     {
         return $this->columns;
     }
@@ -119,7 +97,7 @@ class CompoundIndex
     /**
      * @return string
      */
-    public function getName()
+    public function getName(): string
     {
         return $this->name;
     }
@@ -127,7 +105,7 @@ class CompoundIndex
     /**
      * @return bool
      */
-    public function getFastHash()
+    public function getFastHash(): bool
     {
         return $this->fastHash;
     }
@@ -135,7 +113,7 @@ class CompoundIndex
     /**
      * @return int
      */
-    public function getFilterBitLength()
+    public function getFilterBitLength(): int
     {
         return $this->filterBits;
     }
@@ -143,7 +121,7 @@ class CompoundIndex
     /**
      * @return array
      */
-    public function getHashConfig()
+    public function getHashConfig(): array
     {
         return $this->hashConfig;
     }
@@ -152,7 +130,7 @@ class CompoundIndex
      * @param string $column
      * @return array<int, TransformationInterface>
      */
-    public function getTransforms($column)
+    public function getTransforms(string $column): array
     {
         if (!\array_key_exists($column, $this->columns)) {
             return [];
@@ -163,7 +141,7 @@ class CompoundIndex
     /**
      * @return array<int, RowTransformationInterface>
      */
-    public function getRowTransforms()
+    public function getRowTransforms(): array
     {
         return $this->rowTransforms;
     }
@@ -178,7 +156,7 @@ class CompoundIndex
      * @return string
      * @throws \Exception
      */
-    public function getPacked(array $row)
+    public function getPacked(array $row): string
     {
         /** @var array<int, string> $pieces */
         $pieces = [];

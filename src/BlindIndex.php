@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 namespace ParagonIE\CipherSweet;
 
 use ParagonIE\CipherSweet\Contract\TransformationInterface;
@@ -9,30 +10,18 @@ use ParagonIE\CipherSweet\Contract\TransformationInterface;
  */
 class BlindIndex
 {
-    /**
-     * @var bool $fastHash
-     */
-    protected $fastHash;
+    protected bool $fastHash;
 
-    /**
-     * @var array $hashConfig
-     */
-    protected $hashConfig;
+    protected array $hashConfig;
 
-    /**
-     * @var string $name
-     */
-    protected $name;
+    protected string $name;
 
-    /**
-     * @var int $outputLength
-     */
-    protected $filterBits = 256;
+    protected int $filterBits = 256;
 
     /**
      * @var array<int, TransformationInterface> $transformations
      */
-    protected $transformations;
+    protected array $transformations;
 
     /**
      * BlindIndex constructor.
@@ -44,10 +33,10 @@ class BlindIndex
      * @param array $hashConfig
      */
     public function __construct(
-        $name,
+        string $name,
         array $transformations = [],
-        $filterBits = 256,
-        $fastHash = false,
+        int $filterBits = 256,
+        bool $fastHash = false,
         array $hashConfig = []
     ) {
         $this->name = $name;
@@ -59,9 +48,9 @@ class BlindIndex
 
     /**
      * @param TransformationInterface $tf
-     * @return self
+     * @return static
      */
-    public function addTransformation(TransformationInterface $tf)
+    public function addTransformation(TransformationInterface $tf): static
     {
         $this->transformations[] = $tf;
         return $this;
@@ -70,7 +59,7 @@ class BlindIndex
     /**
      * @return string
      */
-    public function getName()
+    public function getName(): string
     {
         return $this->name;
     }
@@ -78,7 +67,7 @@ class BlindIndex
     /**
      * @return bool
      */
-    public function getFastHash()
+    public function getFastHash(): bool
     {
         return $this->fastHash;
     }
@@ -86,7 +75,7 @@ class BlindIndex
     /**
      * @return array
      */
-    public function getHashConfig()
+    public function getHashConfig(): array
     {
         return $this->hashConfig;
     }
@@ -94,7 +83,7 @@ class BlindIndex
     /**
      * @return int
      */
-    public function getFilterBitLength()
+    public function getFilterBitLength(): int
     {
         return $this->filterBits;
     }
@@ -103,7 +92,7 @@ class BlindIndex
      * @param string $input
      * @return string
      */
-    public function getTransformed($input)
+    public function getTransformed(string $input): string
     {
         if (empty($this->transformations)) {
             return $input;

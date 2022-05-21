@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 namespace ParagonIE\CipherSweet;
 
 use ParagonIE\CipherSweet\Contract\BackendInterface;
@@ -17,17 +18,17 @@ class EncryptedMultiRows
     /**
      * @var CipherSweet $engine
      */
-    protected $engine;
+    protected CipherSweet $engine;
 
     /**
      * @var bool $typedIndexes
      */
-    protected $typedIndexes;
+    protected bool $typedIndexes;
 
     /**
      * @var array<string, EncryptedRow> $tables
      */
-    protected $tables = [];
+    protected array $tables = [];
 
     /**
      * EncryptedFieldSet constructor.
@@ -35,7 +36,7 @@ class EncryptedMultiRows
      * @param CipherSweet $engine
      * @param bool $useTypedIndexes
      */
-    public function __construct(CipherSweet $engine, $useTypedIndexes = false)
+    public function __construct(CipherSweet $engine, bool $useTypedIndexes = false)
     {
         $this->engine = $engine;
         $this->typedIndexes = $useTypedIndexes;
@@ -44,11 +45,9 @@ class EncryptedMultiRows
     /**
      * Add a table to the list of tables we process.
      *
-     * @param string $tableName
-     * @return self
      * @throws CipherSweetException
      */
-    public function addTable($tableName)
+    public function addTable(string $tableName): static
     {
         if (\array_key_exists($tableName, $this->tables)) {
             throw new CipherSweetException('Table already exists');
@@ -60,19 +59,14 @@ class EncryptedMultiRows
     /**
      * Mark a field to be encrypted.
      *
-     * @param string $tableName
-     * @param string $fieldName
-     * @param string $type
-     * @param string $aadSource
-     * @return self
      * @throws CipherSweetException
      */
     public function addField(
-        $tableName,
-        $fieldName,
-        $type = Constants::TYPE_TEXT,
-        $aadSource = ''
-    ) {
+        string $tableName,
+        string $fieldName,
+        string $type = Constants::TYPE_TEXT,
+        string $aadSource = ''
+    ): static {
         $this->getEncryptedRowObjectForTable($tableName)
             ->addField($fieldName, $type, $aadSource);
         return $this;
@@ -81,14 +75,13 @@ class EncryptedMultiRows
     /**
      * Mark a column to be encrypted as boolean input.
      *
-     * @param string $tableName
-     * @param string $fieldName
-     * @param string $aadSource
-     * @return self
      * @throws CipherSweetException
      */
-    public function addBooleanField($tableName, $fieldName, $aadSource = '')
-    {
+    public function addBooleanField(
+        string $tableName,
+        string $fieldName,
+        string $aadSource = ''
+    ): static {
         return $this->addField(
             $tableName,
             $fieldName,
@@ -100,14 +93,13 @@ class EncryptedMultiRows
     /**
      * Mark a column to be encrypted as floating point input.
      *
-     * @param string $tableName
-     * @param string $fieldName
-     * @param string $aadSource
-     * @return self
      * @throws CipherSweetException
      */
-    public function addFloatField($tableName, $fieldName, $aadSource = '')
-    {
+    public function addFloatField(
+        string $tableName,
+        string $fieldName,
+        string $aadSource = ''
+    ): static {
         return $this->addField(
             $tableName,
             $fieldName,
@@ -119,14 +111,13 @@ class EncryptedMultiRows
     /**
      * Mark a column to be encrypted as integer input.
      *
-     * @param string $tableName
-     * @param string $fieldName
-     * @param string $aadSource
-     * @return self
      * @throws CipherSweetException
      */
-    public function addIntegerField($tableName, $fieldName, $aadSource = '')
-    {
+    public function addIntegerField(
+        string $tableName,
+        string $fieldName,
+        string $aadSource = ''
+    ): static {
         return $this->addField(
             $tableName,
             $fieldName,
@@ -138,22 +129,15 @@ class EncryptedMultiRows
     /**
      * Mark a column to be encryption as a JSON blob.
      *
-     * @param string $tableName
-     * @param string $fieldName
-     * @param JsonFieldMap $fieldMap
-     * @param string $aadSource
-     * @param bool $strict
-     * @return self
-     *
      * @throws CipherSweetException
      */
     public function addJsonField(
-        $tableName,
-        $fieldName,
+        string $tableName,
+        string $fieldName,
         JsonFieldMap $fieldMap,
-        $aadSource = '',
-        $strict = true
-    ) {
+        string $aadSource = '',
+        bool $strict = true
+    ): static {
         $this->getEncryptedRowObjectForTable($tableName)
             ->addJsonField($fieldName, $fieldMap, $aadSource, $strict);
         return $this;
@@ -162,14 +146,13 @@ class EncryptedMultiRows
     /**
      * Mark a column to be encrypted as text input.
      *
-     * @param string $tableName
-     * @param string $fieldName
-     * @param string $aadSource
-     * @return self
      * @throws CipherSweetException
      */
-    public function addTextField($tableName, $fieldName, $aadSource = '')
-    {
+    public function addTextField(
+        string $tableName,
+        string $fieldName,
+        string $aadSource = ''
+    ): static {
         return $this->addField(
             $tableName,
             $fieldName,
@@ -180,14 +163,9 @@ class EncryptedMultiRows
 
     /**
      * Add a blind index to a specific table.
-     *
-     * @param string $tableName
-     * @param string $column
-     * @param BlindIndex $index
-     * @return self
      * @throws CipherSweetException
      */
-    public function addBlindIndex($tableName, $column, BlindIndex $index)
+    public function addBlindIndex(string $tableName, string $column, BlindIndex $index): static
     {
         $this->getEncryptedRowObjectForTable($tableName)
             ->addBlindIndex($column, $index);
@@ -197,12 +175,9 @@ class EncryptedMultiRows
     /**
      * Add a CompoundIndex to a specific table.
      *
-     * @param string $tableName
-     * @param CompoundIndex $index
-     * @return self
      * @throws CipherSweetException
      */
-    public function addCompoundIndex($tableName,CompoundIndex $index)
+    public function addCompoundIndex(string $tableName, CompoundIndex $index): static
     {
         $this->getEncryptedRowObjectForTable($tableName)
             ->addCompoundIndex($index);
@@ -212,23 +187,16 @@ class EncryptedMultiRows
     /**
      * Create a compound index. See EncryptedRow::createCompoundIndex().
      *
-     * @param string $tableName
-     * @param string $name
-     * @param array<int, string> $columns
-     * @param int $filterBits
-     * @param bool $fastHash
-     * @param array $hashConfig
-     * @return CompoundIndex
      * @throws CipherSweetException
      */
     public function createCompoundIndex(
-        $tableName,
-        $name,
+        string $tableName,
+        string $name,
         array $columns = [],
-        $filterBits = 256,
-        $fastHash = false,
+        int $filterBits = 256,
+        bool $fastHash = false,
         array $hashConfig = []
-    ) {
+    ): CompoundIndex {
         return $this->getEncryptedRowObjectForTable($tableName)
             ->createCompoundIndex(
                 $name,
@@ -259,7 +227,7 @@ class EncryptedMultiRows
      * @throws SodiumException
      * @throws CipherSweetException
      */
-    public function decryptManyRows(array $rows)
+    public function decryptManyRows(array $rows): array
     {
         foreach (\array_keys($this->tables) as $table) {
             if (isset($rows[$table])) {
@@ -295,7 +263,7 @@ class EncryptedMultiRows
      * @throws SodiumException
      * @throws CipherSweetException
      */
-    public function encryptManyRows(array $rows)
+    public function encryptManyRows(array $rows): array
     {
         foreach (\array_keys($this->tables) as $table) {
             if (isset($rows[$table])) {
@@ -313,9 +281,6 @@ class EncryptedMultiRows
     /**
      * Get a specific blind index output (for a given table and index)
      *
-     * @param string $tableName
-     * @param string $indexName
-     * @param array $row
      * @return array<string, string>|string
      *
      * @throws ArrayKeyException
@@ -324,8 +289,11 @@ class EncryptedMultiRows
      * @throws SodiumException
      * @throws CipherSweetException
      */
-    public function getBlindIndex($tableName, $indexName, array $row)
-    {
+    public function getBlindIndex(
+        string $tableName,
+        string $indexName,
+        array $row
+    ): string|array {
         return $this->getEncryptedRowObjectForTable($tableName)
             ->getBlindIndex($indexName, $row);
     }
@@ -342,7 +310,7 @@ class EncryptedMultiRows
      * @throws SodiumException
      * @throws CipherSweetException
      */
-    public function getBlindIndexesForTable($tableName, array $row)
+    public function getBlindIndexesForTable(string $tableName, array $row): array
     {
         return $this->getEncryptedRowObjectForTable($tableName)
             ->getAllBlindIndexes($row);
@@ -369,8 +337,9 @@ class EncryptedMultiRows
      * @throws SodiumException
      * @throws CipherSweetException
      */
-    public function getAllBlindIndexes(array $rows)
+    public function getAllBlindIndexes(array $rows): array
     {
+        /** @var array<string, array<string, array<string, string>|string>> $tables */
         $tables = [];
         foreach (\array_keys($this->tables) as $table) {
             if (isset($rows[$table])) {
@@ -385,14 +354,10 @@ class EncryptedMultiRows
     /**
      * Get the "type" of a specific blind index (by table, column, and index name).
      *
-     * @param string $table
-     * @param string $column
-     * @param string $name
-     * @return string
      * @throws SodiumException
      * @throws CipherSweetException
      */
-    public function getBlindIndexType($table, $column, $name)
+    public function getBlindIndexType(string $table, string $column, string $name): string
     {
         return $this->getEncryptedRowObjectForTable($table)
             ->getBlindIndexType(
@@ -402,15 +367,12 @@ class EncryptedMultiRows
     }
 
     /**
-     * Get the "type" of a specific blind index (by table and index name).
+     * Get the "type" of a specific compound index (by table and index name).
      *
-     * @param string $table
-     * @param string $name
-     * @return string
      * @throws SodiumException
      * @throws CipherSweetException
      */
-    public function getCompoundIndexType($table, $name)
+    public function getCompoundIndexType(string $table, string $name): string
     {
         return $this->getEncryptedRowObjectForTable($table)
             ->getCompoundIndexType($name);
@@ -424,7 +386,7 @@ class EncryptedMultiRows
      * @return EncryptedRow
      * @throws CipherSweetException
      */
-    public function getEncryptedRowObjectForTable($tableName = '')
+    public function getEncryptedRowObjectForTable(string $tableName = ''): EncryptedRow
     {
         if (!\array_key_exists($tableName, $this->tables)) {
             $this->addTable($tableName);
@@ -438,19 +400,15 @@ class EncryptedMultiRows
     /**
      * @return array<int, string>
      */
-    public function listTables()
+    public function listTables(): array
     {
         return \array_keys($this->tables);
     }
 
     /**
-     * @param string $tableName
-     * @param string $fieldName
-     * @param string $aadSource
-     * @return self
      * @throws CipherSweetException
      */
-    public function setAadSourceField($tableName, $fieldName, $aadSource)
+    public function setAadSourceField(string $tableName, string $fieldName, string $aadSource): static
     {
         $this->getEncryptedRowObjectForTable($tableName)
             ->setAadSourceField($fieldName, $aadSource);
@@ -478,7 +436,7 @@ class EncryptedMultiRows
      * @throws SodiumException
      * @throws CipherSweetException
      */
-    public function prepareForStorage(array $rows)
+    public function prepareForStorage(array $rows): array
     {
         $indexes = [];
         $tables = [];
@@ -501,7 +459,7 @@ class EncryptedMultiRows
     /**
      * @return BackendInterface
      */
-    public function getBackend()
+    public function getBackend(): BackendInterface
     {
         return $this->engine->getBackend();
     }
@@ -509,7 +467,7 @@ class EncryptedMultiRows
     /**
      * @return CipherSweet
      */
-    public function getEngine()
+    public function getEngine(): CipherSweet
     {
         return $this->engine;
     }
@@ -517,16 +475,16 @@ class EncryptedMultiRows
     /**
      * @return bool
      */
-    public function getFlatIndexes()
+    public function getFlatIndexes(): bool
     {
         return !$this->typedIndexes;
     }
 
     /**
      * @param bool $bool
-     * @return self
+     * @return static
      */
-    public function setFlatIndexes($bool)
+    public function setFlatIndexes(bool $bool): static
     {
         $this->typedIndexes = !$bool;
         return $this;
@@ -535,16 +493,16 @@ class EncryptedMultiRows
     /**
      * @return bool
      */
-    public function getTypedIndexes()
+    public function getTypedIndexes(): bool
     {
         return $this->typedIndexes;
     }
 
     /**
      * @param bool $bool
-     * @return self
+     * @return static
      */
-    public function setTypedIndexes($bool)
+    public function setTypedIndexes(bool $bool): static
     {
         $this->typedIndexes = $bool;
         return $this;

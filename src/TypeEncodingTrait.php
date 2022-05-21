@@ -1,5 +1,5 @@
 <?php
-
+declare(strict_types=1);
 namespace ParagonIE\CipherSweet;
 
 use SodiumException;
@@ -10,23 +10,16 @@ trait TypeEncodingTrait
      * Convert data from decrypted ciphertext into the intended data type
      * (i.e. the format of the original plaintext before being converted).
      *
-     * @param string $data
-     * @param string $type
-     * @return int|string|float|bool|null
      * @throws SodiumException
      */
-    protected function convertFromString($data, $type)
+    protected function convertFromString(string $data, string $type): int|string|float|bool|null
     {
-        switch ($type) {
-            case Constants::TYPE_BOOLEAN:
-                return Util::chrToBool($data);
-            case Constants::TYPE_FLOAT:
-                return Util::stringToFloat($data);
-            case Constants::TYPE_INT:
-                return Util::stringToInt($data);
-            default:
-                return (string) $data;
-        }
+        return match ($type) {
+            Constants::TYPE_BOOLEAN => Util::chrToBool($data),
+            Constants::TYPE_FLOAT => Util::stringToFloat($data),
+            Constants::TYPE_INT => Util::stringToInt($data),
+            default => (string) $data,
+        };
     }
 
     /**
@@ -38,12 +31,9 @@ trait TypeEncodingTrait
      * 2. Leak no information about the original value in the
      *    output string length.
      *
-     * @param int|string|float|bool|null $data
-     * @param string $type
-     * @return string
      * @throws SodiumException
      */
-    protected function convertToString($data, $type)
+    protected function convertToString(int|string|float|bool|null $data, string $type): string
     {
         switch ($type) {
             // Will return a 1-byte string:
@@ -69,5 +59,4 @@ trait TypeEncodingTrait
                 return (string) $data;
         }
     }
-
 }

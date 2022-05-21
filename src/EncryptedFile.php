@@ -1,7 +1,9 @@
 <?php
+declare(strict_types=1);
 namespace ParagonIE\CipherSweet;
 
 use ParagonIE\CipherSweet\Contract\BackendInterface;
+use ParagonIE\CipherSweet\Exception\CipherSweetException;
 use ParagonIE\CipherSweet\Exception\CryptoOperationException;
 use ParagonIE\CipherSweet\Exception\FilesystemException;
 use ParagonIE\ConstantTime\Binary;
@@ -13,17 +15,17 @@ use ParagonIE\ConstantTime\Binary;
 class EncryptedFile
 {
     /** @var int $chunkSize */
-    protected $chunkSize;
+    protected int $chunkSize;
 
     /** @var CipherSweet $engine */
-    protected $engine;
+    protected CipherSweet $engine;
 
     /**
      * EncryptedFile constructor.
      * @param CipherSweet $engine
      * @param int $chunkSize      Affects how much memory is read at once.
      */
-    public function __construct(CipherSweet $engine, $chunkSize = 8192)
+    public function __construct(CipherSweet $engine, int $chunkSize = 8192)
     {
         $this->engine = $engine;
         $this->chunkSize = $chunkSize;
@@ -32,7 +34,7 @@ class EncryptedFile
     /**
      * @return BackendInterface
      */
-    public function getBackend()
+    public function getBackend(): BackendInterface
     {
         return $this->engine->getBackend();
     }
@@ -40,7 +42,7 @@ class EncryptedFile
     /**
      * @return string
      */
-    public function getBackendPrefix()
+    public function getBackendPrefix(): string
     {
         return $this->engine->getBackend()->getPrefix();
     }
@@ -48,7 +50,7 @@ class EncryptedFile
     /**
      * @return CipherSweet
      */
-    public function getEngine()
+    public function getEngine(): CipherSweet
     {
         return $this->engine;
     }
@@ -63,7 +65,7 @@ class EncryptedFile
      * @throws CryptoOperationException
      * @throws FilesystemException
      */
-    public function decryptFile($inputFile, $outputFile)
+    public function decryptFile(string $inputFile, string $outputFile): bool
     {
         if (\realpath($inputFile) === \realpath($outputFile)) {
             $inputRealStream = $this->getStreamForFile($inputFile, 'rb');
@@ -91,8 +93,11 @@ class EncryptedFile
      *
      * @throws FilesystemException
      */
-    public function decryptFileWithPassword($inputFile, $outputFile, $password)
-    {
+    public function decryptFileWithPassword(
+        string $inputFile,
+        string $outputFile,
+        string $password
+    ): bool {
         if (\realpath($inputFile) === \realpath($outputFile)) {
             $inputRealStream = $this->getStreamForFile($inputFile, 'rb');
             $inputStream = $this->copyStreamToTemp($inputRealStream);
@@ -119,9 +124,12 @@ class EncryptedFile
      * @param resource $inputFP
      * @param resource $outputFP
      * @return bool
+     *
      * @throws CryptoOperationException
+     * @throws CipherSweetException
+     * @throws \SodiumException
      */
-    public function decryptStream($inputFP, $outputFP)
+    public function decryptStream($inputFP, $outputFP): bool
     {
         $key = $this->engine->getFieldSymmetricKey(
             Constants::FILE_TABLE,
@@ -142,9 +150,15 @@ class EncryptedFile
      * @param resource $outputFP
      * @param string $password
      * @return bool
+     *
+     * @throws CryptoOperationException
+     * @throws \SodiumException
      */
-    public function decryptStreamWithPassword($inputFP, $outputFP, $password)
-    {
+    public function decryptStreamWithPassword(
+        $inputFP,
+        $outputFP,
+        string $password
+    ): bool {
         $backend = $this->engine->getBackend();
         $salt = $this->getSaltFromStream($inputFP);
         $key = $backend->deriveKeyFromPassword($password, $salt);
@@ -166,7 +180,7 @@ class EncryptedFile
      * @throws CryptoOperationException
      * @throws FilesystemException
      */
-    public function encryptFile($inputFile, $outputFile)
+    public function encryptFile(string $inputFile, string $outputFile): bool
     {
         if (\realpath($inputFile) === \realpath($outputFile)) {
             $inputRealStream = $this->getStreamForFile($inputFile, 'rb');
@@ -195,8 +209,11 @@ class EncryptedFile
      * @throws FilesystemException
      * @return bool
      */
-    public function encryptFileWithPassword($inputFile, $outputFile, $password)
-    {
+    public function encryptFileWithPassword(
+        string $inputFile,
+        string $outputFile,
+        string $password
+    ): bool {
         if (\realpath($inputFile) === \realpath($outputFile)) {
             $inputRealStream = $this->getStreamForFile($inputFile, 'rb');
             $inputStream = $this->copyStreamToTemp($inputRealStream);
@@ -224,9 +241,11 @@ class EncryptedFile
      * @param resource $outputFP
      * @return bool
      *
+     * @throws CipherSweetException
      * @throws CryptoOperationException
+     * @throws \SodiumException
      */
-    public function encryptStream($inputFP, $outputFP)
+    public function encryptStream($inputFP, $outputFP): bool
     {
         $key = $this->engine->getFieldSymmetricKey(
             Constants::FILE_TABLE,
@@ -246,11 +265,16 @@ class EncryptedFile
      * @param resource $inputFP
      * @param resource $outputFP
      * @param string $password
-     * @throws CryptoOperationException
      * @return bool
+     *
+     * @throws CryptoOperationException
+     * @throws \SodiumException
      */
-    public function encryptStreamWithPassword($inputFP, $outputFP, $password)
-    {
+    public function encryptStreamWithPassword(
+        $inputFP,
+        $outputFP,
+        string $password
+    ): bool {
         try {
             // Do not generate a dummy salt!
             do {
@@ -277,7 +301,7 @@ class EncryptedFile
      * @param resource $inputFP
      * @return string
      */
-    public function getSaltFromStream($inputFP)
+    public function getSaltFromStream($inputFP): string
     {
         $backend = $this->getBackend();
         \fseek($inputFP, $backend->getFileEncryptionSaltOffset(), SEEK_SET);
@@ -295,7 +319,7 @@ class EncryptedFile
      * @throws FilesystemException
      * @throws \SodiumException
      */
-    public function isFileEncrypted($filename)
+    public function isFileEncrypted(string $filename): bool
     {
         return $this->isStreamEncrypted($this->getStreamForFile($filename, 'rb'));
     }
@@ -306,7 +330,7 @@ class EncryptedFile
      *
      * @throws \SodiumException
      */
-    public function isStreamEncrypted($inputFile)
+    public function isStreamEncrypted($inputFile): bool
     {
         $pos = \ftell($inputFile);
         \fseek($inputFile, 0, SEEK_SET);
@@ -320,7 +344,6 @@ class EncryptedFile
         // Compare the stored header with the backend:
         $expect = $this->getBackendPrefix();
 
-        /** @var bool $return */
         $return = Util::hashEquals($expect, $header);
 
         \fseek($inputFile, $pos, SEEK_SET);
@@ -333,7 +356,7 @@ class EncryptedFile
      * @return resource
      * @throws FilesystemException
      */
-    public function getStreamForFile($fileName = 'php://temp', $mode = 'wb')
+    public function getStreamForFile(string $fileName = 'php://temp', string $mode = 'wb')
     {
         $fp = \fopen($fileName, $mode);
         if (!\is_resource($fp)) {

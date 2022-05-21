@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 namespace ParagonIE\CipherSweet;
 
 use ParagonIE\CipherSweet\Backend\Key\SymmetricKey;
@@ -7,6 +8,7 @@ use ParagonIE\CipherSweet\Exception\BlindIndexNameCollisionException;
 use ParagonIE\CipherSweet\Exception\BlindIndexNotFoundException;
 use ParagonIE\CipherSweet\Exception\CipherSweetException;
 use ParagonIE\CipherSweet\Exception\CryptoOperationException;
+use ParagonIE\CipherSweet\Exception\InvalidCiphertextException;
 use ParagonIE\ConstantTime\Hex;
 use SodiumException;
 
@@ -19,49 +21,44 @@ class EncryptedField
     /**
      * @var array<string, BlindIndex> $blindIndexes
      */
-    protected $blindIndexes = [];
+    protected array $blindIndexes = [];
 
     /**
      * @var CipherSweet $engine
      */
-    protected $engine;
+    protected CipherSweet $engine;
 
     /**
      * @var string $fieldName
      */
-    protected $fieldName = '';
+    protected string $fieldName = '';
 
     /**
      * @var bool $typedIndexes
      */
-    protected $typedIndexes = false;
+    protected bool $typedIndexes = false;
 
     /**
      * @var SymmetricKey $key
      */
-    protected $key;
+    protected SymmetricKey $key;
 
     /**
      * @var string $tableName
      */
-    protected $tableName = '';
+    protected string $tableName = '';
 
     /**
      * EncryptedField constructor.
-     *
-     * @param CipherSweet $engine
-     * @param string $tableName
-     * @param string $fieldName
-     * @param bool $useTypedIndexes
      *
      * @throws CryptoOperationException
      * @throws CipherSweetException
      */
     public function __construct(
         CipherSweet $engine,
-        $tableName = '',
-        $fieldName = '',
-        $useTypedIndexes = false
+        string $tableName = '',
+        string $fieldName = '',
+        bool $useTypedIndexes = false
     ) {
         $this->engine = $engine;
         $this->tableName = $tableName;
@@ -78,12 +75,10 @@ class EncryptedField
      *
      * Sets the active tenant and re-derives the encryption key for this field.
      *
-     * @param string $tenantIndex
-     * @return self
      * @throws CipherSweetException
      * @throws CryptoOperationException
      */
-    public function setActiveTenant($tenantIndex)
+    public function setActiveTenant(string $tenantIndex): static
     {
         if (!$this->engine->isMultiTenantSupported()) {
             throw new CipherSweetException('This is only available for multi-tenant-aware engines/providers.');
@@ -99,15 +94,14 @@ class EncryptedField
     /**
      * Encrypt a value and calculate all of its blind indices in one go.
      *
-     * @param string $plaintext
-     * @param string $aad               Additional authenticated data
      * @return array<int, string|array>
      *
      * @throws BlindIndexNotFoundException
+     * @throws CipherSweetException
      * @throws CryptoOperationException
      * @throws SodiumException
      */
-    public function prepareForStorage($plaintext, $aad = '')
+    public function prepareForStorage(string $plaintext, string $aad = ''): array
     {
         return [
             $this->encryptValue($plaintext, $aad),
@@ -123,10 +117,10 @@ class EncryptedField
      * @return string
      *
      * @throws CryptoOperationException
-     * @throws Exception\CipherSweetException
+     * @throws CipherSweetException
      * @throws SodiumException
      */
-    public function encryptValue($plaintext, $aad = '')
+    public function encryptValue(string $plaintext, string $aad = ''): string
     {
         return $this
             ->engine
@@ -141,15 +135,11 @@ class EncryptedField
     /**
      * Decrypt a single value, using the per-field symmetric key.
      *
-     * @param string $ciphertext
-     * @param string $aad       Additional authenticated data
-     * @return string
-     *
-     * @throws Exception\CipherSweetException
-     * @throws Exception\InvalidCiphertextException
+     * @throws CipherSweetException
+     * @throws InvalidCiphertextException
      * @throws SodiumException
      */
-    public function decryptValue($ciphertext, $aad = '')
+    public function decryptValue(string $ciphertext, string $aad = ''): string
     {
         return $this
             ->engine
@@ -164,15 +154,15 @@ class EncryptedField
     /**
      * Get all blind index values for a given plaintext.
      *
-     * @param string $plaintext
      * @return array<string, string|array>
      *
      * @throws BlindIndexNotFoundException
      * @throws CryptoOperationException
      * @throws SodiumException
      */
-    public function getAllBlindIndexes($plaintext)
+    public function getAllBlindIndexes(string $plaintext): array
     {
+        /** @var array<string, string|array> $output */
         $output = [];
         $key = $this->engine->getBlindIndexRootKey(
             $this->tableName,
@@ -217,15 +207,11 @@ class EncryptedField
     /**
      * Get a particular blind index of a given plaintext.
      *
-     * @param string $plaintext
-     * @param string $name
-     * @return array|string
-     *
      * @throws BlindIndexNotFoundException
      * @throws CryptoOperationException
      * @throws SodiumException
      */
-    public function getBlindIndex($plaintext, $name)
+    public function getBlindIndex(string $plaintext, string $name): string|array
     {
         $key = $this->engine->getBlindIndexRootKey(
             $this->tableName,
@@ -261,19 +247,15 @@ class EncryptedField
     /**
      * Internal: Get the raw blind index. Returns a raw binary string.
      *
-     * @param string $plaintext
-     * @param string $name
-     * @param SymmetricKey|null $key
-     * @return string
-     *
      * @throws BlindIndexNotFoundException
      * @throws CryptoOperationException
+     * @throws SodiumException
      */
     protected function getBlindIndexRaw(
-        $plaintext,
-        $name,
+        string $plaintext,
+        string $name,
         SymmetricKey $key = null
-    ) {
+    ): string {
         if (!isset($this->blindIndexes[$name])) {
             throw new BlindIndexNotFoundException(
                 'Blind index ' . $name . ' not found'
@@ -316,7 +298,7 @@ class EncryptedField
     /**
      * @return array<string, BlindIndex>
      */
-    public function getBlindIndexObjects()
+    public function getBlindIndexObjects(): array
     {
         return $this->blindIndexes;
     }
@@ -326,11 +308,9 @@ class EncryptedField
      *
      * More specific than the getBlindIndexTypes() method.
      *
-     * @param string $name
-     * @return string
      * @throws SodiumException
      */
-    public function getBlindIndexType($name)
+    public function getBlindIndexType(string $name): string
     {
         return $this->engine->getIndexTypeColumn(
             $this->tableName,
@@ -344,9 +324,10 @@ class EncryptedField
      * index names.
      *
      * @return array<string, string>
+     *
      * @throws SodiumException
      */
-    public function getBlindIndexTypes()
+    public function getBlindIndexTypes(): array
     {
         $typeArray = [];
         foreach (\array_keys($this->blindIndexes) as $name) {
@@ -362,12 +343,9 @@ class EncryptedField
     /**
      * Add a blind index to this encrypted field.
      *
-     * @param BlindIndex $index
-     * @param string|null $name
-     * @return self
      * @throws BlindIndexNameCollisionException
      */
-    public function addBlindIndex(BlindIndex $index, $name = null)
+    public function addBlindIndex(BlindIndex $index, ?string $name = null): static
     {
         if (\is_null($name)) {
             $name = $index->getName();
@@ -381,26 +359,17 @@ class EncryptedField
         return $this;
     }
 
-    /**
-     * @return bool
-     */
-    public function getFlatIndexes()
+    public function getFlatIndexes(): bool
     {
         return !$this->typedIndexes;
     }
 
-    /**
-     * @return bool
-     */
-    public function getTypedIndexes()
+    public function getTypedIndexes(): bool
     {
         return $this->typedIndexes;
     }
 
-    /**
-     * @return BackendInterface
-     */
-    public function getBackend()
+    public function getBackend(): BackendInterface
     {
         return $this->engine->getBackend();
     }
@@ -408,26 +377,18 @@ class EncryptedField
     /**
      * @return CipherSweet
      */
-    public function getEngine()
+    public function getEngine(): CipherSweet
     {
         return $this->engine;
     }
 
-    /**
-     * @param bool $bool
-     * @return self
-     */
-    public function setFlatIndexes($bool)
+    public function setFlatIndexes(bool $bool): static
     {
         $this->typedIndexes = !$bool;
         return $this;
     }
 
-    /**
-     * @param bool $bool
-     * @return self
-     */
-    public function setTypedIndexes($bool)
+    public function setTypedIndexes(bool $bool): static
     {
         $this->typedIndexes = $bool;
         return $this;

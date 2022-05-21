@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 namespace ParagonIE\CipherSweet;
 
 use ParagonIE\CipherSweet\Backend\BoringCrypto;
@@ -16,15 +17,8 @@ use ParagonIE\CipherSweet\Exception\CryptoOperationException;
  */
 final class CipherSweet
 {
-    /**
-     * @var BackendInterface $backend
-     */
-    private $backend;
-
-    /**
-     * @var KeyProviderInterface $keyProvider
-     */
-    private $keyProvider;
+    private BackendInterface $backend;
+    private KeyProviderInterface $keyProvider;
 
     /**
      * CipherSweet constructor.
@@ -43,7 +37,7 @@ final class CipherSweet
     /**
      * @return BackendInterface
      */
-    public function getBackend()
+    public function getBackend(): BackendInterface
     {
         return $this->backend;
     }
@@ -53,23 +47,19 @@ final class CipherSweet
      *
      * @return KeyProviderInterface
      */
-    public function getKeyProvider()
+    public function getKeyProvider(): KeyProviderInterface
     {
         return $this->keyProvider;
     }
 
     /**
-     * @param string $tableName
-     * @param string $fieldName
-     * @param string $indexName
-     * @return string
      * @throws \SodiumException
      */
     public function getIndexTypeColumn(
-        $tableName,
-        $fieldName,
-        $indexName
-    ) {
+        string $tableName,
+        string $fieldName,
+        string $indexName
+    ): string {
         return $this->backend->getIndexTypeColumn(
             $tableName,
             $fieldName,
@@ -83,14 +73,8 @@ final class CipherSweet
      *
      * Uses a 32 byte prefix for the HKDF "info" parameter, for domain
      * separation.
-     *
-     * @param string $tableName
-     * @param string $fieldName
-     *
-     * @return SymmetricKey
-     * @throws CryptoOperationException
      */
-    public function getBlindIndexRootKey($tableName, $fieldName)
+    public function getBlindIndexRootKey(string $tableName, string $fieldName): SymmetricKey
     {
         return new SymmetricKey(
             Util::HKDF(
@@ -115,7 +99,7 @@ final class CipherSweet
      * @throws CipherSweetException
      * @throws CryptoOperationException
      */
-    public function getFieldSymmetricKey($tableName, $fieldName)
+    public function getFieldSymmetricKey(string $tableName, string $fieldName): SymmetricKey
     {
         if ($this->isMultiTenantSupported()) {
             return new SymmetricKey(
@@ -142,7 +126,7 @@ final class CipherSweet
      * @return KeyProviderInterface
      * @throws CipherSweetException
      */
-    public function getKeyProviderForActiveTenant()
+    public function getKeyProviderForActiveTenant(): KeyProviderInterface
     {
         if (!($this->keyProvider instanceof MultiTenantAwareProviderInterface)) {
             throw new CipherSweetException('Your Key Provider is not multi-tenant aware');
@@ -159,7 +143,7 @@ final class CipherSweet
      * @return KeyProviderInterface
      * @throws CipherSweetException
      */
-    public function getKeyProviderForTenant($name)
+    public function getKeyProviderForTenant(string|int $name): KeyProviderInterface
     {
         if (!($this->keyProvider instanceof MultiTenantAwareProviderInterface)) {
             throw new CipherSweetException('Your Key Provider is not multi-tenant aware');
@@ -175,7 +159,7 @@ final class CipherSweet
      * @return string
      * @throws CipherSweetException
      */
-    public function getTenantFromRow(array $row, $tableName = '')
+    public function getTenantFromRow(array $row, string $tableName = ''): string
     {
         /** @param MultiTenantAwareProviderInterface $kp */
         if ($this->keyProvider instanceof MultiTenantAwareProviderInterface) {
@@ -190,7 +174,7 @@ final class CipherSweet
      * @return void
      * @throws CipherSweetException
      */
-    public function setActiveTenant($name)
+    public function setActiveTenant(string $name): void
     {
         /** @param MultiTenantAwareProviderInterface $kp */
         if ($this->keyProvider instanceof MultiTenantAwareProviderInterface) {
@@ -206,7 +190,7 @@ final class CipherSweet
      * @return array
      * @throws CipherSweetException
      */
-    public function injectTenantMetadata(array $row, $tableName = '')
+    public function injectTenantMetadata(array $row, string $tableName = ''): array
     {
         if ($this->keyProvider instanceof MultiTenantAwareProviderInterface) {
             $kp = $this->keyProvider;
@@ -218,7 +202,7 @@ final class CipherSweet
     /**
      * @return bool
      */
-    public function isMultiTenantSupported()
+    public function isMultiTenantSupported(): bool
     {
         if (!($this->backend instanceof MultiTenantSafeBackendInterface)) {
             // Backend doesn't provide the cryptographic properties we need.
