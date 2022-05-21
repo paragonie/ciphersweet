@@ -9,7 +9,7 @@
 **CipherSweet** is a backend library developed by [Paragon Initiative Enterprises](https://paragonie.com)
 for implementing [searchable field-level encryption](https://paragonie.com/blog/2017/05/building-searchable-encrypted-databases-with-php-and-sql).
 
-**Requires PHP 5.5+**, although 7.2 is recommended for better performance.
+**Requires PHP 8.1 or newer**.
 
 Before adding searchable encryption support to your project, make sure you understand
 the [appropriate threat model](https://adamcaudill.com/2016/07/20/threat-modeling-for-applications/)
