@@ -29,7 +29,9 @@ class EncryptedRow
      */
     protected $fieldsToEncrypt = [];
 
-    /** @var array<string, JsonFieldMap> $jsonMaps */
+    /**
+     * @var array<string, JsonFieldMap> $jsonMaps
+     */
     protected $jsonMaps = [];
 
     /**

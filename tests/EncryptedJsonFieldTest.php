@@ -119,14 +119,7 @@ class EncryptedJsonFieldTest extends TestCase
             $map
         );
 
-        $plaintext = [
-            'id' => 12345,
-            'name' => 'foo',
-            'active' => (random_int(0, 1) === 1),
-            'age' => random_int(18,100),
-            'latitude' => 37.2431,
-            'longitude' => 115.7930
-        ];
+        $plaintext = $this->getDummyPlaintext();
         $encrypted = $ejf->encryptJson($plaintext);
 
         $encArray = json_decode($encrypted, true);
@@ -162,13 +155,7 @@ class EncryptedJsonFieldTest extends TestCase
             ->addIntegerField('age');
         $ejf = EncryptedJsonField::create($engine, $map, 'table', 'extra');
 
-        $plaintext = [
-            'id' => 12345,
-            'customer' => bin2hex(random_bytes(8)),
-            'name' => 'foo',
-            'active' => (random_int(0, 1) === 1),
-            'age' => random_int(18,100)
-        ];
+        $plaintext = $this->getDummyPlaintext();
 
         $encrypted = $ejf->encryptJson($plaintext, $plaintext['customer']);
         $this->assertNotSame($encrypted, $plaintext, 'Encryption did nothing');
@@ -179,6 +166,33 @@ class EncryptedJsonFieldTest extends TestCase
         $this->expectException(InvalidCiphertextException::class);
         $ejf->decryptJson($encrypted);
         $this->fail("The previous decryptJson() call should have thrown an exception.");
+    }
+
+    /**
+     * @dataProvider engineProvider
+     *
+     * @throws CipherSweetException
+     * @throws CryptoOperationException
+     */
+    public function testStrictMode(CipherSweet $engine)
+    {
+        $map = (new JsonFieldMap())
+            ->addTextField('name')
+            ->addBooleanField('active')
+            ->addIntegerField('age');
+
+        $ejf = EncryptedJsonField::create($engine, $map, 'table', 'extra');
+        $ejf->setStrictMode(true);
+
+        $plaintext = $this->getDummyPlaintext();
+
+        // Remove an item
+        $encArray = json_decode($ejf->encryptJson($plaintext), true);
+        unset($encArray['age']);
+        $encrypted = json_encode($encArray);
+        $this->expectException(CipherSweetException::class);
+        $ejf->decryptJson($encrypted);
+        $this->fail("The previous call to decryptJSON() should have failed");
     }
 
     /**
@@ -204,14 +218,7 @@ class EncryptedJsonFieldTest extends TestCase
             $map
         );
 
-        $plaintext = [
-            'id' => 12345,
-            'name' => 'foo',
-            'active' => (random_int(0, 1) === 1),
-            'age' => random_int(18,100),
-            'latitude' => 37.2431,
-            'longitude' => 115.7930
-        ];
+        $plaintext = $this->getDummyPlaintext();
         $encrypted = $ejf->encryptJson($plaintext);
 
         $encArray = json_decode($encrypted, true);
@@ -226,5 +233,18 @@ class EncryptedJsonFieldTest extends TestCase
         $ejf->decryptJson(json_encode($copy));
 
         $this->fail("Expected exception was not thrown");
+    }
+
+    private function getDummyPlaintext()
+    {
+        return [
+            'id' => 12345,
+            'customer' => bin2hex(random_bytes(8)),
+            'name' => 'foo',
+            'active' => (random_int(0, 1) === 1),
+            'age' => random_int(18,100),
+            'latitude' => 37.2431,
+            'longitude' => 115.7930
+        ];
     }
 }

@@ -16,20 +16,31 @@ class EncryptedJsonField
     /** @var BackendInterface $backend */
     private $backend;
 
-    /** @var SymmetricKey $rootKey */
-    private $rootKey;
-
     /** @var JsonFieldMap $fieldMap */
     private $fieldMap;
 
+    /** @var SymmetricKey $rootKey */
+    private $rootKey;
+
+    /** @var bool $strict */
+    private $strict;
+
+    /**
+     * @param BackendInterface $backend
+     * @param SymmetricKey $rootKey
+     * @param JsonFieldMap $fieldMap
+     * @param bool $strict
+     */
     public function __construct(
         BackendInterface $backend,
         SymmetricKey $rootKey,
-        JsonFieldMap $fieldMap
+        JsonFieldMap $fieldMap,
+        $strict = false
     ) {
         $this->backend = $backend;
         $this->rootKey = $rootKey;
         $this->fieldMap = $fieldMap;
+        $this->strict = $strict;
     }
 
     /**
@@ -37,6 +48,7 @@ class EncryptedJsonField
      * @param JsonFieldMap $fieldMap
      * @param string $tableName
      * @param string $fieldName
+     * @param bool $strict
      * @return EncryptedJsonField
      *
      * @throws CipherSweetException
@@ -46,12 +58,14 @@ class EncryptedJsonField
         CipherSweet $engine,
         JsonFieldMap $fieldMap,
         $tableName,
-        $fieldName
+        $fieldName,
+        $strict = false
     ) {
         return new self(
             $engine->getBackend(),
             $engine->getFieldSymmetricKey($tableName, $fieldName),
-            $fieldMap
+            $fieldMap,
+            $strict
         );
     }
 
@@ -203,6 +217,16 @@ class EncryptedJsonField
     }
 
     /**
+     * @param bool $bool
+     * @return static
+     */
+    public function setStrictMode($bool = false)
+    {
+        $this->strict = !empty($bool);
+        return $this;
+    }
+
+    /**
      * @param SymmetricKey $derivedKey
      * @param array<array-key, mixed|array> &$field
      * @param array<array-key, int|string> $path
@@ -210,10 +234,11 @@ class EncryptedJsonField
      * @param string $aad
      * @return void
      *
+     * @throws CipherSweetException
      * @throws SodiumException
      * @psalm-suppress InvalidArgument
      */
-    public function decryptInPlace(
+    protected function decryptInPlace(
         SymmetricKey $derivedKey,
         array &$field,
         array $path,
@@ -224,6 +249,7 @@ class EncryptedJsonField
         $curr = &$field;
         foreach ($path as $next) {
             if (!array_key_exists($next, $curr)) {
+                $this->throwIfStrict(true);
                 return;
             }
             /** @var array<array-key, mixed|array>|null $curr */
@@ -244,10 +270,11 @@ class EncryptedJsonField
      * @param string $aad
      * @return void
      *
+     * @throws CipherSweetException
      * @throws SodiumException
      * @psalm-suppress InvalidArgument
      */
-    public function encryptInPlace(
+    protected function encryptInPlace(
         SymmetricKey $derivedKey,
         array &$field,
         array $path,
@@ -258,6 +285,7 @@ class EncryptedJsonField
         $curr = &$field;
         foreach ($path as $next) {
             if (!array_key_exists($next, $curr)) {
+                $this->throwIfStrict();
                 return;
             }
 
@@ -271,6 +299,25 @@ class EncryptedJsonField
             $this->convertToString($curr, $type),
             $derivedKey,
             $aad
+        );
+    }
+
+    /**
+     * @param bool $decrypting
+     * @return void
+     *
+     * @throws CipherSweetException
+     */
+    private function throwIfStrict($decrypting = false)
+    {
+        if (!$this->strict) {
+            /* NOP */
+            return;
+        }
+
+        $pre = $decrypting ? 'de' : 'en';
+        throw new CipherSweetException(
+            "Required JSON field was missing on {$pre}cryptJSON() in strict mode"
         );
     }
 }
