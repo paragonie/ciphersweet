@@ -7,9 +7,11 @@ use ParagonIE\CipherSweet\BlindIndex;
 use ParagonIE\CipherSweet\CipherSweet;
 use ParagonIE\CipherSweet\EncryptedRow;
 use ParagonIE\CipherSweet\Exception\ArrayKeyException;
+use ParagonIE\CipherSweet\Exception\BlindIndexNameCollisionException;
 use ParagonIE\CipherSweet\Exception\BlindIndexNotFoundException;
 use ParagonIE\CipherSweet\Exception\CryptoOperationException;
 use ParagonIE\CipherSweet\Exception\InvalidCiphertextException;
+use ParagonIE\CipherSweet\JsonFieldMap;
 use ParagonIE\CipherSweet\Transformation\LastFourDigits;
 use ParagonIE\ConstantTime\Binary;
 use PHPUnit\Framework\TestCase;
@@ -34,6 +36,11 @@ class EncryptedRowTest extends TestCase
     protected $naclEngine;
 
     /**
+     * @var CipherSweet $naclEngine
+     */
+    protected $brngEngine;
+
+    /**
      * @var CipherSweet $fipsRandom
      */
     protected $fipsRandom;
@@ -44,6 +51,11 @@ class EncryptedRowTest extends TestCase
     protected $naclRandom;
 
     /**
+     * @var CipherSweet $naclRandom
+     */
+    protected $brngRandom;
+
+    /**
      * @before
      * @throws CryptoOperationException
      */
@@ -51,9 +63,11 @@ class EncryptedRowTest extends TestCase
     {
         $this->fipsEngine = $this->createFipsEngine('4e1c44f87b4cdf21808762970b356891db180a9dd9850e7baf2a79ff3ab8a2fc');
         $this->naclEngine = $this->createModernEngine('4e1c44f87b4cdf21808762970b356891db180a9dd9850e7baf2a79ff3ab8a2fc');
+        $this->brngEngine = $this->createBoringEngine('4e1c44f87b4cdf21808762970b356891db180a9dd9850e7baf2a79ff3ab8a2fc');
 
         $this->fipsRandom = $this->createFipsEngine();
         $this->naclRandom = $this->createModernEngine();
+        $this->brngRandom = $this->createBoringEngine();
     }
 
     /**
@@ -360,7 +374,6 @@ class EncryptedRowTest extends TestCase
      * @param bool $fast
      *
      * @return EncryptedRow
-     * @throws BlindIndexNameCollisionException
      */
     public function getExampleRow(
         CipherSweet $backend,
@@ -437,5 +450,46 @@ class EncryptedRowTest extends TestCase
             $row->getBlindIndex('full_name', ['first_name' => 'John', 'last_name' => 'Smith']),
             $row->getBlindIndex('full_name', ['first_name' => 'Jane', 'last_name' => 'Smith'])
         );
+    }
+
+    public function engineProvider()
+    {
+        if (!isset($this->fipsEngine)) {
+            $this->before();
+        }
+        return [
+            [$this->fipsEngine],
+            [$this->fipsRandom],
+            [$this->naclEngine],
+            [$this->naclRandom],
+            [$this->brngEngine],
+            [$this->brngRandom]
+        ];
+    }
+
+    /**
+     * @dataProvider engineProvider
+     */
+    public function testJsonField(CipherSweet $engine)
+    {
+        $eR = new EncryptedRow($engine, 'foo');
+        $eR->addJsonField('bar', new JsonFieldMap());
+        $this->assertInstanceOf(JsonFieldMap::class, $eR->getJsonFieldMap('bar'));
+
+        $null = $eR->encryptRow(['bar' => ['test' => true]]);
+        $this->assertSame(['bar' => '{"test":true}'], $null);
+
+        $eR->getJsonFieldMap('bar')
+            ->addTextField('baz');
+
+        $plaintext = ['bar' => ['baz' => 'abdefg', 'qux' => 1234]];
+        $some = $eR->encryptRow($plaintext);
+        $array = json_decode($some['bar'], true);
+        $this->assertStringStartsWith(
+            $engine->getBackend()->getPrefix(),
+            $array['baz']
+        );
+        $this->assertSame(1234, $array['qux']);
+        $this->assertSame($plaintext, $eR->decryptRow($some));
     }
 }
