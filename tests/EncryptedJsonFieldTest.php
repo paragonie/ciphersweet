@@ -4,12 +4,14 @@ namespace ParagonIE\CipherSweet\Tests;
 use ParagonIE\CipherSweet\CipherSweet;
 use ParagonIE\CipherSweet\EncryptedJsonField;
 use ParagonIE\CipherSweet\Exception\ArrayKeyException;
+use ParagonIE\CipherSweet\Exception\CipherSweetException;
 use ParagonIE\CipherSweet\Exception\CryptoOperationException;
 use ParagonIE\CipherSweet\Exception\InvalidCiphertextException;
 use ParagonIE\CipherSweet\Exception\JsonMapException;
 use ParagonIE\CipherSweet\JsonFieldMap;
 use ParagonIE\ConstantTime\Hex;
 use PHPUnit\Framework\TestCase;
+use SodiumException;
 
 /**
  * @psalm-suppress
@@ -98,7 +100,9 @@ class EncryptedJsonFieldTest extends TestCase
     /**
      * @dataProvider engineProvider
      *
+     * @throws CipherSweetException
      * @throws JsonMapException
+     * @throws SodiumException
      */
     public function testFieldEncryption(CipherSweet $engine)
     {
@@ -147,7 +151,43 @@ class EncryptedJsonFieldTest extends TestCase
     /**
      * @dataProvider engineProvider
      *
+     * @throws CipherSweetException
+     * @throws CryptoOperationException
+     */
+    public function testEncryptWithAAD(CipherSweet $engine)
+    {
+        $map = (new JsonFieldMap())
+            ->addTextField('name')
+            ->addBooleanField('active')
+            ->addIntegerField('age');
+        $ejf = EncryptedJsonField::create($engine, $map, 'table', 'extra');
+
+        $plaintext = [
+            'id' => 12345,
+            'customer' => bin2hex(random_bytes(8)),
+            'name' => 'foo',
+            'active' => (random_int(0, 1) === 1),
+            'age' => random_int(18,100)
+        ];
+
+        $encrypted = $ejf->encryptJson($plaintext, $plaintext['customer']);
+        $this->assertNotSame($encrypted, $plaintext, 'Encryption did nothing');
+        $decrypted = $ejf->decryptJson($encrypted, $plaintext['customer']);
+        $this->assertSame($plaintext, $decrypted, 'Decryption unsuccessful');
+
+        // No AAD: fail
+        $this->expectException(InvalidCiphertextException::class);
+        $ejf->decryptJson($encrypted);
+        $this->fail("The previous decryptJson() call should have thrown an exception.");
+    }
+
+    /**
+     * @dataProvider engineProvider
+     *
+     * @throws CipherSweetException
+     * @throws CryptoOperationException
      * @throws JsonMapException
+     * @throws SodiumException
      */
     public function testUnhappyPath(CipherSweet $engine)
     {

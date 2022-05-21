@@ -33,6 +33,29 @@ class EncryptedJsonField
     }
 
     /**
+     * @param CipherSweet $engine
+     * @param JsonFieldMap $fieldMap
+     * @param string $tableName
+     * @param string $fieldName
+     * @return EncryptedJsonField
+     *
+     * @throws CipherSweetException
+     * @throws CryptoOperationException
+     */
+    public static function create(
+        CipherSweet $engine,
+        JsonFieldMap $fieldMap,
+        $tableName,
+        $fieldName
+    ) {
+        return new self(
+            $engine->getBackend(),
+            $engine->getFieldSymmetricKey($tableName, $fieldName),
+            $fieldMap
+        );
+    }
+
+    /**
      * @param array<array-key, string|int> $indices
      * @return self
      *
@@ -103,11 +126,12 @@ class EncryptedJsonField
 
     /**
      * @param string $encoded
+     * @param string $aad
      * @return array
      *
      * @throws CipherSweetException
      */
-    public function decryptJson($encoded)
+    public function decryptJson($encoded, $aad = '')
     {
         $field = json_decode($encoded, true);
         if (!is_array($field)) {
@@ -127,7 +151,7 @@ class EncryptedJsonField
                 /** @var string $type */
                 $type = $mapped['type'];
                 $derivedKey = $this->deriveKey($mapped['flat']);
-                $this->decryptInPlace($derivedKey, $field, $path, $type);
+                $this->decryptInPlace($derivedKey, $field, $path, $type, $aad);
             }
             return $field;
         } catch (SodiumException $ex) {
@@ -137,12 +161,13 @@ class EncryptedJsonField
 
     /**
      * @param array $field
+     * @param string $aad
      * @return string
      *
      * @throws CryptoOperationException
      * @throws SodiumException
      */
-    public function encryptJson(array $field)
+    public function encryptJson(array $field, $aad = '')
     {
         /**
          * @var array{flat: string, path: array, type: string} $mapped
@@ -156,7 +181,7 @@ class EncryptedJsonField
             /** @var string $type */
             $type = $mapped['type'];
             $derivedKey = $this->deriveKey($mapped['flat']);
-            $this->encryptInPlace($derivedKey, $field, $path, $type);
+            $this->encryptInPlace($derivedKey, $field, $path, $type, $aad);
         }
         return json_encode($field);
     }
@@ -182,6 +207,7 @@ class EncryptedJsonField
      * @param array<array-key, mixed|array> &$field
      * @param array<array-key, int|string> $path
      * @param string $type
+     * @param string $aad
      * @return void
      *
      * @throws SodiumException
@@ -191,7 +217,8 @@ class EncryptedJsonField
         SymmetricKey $derivedKey,
         array &$field,
         array $path,
-        $type
+        $type,
+        $aad = ''
     ) {
         // Walk down the path
         $curr = &$field;
@@ -205,7 +232,7 @@ class EncryptedJsonField
         if (is_null($curr)) {
             return;
         }
-        $decrypted = $this->backend->decrypt($curr, $derivedKey);
+        $decrypted = $this->backend->decrypt($curr, $derivedKey, $aad);
         $curr = $this->convertFromString($decrypted, $type);
     }
 
@@ -214,6 +241,7 @@ class EncryptedJsonField
      * @param array<array-key, mixed|array> &$field
      * @param array<array-key, int|string> $path
      * @param string $type
+     * @param string $aad
      * @return void
      *
      * @throws SodiumException
@@ -223,7 +251,8 @@ class EncryptedJsonField
         SymmetricKey $derivedKey,
         array &$field,
         array $path,
-        $type
+        $type,
+        $aad = ''
     ) {
         // Walk down the path
         $curr = &$field;
@@ -240,7 +269,8 @@ class EncryptedJsonField
         }
         $curr = $this->backend->encrypt(
             $this->convertToString($curr, $type),
-            $derivedKey
+            $derivedKey,
+            $aad
         );
     }
 }

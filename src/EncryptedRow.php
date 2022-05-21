@@ -370,26 +370,23 @@ class EncryptedRow
                 $return[$field] = null;
                 continue;
             }
-            if ($type === Constants::TYPE_JSON && !empty($this->jsonMaps[$field])) {
-                // JSON is a special case
-                $jsonEncryptor = new EncryptedJsonField($backend, $key, $this->jsonMaps[$field]);
-                $return[$field] = $jsonEncryptor->decryptJson($row[$field]);
-                continue;
-            }
-
             if (
                 !empty($this->aadSourceField[$field])
                     &&
                 \array_key_exists($this->aadSourceField[$field], $row)
             ) {
-                $plaintext = $backend->decrypt(
-                    $row[$field],
-                    $key,
-                    (string) $row[$this->aadSourceField[$field]]
-                );
+                $aad = (string) $row[$this->aadSourceField[$field]];
             } else {
-                $plaintext = $backend->decrypt($row[$field], $key);
+                $aad = '';
             }
+
+            if ($type === Constants::TYPE_JSON && !empty($this->jsonMaps[$field])) {
+                // JSON is a special case
+                $jsonEncryptor = new EncryptedJsonField($backend, $key, $this->jsonMaps[$field]);
+                $return[$field] = $jsonEncryptor->decryptJson($row[$field], $aad);
+                continue;
+            }
+            $plaintext = $backend->decrypt($row[$field], $key, $aad);
             $return[$field] = $this->convertFromString($plaintext, $type);
         }
         return $return;
@@ -425,28 +422,24 @@ class EncryptedRow
                 $this->tableName,
                 $field
             );
-            if ($type === Constants::TYPE_JSON && !empty($this->jsonMaps[$field])) {
-                // JSON is a special case
-                $jsonEncryptor = new EncryptedJsonField($backend, $key, $this->jsonMaps[$field]);
-                /** @psalm-suppress InvalidArgument */
-                $return[$field] = $jsonEncryptor->encryptJson($row[$field]);
-                continue;
-            }
-            /** @var string $plaintext */
-            $plaintext = $this->convertToString($row[$field], $type);
             if (
                 !empty($this->aadSourceField[$field])
                     &&
                 \array_key_exists($this->aadSourceField[$field], $row)
             ) {
-                $return[$field] = $backend->encrypt(
-                    $plaintext,
-                    $key,
-                    (string) $row[$this->aadSourceField[$field]]
-                );
+                $aad = (string) $row[$this->aadSourceField[$field]];
             } else {
-                $return[$field] = $backend->encrypt($plaintext, $key);
+                $aad = '';
             }
+            if ($type === Constants::TYPE_JSON && !empty($this->jsonMaps[$field])) {
+                // JSON is a special case
+                $jsonEncryptor = new EncryptedJsonField($backend, $key, $this->jsonMaps[$field]);
+                /** @psalm-suppress InvalidArgument */
+                $return[$field] = $jsonEncryptor->encryptJson($row[$field], $aad);
+                continue;
+            }
+            $plaintext = $this->convertToString($row[$field], $type);
+            $return[$field] = $backend->encrypt($plaintext, $key, $aad);
         }
         /** @var array<string, string> $return */
         if ($this->engine->isMultiTenantSupported()) {
