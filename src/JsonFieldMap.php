@@ -5,11 +5,54 @@ use ParagonIE\CipherSweet\Exception\CipherSweetException;
 use ParagonIE\CipherSweet\Exception\JsonMapException;
 use ParagonIE\ConstantTime\Binary;
 use ParagonIE\ConstantTime\Hex;
+use SodiumException;
 
 class JsonFieldMap
 {
     /** @var array<string, string> */
     private $fields = [];
+
+    /**
+     * @param string $string
+     * @return static
+     *
+     * @throws CipherSweetException
+     * @throws SodiumException
+     */
+    public static function fromString($string)
+    {
+        $crc32 = Binary::safeSubstr($string, 0, 8);
+        $json = Binary::safeSubstr($string, 8);
+        $calc = hash('crc32c', $json);
+        if (!Util::hashEquals($calc, $crc32)) {
+            throw new CipherSweetException("CRC32C invalid; was config corrupted?");
+        }
+
+        $decoded = json_decode($json, true);
+        if (!is_array($decoded)) {
+            throw new CipherSweetException("Invalid JSON encoding");
+        }
+        if (!array_key_exists('fields', $decoded)) {
+            throw new CipherSweetException("Invalid JSON: no fields key");
+        }
+
+        /** @psalm-suppress UnsafeInstantiation */
+        $self = new static();
+
+        // Let's validate the input:
+        foreach ($decoded['fields'] as $flat => $type) {
+            if (!is_string($flat) || !is_string($type)) {
+                throw new CipherSweetException("Invalid field");
+            }
+
+            // This will throw if an invalid path is provided:
+            $self->unflattenPath($flat);
+        }
+
+        // If we're still here, we're golden
+        $self->fields = $decoded['fields'];
+        return $self;
+    }
 
     /**
      * @param array<array-key, string|int> $indices
@@ -142,5 +185,26 @@ class JsonFieldMap
             ];
         }
         return $mapping;
+    }
+
+    /**
+     * @return string
+     */
+    public function toString()
+    {
+        $json = json_encode(['fields' => $this->fields]);
+        $crc = hash('crc32c', $json);
+        return $crc . $json;
+    }
+
+    public function __toString()
+    {
+        try {
+            return $this->toString();
+        } catch (\Exception $ex) {
+            return '';
+        } catch (\Throwable $ex) {
+            return '';
+        }
     }
 }

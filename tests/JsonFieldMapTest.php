@@ -4,6 +4,7 @@ namespace ParagonIE\CipherSweet\Tests;
 use ParagonIE\CipherSweet\Constants;
 use ParagonIE\CipherSweet\JsonFieldMap;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Util\Json;
 
 /**
  * @psalm-suppress
@@ -16,7 +17,10 @@ class JsonFieldMapTest extends TestCase
             ->addField(['foo', 'bar'], Constants::TYPE_TEXT)
             ->addField(['bar', 'baz'], Constants::TYPE_INT);
 
+        $original = $mapper->toString();
         $mapped = $mapper->getMapping();
+        $copy = $mapped;
+
         $this->assertCount(2, $mapped);
 
         $this->assertSame(['foo', 'bar'], $mapped[0]['path']);
@@ -39,5 +43,17 @@ class JsonFieldMapTest extends TestCase
         );
         $this->assertSame(['foo', 0, 'bar', 123], $mapped[2]['path']);
         $this->assertSame(Constants::TYPE_BOOLEAN, $mapped[2]['type']);
+
+        $updated = $mapper->toString();
+        $restored = JsonFieldMap::fromString($original);
+
+        $old = $restored->getMapping();
+        $this->assertCount(2, $old);
+        $this->assertSame($old, $copy);
+
+        $threeFields = JsonFieldMap::fromString($updated);
+        $new = $threeFields->getMapping();
+        $this->assertCount(3, $new);
+        $this->assertSame($mapped, $new);
     }
 }
