@@ -14,10 +14,10 @@ use ParagonIE\CipherSweet\Exception\InvalidCiphertextException;
 class MultiRowsRotator implements KeyRotationInterface
 {
     /** @var EncryptedMultiRows $old */
-    protected $old;
+    protected EncryptedMultiRows $old;
 
     /** @var EncryptedMultiRows $new */
-    protected $new;
+    protected EncryptedMultiRows $new;
 
     /**
      * MultiRowsRotator constructor.
@@ -35,7 +35,7 @@ class MultiRowsRotator implements KeyRotationInterface
      * @return bool
      * @throws InvalidCiphertextException
      */
-    public function needsReEncrypt($ciphertext = '')
+    public function needsReEncrypt(array|string $ciphertext = ''): bool
     {
         if (!\is_array($ciphertext)) {
             throw new InvalidCiphertextException('MultiRowsRotator expects an array, not a string');
@@ -56,7 +56,7 @@ class MultiRowsRotator implements KeyRotationInterface
      * @throws InvalidCiphertextException
      * @throws \SodiumException
      */
-    public function prepareForUpdate($values)
+    public function prepareForUpdate(array|string $values): array
     {
         if (!\is_array($values)) {
             throw new InvalidCiphertextException('MultiRowsRotator expects an array, not a string');

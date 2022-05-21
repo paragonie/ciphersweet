@@ -9,25 +9,24 @@ use ParagonIE\CipherSweet\Exception\CipherSweetException;
  */
 interface MultiTenantAwareProviderInterface
 {
-
     /**
      * @return KeyProviderInterface
      * @throws CipherSweetException
      */
-    public function getActiveTenant();
+    public function getActiveTenant(): KeyProviderInterface;
 
     /**
      * @param array-key $name
      * @return KeyProviderInterface
      * @throws CipherSweetException
      */
-    public function getTenant($name);
+    public function getTenant(string|int $name): KeyProviderInterface;
 
     /**
      * @param array-key $index
      * @return self
      */
-    public function setActiveTenant($index);
+    public function setActiveTenant(string|int $index): self;
 
     /**
      * OVERRIDE THIS in your own class!
@@ -36,16 +35,16 @@ interface MultiTenantAwareProviderInterface
      *
      * @param array $row
      * @param string $tableName
-     * @return string
+     * @return string|int
      *
      * @throws CipherSweetException
      */
-    public function getTenantFromRow(array $row, $tableName);
+    public function getTenantFromRow(array $row, string $tableName): string|int;
 
     /**
      * @param array $row
      * @param string $tableName
      * @return array
      */
-    public function injectTenantMetadata(array $row, $tableName);
+    public function injectTenantMetadata(array $row, string $tableName): array;
 }

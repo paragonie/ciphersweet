@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 namespace ParagonIE\CipherSweet;
 
 use ParagonIE\CipherSweet\Backend\Key\SymmetricKey;
@@ -22,47 +23,47 @@ class EncryptedRow
     /**
      * @var CipherSweet $engine
      */
-    protected $engine;
+    protected CipherSweet $engine;
 
     /**
      * @var array<string, string> $fieldsToEncrypt
      */
-    protected $fieldsToEncrypt = [];
+    protected array $fieldsToEncrypt = [];
 
     /**
      * @var array<string, JsonFieldMap> $jsonMaps
      */
-    protected $jsonMaps = [];
+    protected array $jsonMaps = [];
 
     /**
      * @var array<string, bool> $jsonStrict
      */
-    protected $jsonStrict = [];
+    protected array $jsonStrict = [];
 
     /**
      * @var array<string, string> $aadSourceField
      */
-    protected $aadSourceField = [];
+    protected array $aadSourceField = [];
 
     /**
      * @var array<string, array<string, BlindIndex>> $blindIndexes
      */
-    protected $blindIndexes = [];
+    protected array $blindIndexes = [];
 
     /**
      * @var bool $typedIndexes
      */
-    protected $typedIndexes = false;
+    protected bool $typedIndexes = false;
 
     /**
      * @var array<string, CompoundIndex> $compoundIndexes
      */
-    protected $compoundIndexes = [];
+    protected array $compoundIndexes = [];
 
     /**
      * @var string $tableName
      */
-    protected $tableName;
+    protected string $tableName;
 
     /**
      * EncryptedFieldSet constructor.
@@ -71,8 +72,11 @@ class EncryptedRow
      * @param string $tableName
      * @param bool $useTypedIndexes
      */
-    public function __construct(CipherSweet $engine, $tableName, $useTypedIndexes = false)
-    {
+    public function __construct(
+        CipherSweet $engine,
+        string $tableName,
+        bool $useTypedIndexes = false
+    ) {
         $this->engine = $engine;
         $this->tableName = $tableName;
         $this->typedIndexes = !$useTypedIndexes;
@@ -84,10 +88,13 @@ class EncryptedRow
      * @param string $fieldName
      * @param string $type
      * @param string $aadSource Field name to source AAD from
-     * @return self
+     * @return static
      */
-    public function addField($fieldName, $type = Constants::TYPE_TEXT, $aadSource = '')
-    {
+    public function addField(
+        string $fieldName,
+        string $type = Constants::TYPE_TEXT,
+        string $aadSource = ''
+    ): static {
         $this->fieldsToEncrypt[$fieldName] = $type;
         if ($aadSource) {
             $this->aadSourceField[$fieldName] = $aadSource;
@@ -100,9 +107,9 @@ class EncryptedRow
      *
      * @param string $fieldName
      * @param string $aadSource Field name to source AAD from
-     * @return self
+     * @return static
      */
-    public function addBooleanField($fieldName, $aadSource = '')
+    public function addBooleanField(string $fieldName, string $aadSource = ''): static
     {
         return $this->addField($fieldName, Constants::TYPE_BOOLEAN, $aadSource);
     }
@@ -112,9 +119,9 @@ class EncryptedRow
      *
      * @param string $fieldName
      * @param string $aadSource Field name to source AAD from
-     * @return self
+     * @return static
      */
-    public function addFloatField($fieldName, $aadSource = '')
+    public function addFloatField(string $fieldName, string $aadSource = ''): static
     {
         return $this->addField($fieldName, Constants::TYPE_FLOAT, $aadSource);
     }
@@ -124,9 +131,9 @@ class EncryptedRow
      *
      * @param string $fieldName
      * @param string $aadSource Field name to source AAD from
-     * @return self
+     * @return static
      */
-    public function addIntegerField($fieldName, $aadSource = '')
+    public function addIntegerField(string $fieldName, string $aadSource = ''): static
     {
         return $this->addField($fieldName, Constants::TYPE_INT, $aadSource);
     }
@@ -138,10 +145,14 @@ class EncryptedRow
      * @param JsonFieldMap $fieldMap
      * @param string $aadSource Field name to source AAD from
      * @param bool $strict
-     * @return self
+     * @return static
      */
-    public function addJsonField($fieldName, JsonFieldMap $fieldMap, $aadSource = '', $strict = true)
-    {
+    public function addJsonField(
+        string $fieldName,
+        JsonFieldMap $fieldMap,
+        string $aadSource = '',
+        bool $strict = true
+    ): static {
         $this->jsonMaps[$fieldName] = $fieldMap;
         $this->jsonStrict[$fieldName] = $strict;
         return $this->addField($fieldName, Constants::TYPE_JSON, $aadSource);
@@ -152,9 +163,9 @@ class EncryptedRow
      *
      * @param string $fieldName
      * @param string $aadSource Field name to source AAD from
-     * @return self
+     * @return static
      */
-    public function addTextField($fieldName, $aadSource = '')
+    public function addTextField(string $fieldName, string $aadSource = ''): static
     {
         return $this->addField($fieldName, Constants::TYPE_TEXT, $aadSource);
     }
@@ -164,9 +175,9 @@ class EncryptedRow
      *
      * @param string $column
      * @param BlindIndex $index
-     * @return self
+     * @return static
      */
-    public function addBlindIndex($column, BlindIndex $index)
+    public function addBlindIndex(string $column, BlindIndex $index): static
     {
         $this->blindIndexes[$column][$index->getName()] = $index;
         return $this;
@@ -176,9 +187,9 @@ class EncryptedRow
      * Add a compound blind index to this EncryptedRow object.
      *
      * @param CompoundIndex $index
-     * @return self
+     * @return static
      */
-    public function addCompoundIndex(CompoundIndex $index)
+    public function addCompoundIndex(CompoundIndex $index): static
     {
         $this->compoundIndexes[$index->getName()] = $index;
         return $this;
@@ -195,12 +206,12 @@ class EncryptedRow
      * @return CompoundIndex
      */
     public function createCompoundIndex(
-        $name,
+        string $name,
         array $columns = [],
-        $filterBits = 256,
-        $fastHash = false,
+        int $filterBits = 256,
+        bool $fastHash = false,
         array $hashConfig = []
-    ) {
+    ): CompoundIndex {
         $index = new CompoundIndex(
             $name,
             $columns,
@@ -224,7 +235,7 @@ class EncryptedRow
      * @throws Exception\CryptoOperationException
      * @throws SodiumException
      */
-    public function getBlindIndex($indexName, array $row)
+    public function getBlindIndex(string $indexName, array $row): string|array
     {
         foreach ($this->blindIndexes as $column => $blindIndexes) {
             if (isset($blindIndexes[$indexName])) {
@@ -254,8 +265,9 @@ class EncryptedRow
      * @throws Exception\CryptoOperationException
      * @throws SodiumException
      */
-    public function getAllBlindIndexes(array $row)
+    public function getAllBlindIndexes(array $row): array
     {
+        /** @var array<string, array<string, string>|string> $return */
         $return = [];
         foreach ($this->blindIndexes as $column => $blindIndexes) {
             /** @var BlindIndex $blindIndex */
@@ -281,7 +293,7 @@ class EncryptedRow
      * @param string $column
      * @return array<string, BlindIndex>
      */
-    public function getBlindIndexObjectsForColumn($column)
+    public function getBlindIndexObjectsForColumn($column): array
     {
         if (isset($this->blindIndexes[$column])) {
             return $this->blindIndexes[$column];
@@ -297,7 +309,7 @@ class EncryptedRow
      * @return string
      * @throws SodiumException
      */
-    public function getBlindIndexType($column, $name)
+    public function getBlindIndexType(string $column, string $name): string
     {
         return $this->engine->getIndexTypeColumn(
             $this->tableName,
@@ -313,7 +325,7 @@ class EncryptedRow
      * @return string
      * @throws SodiumException
      */
-    public function getCompoundIndexType($name)
+    public function getCompoundIndexType(string $name): string
     {
         return $this->engine->getIndexTypeColumn(
             $this->tableName,
@@ -325,7 +337,7 @@ class EncryptedRow
     /**
      * @return array<string, CompoundIndex>
      */
-    public function getCompoundIndexObjects()
+    public function getCompoundIndexObjects(): array
     {
         return $this->compoundIndexes;
     }
@@ -336,7 +348,7 @@ class EncryptedRow
      *
      * @throws CipherSweetException
      */
-    public function getJsonFieldMap($name)
+    public function getJsonFieldMap(string $name): JsonFieldMap
     {
         if (!\array_key_exists($name, $this->fieldsToEncrypt)) {
             throw new CipherSweetException("Field does not exist: {$name}");
@@ -366,8 +378,9 @@ class EncryptedRow
      *
      * @psalm-suppress InvalidReturnStatement
      */
-    public function decryptRow(array $row)
+    public function decryptRow(array $row): array
     {
+        /** @var array<string, string|int|float|bool|null|scalar[]> $return */
         $return = $row;
         $backend = $this->engine->getBackend();
         if ($this->engine->isMultiTenantSupported()) {
@@ -424,8 +437,9 @@ class EncryptedRow
      * @throws CipherSweetException
      * @throws SodiumException
      */
-    public function encryptRow(array $row)
+    public function encryptRow(array $row): array
     {
+        /** @var array<string, string|int|float|bool|null|scalar[]> $return */
         $return = $row;
         $backend = $this->engine->getBackend();
         foreach ($this->fieldsToEncrypt as $field => $type) {
@@ -489,7 +503,7 @@ class EncryptedRow
      * @throws CryptoOperationException
      * @throws SodiumException
      */
-    public function prepareRowForStorage(array $row)
+    public function prepareRowForStorage(array $row): array
     {
         return [
             $this->encryptRow($row),
@@ -502,7 +516,7 @@ class EncryptedRow
      *
      * @return array<int, string>
      */
-    public function listEncryptedFields()
+    public function listEncryptedFields(): array
     {
         return \array_keys($this->fieldsToEncrypt);
     }
@@ -513,9 +527,9 @@ class EncryptedRow
      *
      * @param string $fieldName
      * @param string $aadSource
-     * @return self
+     * @return static
      */
-    public function setAadSourceField($fieldName, $aadSource)
+    public function setAadSourceField(string $fieldName, string $aadSource): static
     {
         $this->aadSourceField[$fieldName] = $aadSource;
         return $this;
@@ -533,7 +547,7 @@ class EncryptedRow
      * @throws Exception\CryptoOperationException
      * @throws SodiumException
      */
-    protected function calcBlindIndex(array $row, $column, BlindIndex $index)
+    protected function calcBlindIndex(array $row, string $column, BlindIndex $index): string|array
     {
         $name = $index->getName();
         $key = $this->engine->getBlindIndexRootKey(
@@ -579,7 +593,7 @@ class EncryptedRow
      * @throws CryptoOperationException
      * @throws SodiumException
      */
-    protected function calcCompoundIndex(array $row, CompoundIndex $index)
+    protected function calcCompoundIndex(array $row, CompoundIndex $index): string|array
     {
         $name = $index->getName();
         $key = $this->engine->getBlindIndexRootKey(
@@ -628,10 +642,10 @@ class EncryptedRow
      */
     protected function calcBlindIndexRaw(
         array $row,
-        $column,
+        string $column,
         BlindIndex $index,
         SymmetricKey $key = null
-    ) {
+    ): string {
         if (!$key) {
             $key = $this->engine->getBlindIndexRootKey(
                 $this->tableName,
@@ -695,7 +709,7 @@ class EncryptedRow
         array $row,
         CompoundIndex $index,
         SymmetricKey $key = null
-    ) {
+    ): string {
         if (!$key) {
             $key = $this->engine->getBlindIndexRootKey(
                 $this->tableName,
@@ -734,7 +748,7 @@ class EncryptedRow
     /**
      * @return BackendInterface
      */
-    public function getBackend()
+    public function getBackend(): BackendInterface
     {
         return $this->engine->getBackend();
     }
@@ -742,7 +756,7 @@ class EncryptedRow
     /**
      * @return CipherSweet
      */
-    public function getEngine()
+    public function getEngine(): CipherSweet
     {
         return $this->engine;
     }
@@ -750,16 +764,16 @@ class EncryptedRow
     /**
      * @return bool
      */
-    public function getFlatIndexes()
+    public function getFlatIndexes(): bool
     {
         return !$this->typedIndexes;
     }
 
     /**
      * @param bool $bool
-     * @return self
+     * @return static
      */
-    public function setFlatIndexes($bool)
+    public function setFlatIndexes(bool $bool): static
     {
         $this->typedIndexes = !$bool;
         return $this;
@@ -768,16 +782,16 @@ class EncryptedRow
     /**
      * @return bool
      */
-    public function getTypedIndexes()
+    public function getTypedIndexes(): bool
     {
         return $this->typedIndexes;
     }
 
     /**
      * @param bool $bool
-     * @return self
+     * @return static
      */
-    public function setTypedIndexes($bool)
+    public function setTypedIndexes(bool $bool): static
     {
         $this->typedIndexes = $bool;
         return $this;

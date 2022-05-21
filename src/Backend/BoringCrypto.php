@@ -34,7 +34,7 @@ class BoringCrypto implements BackendInterface, MultiTenantSafeBackendInterface
      * @return SymmetricKey
      * @throws \SodiumException
      */
-    protected function getEncryptionKey(SymmetricKey $key)
+    protected function getEncryptionKey(SymmetricKey $key): SymmetricKey
     {
         return new SymmetricKey(
             SodiumCompat::crypto_generichash('message-encryption', $key->getRawKey(), 32)
@@ -46,7 +46,7 @@ class BoringCrypto implements BackendInterface, MultiTenantSafeBackendInterface
      * @return SymmetricKey
      * @throws \SodiumException
      */
-    protected function getIntegrityKey(SymmetricKey $key)
+    protected function getIntegrityKey(SymmetricKey $key): SymmetricKey
     {
         return new SymmetricKey(
             SodiumCompat::crypto_generichash('message-integrity', $key->getRawKey(), 32)
@@ -65,8 +65,11 @@ class BoringCrypto implements BackendInterface, MultiTenantSafeBackendInterface
      * @throws CryptoOperationException
      * @throws \SodiumException
      */
-    public function encrypt($plaintext, SymmetricKey $key, $aad = '')
-    {
+    public function encrypt(
+        string $plaintext,
+        SymmetricKey $key,
+        string $aad = ''
+    ): string {
         try {
             $nonce = \random_bytes(self::NONCE_SIZE);
         } catch (\Exception $ex) {
@@ -78,9 +81,6 @@ class BoringCrypto implements BackendInterface, MultiTenantSafeBackendInterface
             $this->getEncryptionKey($key)->getRawKey()
         );
         $cipherLength = SodiumUtil::strlen($ciphertext);
-        if (is_null($aad)) {
-            $aad = '';
-        }
         $aadLength = SodiumUtil::strlen($aad);
         // T := BLAKE2b-MAC (nonce || len(aad) || aad || len(C) || C)
         $mac = SodiumCompat::crypto_generichash(
@@ -102,8 +102,11 @@ class BoringCrypto implements BackendInterface, MultiTenantSafeBackendInterface
      * @throws InvalidCiphertextException
      * @throws \SodiumException
      */
-    public function decrypt($ciphertext, SymmetricKey $key, $aad = '')
-    {
+    public function decrypt(
+        string $ciphertext,
+        SymmetricKey $key,
+        string $aad = ''
+    ): string {
         // Make sure we're using the correct version:
         $header = Binary::safeSubstr($ciphertext, 0, 5);
         if (!SodiumUtil::hashEquals($header, self::MAGIC_HEADER)) {
@@ -121,9 +124,6 @@ class BoringCrypto implements BackendInterface, MultiTenantSafeBackendInterface
 
         // T := BLAKE2b-MAC ( len(aad) || aad || len(C) || C)
         $cipherLength = SodiumUtil::strlen($encrypted);
-        if (is_null($aad)) {
-            $aad = '';
-        }
         $aadLength = SodiumUtil::strlen($aad);
         $calcMac = SodiumCompat::crypto_generichash(
             ((string) static::MAGIC_HEADER) . $nonce . $aadLength . $aad . $cipherLength . $encrypted,
@@ -150,10 +150,10 @@ class BoringCrypto implements BackendInterface, MultiTenantSafeBackendInterface
      * @throws \SodiumException
      */
     public function blindIndexFast(
-        $plaintext,
+        string $plaintext,
         SymmetricKey $key,
-        $bitLength = null
-    ) {
+        ?int $bitLength = null
+    ): string {
         if (\is_null($bitLength)) {
             $bitLength = 256;
         }
@@ -183,11 +183,11 @@ class BoringCrypto implements BackendInterface, MultiTenantSafeBackendInterface
      * @throws \SodiumException
      */
     public function blindIndexSlow(
-        $plaintext,
+        string $plaintext,
         SymmetricKey $key,
-        $bitLength = null,
+        ?int $bitLength = null,
         array $config = []
-    ) {
+    ): string {
         if (!SodiumCompat::crypto_pwhash_is_available()) {
             throw new \SodiumException(
                 'Not using the native libsodium bindings'
@@ -236,8 +236,11 @@ class BoringCrypto implements BackendInterface, MultiTenantSafeBackendInterface
      * @return string
      * @throws \SodiumException
      */
-    public function getIndexTypeColumn($tableName, $fieldName, $indexName)
-    {
+    public function getIndexTypeColumn(
+        string $tableName,
+        string $fieldName,
+        string $indexName
+    ): string {
         $hash = SodiumCompat::crypto_shorthash(
             Util::pack([$fieldName, $indexName]),
             SodiumCompat::crypto_generichash($tableName, '', 16)
@@ -252,8 +255,10 @@ class BoringCrypto implements BackendInterface, MultiTenantSafeBackendInterface
      *
      * @throws \SodiumException
      */
-    public function deriveKeyFromPassword($password, $salt)
-    {
+    public function deriveKeyFromPassword(
+        string $password,
+        string $salt
+    ): SymmetricKey {
         return new SymmetricKey(
             SodiumCompat::crypto_pwhash(
                 32,
@@ -279,8 +284,8 @@ class BoringCrypto implements BackendInterface, MultiTenantSafeBackendInterface
         $inputFP,
         $outputFP,
         SymmetricKey $key,
-        $chunkSize = 8192
-    ) {
+        int $chunkSize = 8192
+    ): bool {
         \fseek($inputFP, 0, SEEK_SET);
         \fseek($outputFP, 0, SEEK_SET);
         $adlen = 61; // 5 + 24 + 32
@@ -378,9 +383,9 @@ class BoringCrypto implements BackendInterface, MultiTenantSafeBackendInterface
         $inputFP,
         $outputFP,
         SymmetricKey $key,
-        $chunkSize = 8192,
-        $salt = Constants::DUMMY_SALT
-    ) {
+        int $chunkSize = 8192,
+        string $salt = Constants::DUMMY_SALT
+    ): bool {
         \fseek($inputFP, 0, SEEK_SET);
         \fseek($outputFP, 0, SEEK_SET);
         $adlen = 61; // 5 + 24 + 32
@@ -442,7 +447,7 @@ class BoringCrypto implements BackendInterface, MultiTenantSafeBackendInterface
     /**
      * @return int
      */
-    public function getFileEncryptionSaltOffset()
+    public function getFileEncryptionSaltOffset(): int
     {
         return 37;
     }
@@ -450,7 +455,7 @@ class BoringCrypto implements BackendInterface, MultiTenantSafeBackendInterface
     /**
      * @return string
      */
-    public function getPrefix()
+    public function getPrefix(): string
     {
         return (string) static::MAGIC_HEADER;
     }

@@ -15,7 +15,7 @@ class DigitsOnly implements TransformationInterface
      * @param string $input
      * @return string
      */
-    public function __invoke($input)
+    public function __invoke(mixed $input): string
     {
         return \preg_replace('/[^0-9]/', '', $input);
     }

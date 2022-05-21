@@ -15,7 +15,7 @@ class FirstInitialLastName implements RowTransformationInterface
      * @return array|string
      * @throws \Exception
      */
-    public function processArray(array $input, $layer = 0)
+    public function processArray(array $input, int $layer = 0): array|string
     {
         if (!\is_array($input)) {
             throw new \TypeError('Compound Transformation expects an array');
@@ -33,7 +33,7 @@ class FirstInitialLastName implements RowTransformationInterface
      * @return string
      * @throws \Exception
      */
-    public function __invoke($input)
+    public function __invoke(mixed $input): string
     {
         return $this->processArray($input);
     }

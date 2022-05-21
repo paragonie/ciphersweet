@@ -14,5 +14,5 @@ interface RowTransformationInterface extends TransformationInterface
      * @return array|string
      * @throws \Exception
      */
-    public function processArray(array $input, $layer = 0);
+    public function processArray(array $input, int $layer = 0): array|string;
 }

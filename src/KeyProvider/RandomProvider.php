@@ -1,6 +1,7 @@
 <?php
 namespace ParagonIE\CipherSweet\KeyProvider;
 
+use ParagonIE\CipherSweet\Backend\BoringCrypto;
 use ParagonIE\CipherSweet\Backend\FIPSCrypto;
 use ParagonIE\CipherSweet\Backend\Key\SymmetricKey;
 use ParagonIE\CipherSweet\Backend\ModernCrypto;
@@ -19,7 +20,7 @@ class RandomProvider implements KeyProviderInterface
     /**
      * @var BackendInterface
      */
-    private $backend;
+    private BackendInterface $backend;
 
     /**
      * RandomProvider constructor.
@@ -35,13 +36,17 @@ class RandomProvider implements KeyProviderInterface
      * @return SymmetricKey
      * @throws \Exception
      */
-    public function getSymmetricKey()
+    public function getSymmetricKey(): SymmetricKey
     {
         if ($this->backend instanceof FIPSCrypto) {
             return new SymmetricKey(
                 \random_bytes(32)
             );
         } elseif ($this->backend instanceof ModernCrypto) {
+            return new SymmetricKey(
+                \ParagonIE_Sodium_Compat::crypto_secretbox_keygen()
+            );
+        } elseif ($this->backend instanceof BoringCrypto) {
             return new SymmetricKey(
                 \ParagonIE_Sodium_Compat::crypto_secretbox_keygen()
             );

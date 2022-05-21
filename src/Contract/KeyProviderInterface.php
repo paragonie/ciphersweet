@@ -9,8 +9,5 @@ use ParagonIE\CipherSweet\Backend\Key\SymmetricKey;
  */
 interface KeyProviderInterface
 {
-    /**
-     * @return SymmetricKey
-     */
-    public function getSymmetricKey();
+    public function getSymmetricKey(): SymmetricKey;
 }

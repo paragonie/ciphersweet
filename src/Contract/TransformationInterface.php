@@ -15,5 +15,5 @@ interface TransformationInterface
      * @param mixed $input
      * @return string
      */
-    public function __invoke($input);
+    public function __invoke(mixed $input): string;
 }

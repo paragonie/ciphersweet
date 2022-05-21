@@ -17,10 +17,10 @@ use SodiumException;
 class FieldRotator implements KeyRotationInterface
 {
     /** @var EncryptedField $old */
-    protected $old;
+    protected EncryptedField $old;
 
     /** @var EncryptedField $new */
-    protected $new;
+    protected EncryptedField $new;
 
     /**
      * FIeldRotator constructor.
@@ -40,7 +40,7 @@ class FieldRotator implements KeyRotationInterface
      * @throws InvalidCiphertextException
      * @throws SodiumException
      */
-    public function needsReEncrypt($ciphertext = '', $aad = '')
+    public function needsReEncrypt(string|array $ciphertext = '', string $aad = ''): bool
     {
         if (!\is_string($ciphertext)) {
             throw new InvalidCiphertextException('FieldRotator expects a string, not an array');
@@ -70,8 +70,11 @@ class FieldRotator implements KeyRotationInterface
      * @throws CryptoOperationException
      * @throws SodiumException
      */
-    public function prepareForUpdate($values, $oldAad = '', $newAad = '')
-    {
+    public function prepareForUpdate(
+        array|string $values,
+        string $oldAad = '',
+        string $newAad = ''
+    ): array {
         if (!\is_string($values)) {
             throw new \TypeError('FieldRotator expects a string');
         }

@@ -14,16 +14,16 @@ class EncryptedJsonField
     use TypeEncodingTrait;
 
     /** @var BackendInterface $backend */
-    private $backend;
+    private BackendInterface $backend;
 
     /** @var JsonFieldMap $fieldMap */
-    private $fieldMap;
+    private JsonFieldMap $fieldMap;
 
     /** @var SymmetricKey $rootKey */
-    private $rootKey;
+    private SymmetricKey $rootKey;
 
     /** @var bool $strict */
-    private $strict;
+    private bool $strict;
 
     /**
      * @param BackendInterface $backend
@@ -35,7 +35,7 @@ class EncryptedJsonField
         BackendInterface $backend,
         SymmetricKey $rootKey,
         JsonFieldMap $fieldMap,
-        $strict = true
+        bool $strict = true
     ) {
         $this->backend = $backend;
         $this->rootKey = $rootKey;
@@ -44,23 +44,16 @@ class EncryptedJsonField
     }
 
     /**
-     * @param CipherSweet $engine
-     * @param JsonFieldMap $fieldMap
-     * @param string $tableName
-     * @param string $fieldName
-     * @param bool $strict
-     * @return EncryptedJsonField
-     *
      * @throws CipherSweetException
      * @throws CryptoOperationException
      */
     public static function create(
         CipherSweet $engine,
         JsonFieldMap $fieldMap,
-        $tableName,
-        $fieldName,
-        $strict = true
-    ) {
+        string $tableName,
+        string $fieldName,
+        bool $strict = true
+    ): self {
         return new self(
             $engine->getBackend(),
             $engine->getFieldSymmetricKey($tableName, $fieldName),
@@ -70,56 +63,56 @@ class EncryptedJsonField
     }
 
     /**
-     * @param array<array-key, string|int> $indices
-     * @return self
+     * @param array<array-key, string|int>|int|string $indices
+     * @return static
      *
      * @throws JsonMapException
      */
-    public function addBooleanField($indices)
+    public function addBooleanField(string|int|array $indices): static
     {
-        if (\is_string($indices) || \is_int($indices)) {
+        if (!\is_array($indices)) {
             $indices = [$indices];
         }
         return $this->addField($indices, Constants::TYPE_BOOLEAN);
     }
 
     /**
-     * @param array<array-key, string|int> $indices
-     * @return self
+     * @param array<array-key, string|int>|int|string $indices
+     * @return static
      *
      * @throws JsonMapException
      */
-    public function addFloatField($indices)
+    public function addFloatField(string|int|array $indices): static
     {
-        if (\is_string($indices) || \is_int($indices)) {
+        if (!\is_array($indices)) {
             $indices = [$indices];
         }
         return $this->addField($indices, Constants::TYPE_FLOAT);
     }
 
     /**
-     * @param array<array-key, string|int> $indices
-     * @return self
+     * @param array<array-key, string|int>|int|string $indices
+     * @return static
      *
      * @throws JsonMapException
      */
-    public function addIntegerField($indices)
+    public function addIntegerField(string|int|array $indices): static
     {
-        if (\is_string($indices) || \is_int($indices)) {
+        if (!\is_array($indices)) {
             $indices = [$indices];
         }
         return $this->addField($indices, Constants::TYPE_INT);
     }
 
     /**
-     * @param array<array-key, string|int> $indices
-     * @return self
+     * @param array<array-key, string|int>|int|string $indices
+     * @return static
      *
      * @throws JsonMapException
      */
-    public function addTextField($indices)
+    public function addTextField(string|int|array $indices): static
     {
-        if (\is_string($indices) || \is_int($indices)) {
+        if (!\is_array($indices)) {
             $indices = [$indices];
         }
         return $this->addField($indices, Constants::TYPE_TEXT);
@@ -128,24 +121,20 @@ class EncryptedJsonField
     /**
      * @param array<array-key, string|int> $indices
      * @param string $type
-     * @return self
+     * @return static
      *
      * @throws JsonMapException
      */
-    public function addField(array $indices, $type)
+    public function addField(array $indices, string $type): static
     {
         $this->fieldMap->addField($indices, $type);
         return $this;
     }
 
     /**
-     * @param string $encoded
-     * @param string $aad
-     * @return array
-     *
      * @throws CipherSweetException
      */
-    public function decryptJson($encoded, $aad = '')
+    public function decryptJson(string $encoded, string $aad = ''): array
     {
         $field = \json_decode($encoded, true);
         if (!\is_array($field)) {
@@ -174,14 +163,10 @@ class EncryptedJsonField
     }
 
     /**
-     * @param array $field
-     * @param string $aad
-     * @return string
-     *
-     * @throws CryptoOperationException
+     * @throws CipherSweetException
      * @throws SodiumException
      */
-    public function encryptJson(array $field, $aad = '')
+    public function encryptJson(array $field, string $aad = ''): string
     {
         /**
          * @var array{flat: string, path: array, type: string} $mapped
@@ -200,12 +185,7 @@ class EncryptedJsonField
         return json_encode($field);
     }
 
-    /**
-     * @param string $flatPath
-     * @return SymmetricKey
-     * @throws CryptoOperationException
-     */
-    public function deriveKey($flatPath)
+    public function deriveKey(string $flatPath): SymmetricKey
     {
         return new SymmetricKey(
             Util::HKDF(
@@ -220,9 +200,9 @@ class EncryptedJsonField
      * @param bool $bool
      * @return static
      */
-    public function setStrictMode($bool = false)
+    public function setStrictMode(bool $bool = false): static
     {
-        $this->strict = !empty($bool);
+        $this->strict = $bool;
         return $this;
     }
 
@@ -242,9 +222,9 @@ class EncryptedJsonField
         SymmetricKey $derivedKey,
         array &$field,
         array $path,
-        $type,
-        $aad = ''
-    ) {
+        string $type,
+        string $aad = ''
+    ): void {
         // Walk down the path
         $curr = &$field;
         $depth = 0;
@@ -280,9 +260,9 @@ class EncryptedJsonField
         SymmetricKey $derivedKey,
         array &$field,
         array $path,
-        $type,
-        $aad = ''
-    ) {
+        string $type,
+        string $aad = ''
+    ): void {
         // Walk down the path
         $curr = &$field;
         $depth = 0;
@@ -314,7 +294,7 @@ class EncryptedJsonField
      *
      * @throws CipherSweetException
      */
-    private function throwIfStrict($key, $depth, $decrypting = false)
+    private function throwIfStrict(string|int $key, int $depth, bool $decrypting = false): void
     {
         if (!$this->strict) {
             /* NOP */

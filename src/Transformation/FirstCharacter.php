@@ -16,7 +16,7 @@ class FirstCharacter implements TransformationInterface
      * @param string $input
      * @return string
      */
-    public function __invoke($input)
+    public function __invoke(mixed $input): string
     {
         if (Binary::safeStrlen($input) < 1) {
             return '';

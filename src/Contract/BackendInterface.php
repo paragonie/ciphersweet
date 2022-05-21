@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 namespace ParagonIE\CipherSweet\Contract;
 
 use ParagonIE\CipherSweet\Backend\Key\SymmetricKey;
@@ -10,64 +11,38 @@ use ParagonIE\CipherSweet\Constants;
  */
 interface BackendInterface
 {
-    /**
-     * @param string $plaintext
-     * @param SymmetricKey $key
-     * @param string $aad       Additional authenticated data
-     * @return string
-     */
-    public function encrypt($plaintext, SymmetricKey $key, $aad = '');
+    public function encrypt(string $plaintext, SymmetricKey $key, string $aad = ''): string;
 
-    /**
-     * @param string $ciphertext
-     * @param SymmetricKey $key
-     * @param string $aad       Additional authenticated data
-     * @return string
-     */
-    public function decrypt($ciphertext, SymmetricKey $key, $aad = '');
+    public function decrypt(string $ciphertext, SymmetricKey $key, string $aad = ''): string;
 
-    /**
-     * @param string $plaintext
-     * @param SymmetricKey $key
-     * @param int|null $bitLength
-     *
-     * @return string
-     */
     public function blindIndexFast(
-        $plaintext,
+        string $plaintext,
         SymmetricKey $key,
-        $bitLength = null
-    );
+        ?int $bitLength = null
+    ): string;
 
-    /**
-     * @param string $plaintext
-     * @param SymmetricKey $key
-     * @param int|null $bitLength
-     * @param array $config
-     *
-     * @return string
-     */
     public function blindIndexSlow(
-        $plaintext,
+        string $plaintext,
         SymmetricKey $key,
-        $bitLength = null,
+        ?int $bitLength = null,
         array $config = []
-    );
+    ): string;
 
-    /**
-     * @param string $tableName
-     * @param string $fieldName
-     * @param string $indexName
-     * @return string
-     */
-    public function getIndexTypeColumn($tableName, $fieldName, $indexName);
+    public function getIndexTypeColumn(
+        string $tableName,
+        string $fieldName,
+        string $indexName
+    ): string;
 
     /**
      * @param string $password
      * @param string $salt
      * @return SymmetricKey
      */
-    public function deriveKeyFromPassword($password, $salt);
+    public function deriveKeyFromPassword(
+        string $password,
+        string $salt
+    ): SymmetricKey;
 
     /**
      * @param resource $inputFP
@@ -80,8 +55,8 @@ interface BackendInterface
         $inputFP,
         $outputFP,
         SymmetricKey $key,
-        $chunkSize = 8192
-    );
+        int $chunkSize = 8192
+    ): bool;
 
     /**
      * @param resource $inputFP
@@ -95,17 +70,17 @@ interface BackendInterface
         $inputFP,
         $outputFP,
         SymmetricKey $key,
-        $chunkSize = 8192,
-        $salt = Constants::DUMMY_SALT
-    );
+        int $chunkSize = 8192,
+        string $salt = Constants::DUMMY_SALT
+    ): bool;
 
     /**
      * @return int
      */
-    public function getFileEncryptionSaltOffset();
+    public function getFileEncryptionSaltOffset(): int;
 
     /**
      * @return string
      */
-    public function getPrefix();
+    public function getPrefix(): string;
 }

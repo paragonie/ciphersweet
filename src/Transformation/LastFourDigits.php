@@ -21,7 +21,7 @@ class LastFourDigits implements TransformationInterface
      * @param string $input
      * @return string
      */
-    public function __invoke($input)
+    public function __invoke(mixed $input): string
     {
         $input = \preg_replace('/[^0-9]/', '', $input);
         $input = \str_pad($input, 4, '0', STR_PAD_LEFT);

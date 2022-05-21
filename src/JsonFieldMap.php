@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 namespace ParagonIE\CipherSweet;
 
 use ParagonIE\CipherSweet\Exception\CipherSweetException;
@@ -10,7 +11,7 @@ use SodiumException;
 class JsonFieldMap
 {
     /** @var array<string, string> */
-    private $fields = [];
+    private array $fields = [];
 
     /**
      * @param string $string
@@ -19,7 +20,7 @@ class JsonFieldMap
      * @throws CipherSweetException
      * @throws SodiumException
      */
-    public static function fromString($string)
+    public static function fromString(string $string): static
     {
         $crc32 = Binary::safeSubstr($string, 0, 8);
         $json = Binary::safeSubstr($string, 8);
@@ -55,12 +56,12 @@ class JsonFieldMap
     }
 
     /**
-     * @param array<array-key, string|int> $indices
-     * @return self
+     * @param array<array-key, string|int>|int|string $indices
+     * @return static
      *
      * @throws JsonMapException
      */
-    public function addBooleanField($indices)
+    public function addBooleanField(array|int|string $indices): static
     {
         if (\is_string($indices) || \is_int($indices)) {
             $indices = [$indices];
@@ -69,12 +70,12 @@ class JsonFieldMap
     }
 
     /**
-     * @param array<array-key, string|int> $indices
-     * @return self
+     * @param array<array-key, string|int>|int|string $indices
+     * @return static
      *
      * @throws JsonMapException
      */
-    public function addFloatField($indices)
+    public function addFloatField(array|int|string $indices): static
     {
         if (\is_string($indices) || \is_int($indices)) {
             $indices = [$indices];
@@ -83,12 +84,12 @@ class JsonFieldMap
     }
 
     /**
-     * @param array<array-key, string|int> $indices
-     * @return self
+     * @param array<array-key, string|int>|int|string $indices
+     * @return static
      *
      * @throws JsonMapException
      */
-    public function addIntegerField($indices)
+    public function addIntegerField(array|int|string $indices): static
     {
         if (\is_string($indices) || \is_int($indices)) {
             $indices = [$indices];
@@ -97,12 +98,12 @@ class JsonFieldMap
     }
 
     /**
-     * @param array<array-key, string|int> $indices
-     * @return self
+     * @param array<array-key, string|int>|int|string $indices
+     * @return static
      *
      * @throws JsonMapException
      */
-    public function addTextField($indices)
+    public function addTextField(array|int|string $indices): static
     {
         if (\is_string($indices) || \is_int($indices)) {
             $indices = [$indices];
@@ -113,11 +114,11 @@ class JsonFieldMap
     /**
      * @param array<array-key, string|int> $indices
      * @param string $type
-     * @return self
+     * @return static
      *
      * @throws JsonMapException
      */
-    public function addField(array $indices, $type)
+    public function addField(array $indices, string $type): static
     {
         $path = $this->flattenPath($indices);
         $this->fields[$path] = $type;
@@ -130,7 +131,7 @@ class JsonFieldMap
      *
      * @throws JsonMapException
      */
-    protected function flattenPath(array $indices)
+    protected function flattenPath(array $indices): string
     {
         $pieces = [];
         foreach ($indices as $index) {
@@ -146,12 +147,9 @@ class JsonFieldMap
     }
 
     /**
-     * @param string $flattened
-     * @return array<array-key, string|int>
-     *
      * @throws CipherSweetException
      */
-    protected function unflattenPath($flattened)
+    protected function unflattenPath(string $flattened): array
     {
         $pieces = \explode('.', $flattened);
         $path = [];
@@ -159,7 +157,7 @@ class JsonFieldMap
             $decoded = Hex::decode(Binary::safeSubstr($piece, 1));
             if ($piece[0] === '#') {
                 $unpack = \unpack('J', $decoded);
-                $path[] = $unpack[1];
+                $path[] = (int) $unpack[1];
             } elseif ($piece[0] === '$') {
                 $path[] = $decoded;
             } else {
@@ -170,11 +168,11 @@ class JsonFieldMap
     }
 
     /**
-     * @return array
+     * @return array<array{flat:string,path:array,type:string}>
      *
      * @throws CipherSweetException
      */
-    public function getMapping()
+    public function getMapping(): array
     {
         $mapping = [];
         foreach ($this->fields as $field => $type) {
@@ -190,7 +188,7 @@ class JsonFieldMap
     /**
      * @return string
      */
-    public function toString()
+    public function toString(): string
     {
         $json = \json_encode(['fields' => $this->fields]);
         $crc = \hash('crc32c', $json);
@@ -199,12 +197,6 @@ class JsonFieldMap
 
     public function __toString()
     {
-        try {
-            return $this->toString();
-        } catch (\Exception $ex) {
-            return '';
-        } catch (\Throwable $ex) {
-            return '';
-        }
+        return $this->toString();
     }
 }

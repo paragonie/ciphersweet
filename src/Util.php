@@ -1,5 +1,5 @@
 <?php
-
+declare(strict_types=1);
 namespace ParagonIE\CipherSweet;
 
 use ParagonIE\CipherSweet\Backend\Key\SymmetricKey;
@@ -15,14 +15,12 @@ abstract class Util
 {
     /**
      * Userland polyfill for AES-256-CTR, using AES-256-ECB
-     *
-     * @param string $plaintext
-     * @param string $key
-     * @param string $nonce
-     * @return string
      */
-    public static function aes256ctr($plaintext, $key, $nonce)
-    {
+    public static function aes256ctr(
+        string $plaintext,
+        string $key,
+        string $nonce
+    ): string {
         if (empty($plaintext)) {
             return '';
         }
@@ -46,15 +44,13 @@ abstract class Util
     }
 
     /**
-     * @param string $input
-     * @param int $bits
-     * @param bool $bitwiseLeft
-     * @return string
-     *
      * @throws \SodiumException
      */
-    public static function andMask($input, $bits, $bitwiseLeft = false)
-    {
+    public static function andMask(
+        string $input,
+        int $bits,
+        bool $bitwiseLeft = false
+    ): string {
         $bytes = $bits >> 3;
         $length = Binary::safeStrlen($input);
         if ($bytes >= $length) {
@@ -78,30 +74,21 @@ abstract class Util
 
     /**
      * Convert a nullable boolean to a string with a length of 1.
-     *
-     * @param bool|null $bool
-     * @return string
-     * @psalm-suppress RedundantConditionGivenDocblockType
      */
-    public static function boolToChr($bool)
+    public static function boolToChr(?bool $bool): string
     {
         if (\is_null($bool)) {
             $int = 0;
-        } elseif (\is_bool($bool)) {
-            $int = $bool ? 2 : 1;
         } else {
-            throw new \TypeError('Only TRUE, FALSE, or NULL allowed');
+            $int = $bool ? 2 : 1;
         }
         return \pack('C', $int);
     }
 
     /**
      * Convert a string with a length of 1 to a nullable boolean.
-     *
-     * @param string $string
-     * @return bool|null
      */
-    public static function chrToBool($string)
+    public static function chrToBool(string $string): ?bool
     {
         if (Binary::safeStrlen($string) !== 1) {
             throw new \OutOfRangeException(
@@ -124,58 +111,28 @@ abstract class Util
     }
 
     /**
-     * @param float $float
-     * @return string
-     *
      * @throws \SodiumException
      */
-    public static function floatToString($float)
+    public static function floatToString(float $float): string
     {
         SodiumUtil::declareScalarType($float, 'float');
-        /** @var bool|null $wrongEndian */
-        static $wrongEndian = null;
-
-        if (PHP_VERSION_ID >= 70015 && PHP_VERSION_ID !== 70100) {
-            // PHP >= 7.0.15 or >= 7.1.1
-            return (string) \pack('e', $float);
-        } else {
-            if (\is_null($wrongEndian)) {
-                $wrongEndian = self::getWrongEndianness();
-            }
-            $packed = (string) \pack('d', $float);
-            if ($wrongEndian) {
-                return \strrev($packed);
-            }
-            return $packed;
-        }
+        return \pack('e', $float);
     }
 
     /**
-     * @param string $a
-     * @param string $b
-     * @return bool
      * @throws \TypeError
      * @throws \SodiumException
      */
-    public static function hashEquals($a, $b)
+    public static function hashEquals(string $a, string $b): bool
     {
-        if (\is_callable('hash_equals')) {
-            return \hash_equals($a, $b);
-        }
-        if (!\is_string($a)) {
-            throw new \TypeError('Expected a string for argument 1');
-        }
-        if (!\is_string($b)) {
-            throw new \TypeError('Expected a string for argument 2');
-        }
-        return SodiumUtil::hashEquals($a, $b);
+        return \hash_equals($a, $b);
     }
 
     /**
      * @param int $int
      * @return string
      */
-    public static function intToString($int)
+    public static function intToString(int $int): string
     {
         return SodiumUtil::store64_le($int);
     }
@@ -187,7 +144,7 @@ abstract class Util
      * @param int $amount
      * @return string
      */
-    public static function ctrNonceIncrease($nonce, $amount = 1)
+    public static function ctrNonceIncrease(string $nonce, int $amount = 1): string
     {
         /** @var array<int, int> $pieces */
         $pieces = \unpack('C*', $nonce);
@@ -202,93 +159,26 @@ abstract class Util
         return (string) \call_user_func_array('pack', $pieces);
     }
 
-    /**
-     * @param SymmetricKey $key
-     * @param string|null $salt
-     * @param string $info
-     * @param int $length
-     * @param string $hash
-     *
-     * @return string
-     * @throws CryptoOperationException
-     */
     public static function HKDF(
         SymmetricKey $key,
-        $salt = null,
-        $info = '',
-        $length = 32,
-        $hash = 'sha384'
-    ) {
-        static $nativeHKDF = null;
-        if ($nativeHKDF === null) {
-            $nativeHKDF = \is_callable('\\hash_hkdf');
-        }
-        $ikm = $key->getRawKey();
-
-        if ($nativeHKDF) {
-            /**
-             * @psalm-suppress UndefinedFunction
-             * This is wrapped in an is_callable() check.
-             */
-            return (string) \hash_hkdf(
-                $hash,
-                $ikm,
-                $length,
-                $info,
-                (string) $salt
-            );
-        }
-
-        $digest_length = Binary::safeStrlen(
-            \hash_hmac($hash, '', '', true)
-        );
-
-        // Sanity-check the desired output length.
-        if (empty($length) || $length < 0 || $length > 255 * $digest_length) {
-            throw new CryptoOperationException(
-                'Bad output length requested of HKDF.'
-            );
-        }
-
-        // "if [salt] not provided, is set to a string of HashLen zeroes."
-        if (\is_null($salt)) {
-            $salt = \str_repeat("\x00", $digest_length);
-        }
-
-        // HKDF-Extract:
-        // PRK = HMAC-Hash(salt, IKM)
-        // The salt is the HMAC key.
-        $prk = \hash_hmac($hash, $ikm, $salt, true);
-
-        // HKDF-Expand:
-        // T(0) = ''
-        $t          = '';
-        $last_block = '';
-        for ($blockIndex = 1; Binary::safeStrlen($t) < $length; ++$blockIndex) {
-            // T(i) = HMAC-Hash(PRK, T(i-1) | info | 0x??)
-            $last_block = \hash_hmac(
-                $hash,
-                $last_block . $info . \pack('C', $blockIndex),
-                $prk,
-                true
-            );
-            // T = T(1) | T(2) | T(3) | ... | T(N)
-            $t .= $last_block;
-        }
-
-        // ORM = first L octets of T
-        return Binary::safeSubstr($t, 0, $length);
+        ?string $salt = '',
+        string $info = '',
+        int $length = 32,
+        string $hash = 'sha384'
+    ): string {
+        return \hash_hkdf($hash, $key->getRawKey(), $length, $info, (string) $salt);
     }
 
     /**
      * @param string $string
      * @param-out null $string
      * @return void
+     *
      * @throws \SodiumException
      * @psalm-suppress ReferenceConstraintViolation
      * @psalm-suppress InvalidOperand
      */
-    public static function memzero(&$string)
+    public static function memzero(string &$string): void
     {
         if (\extension_loaded('sodium')) {
             \sodium_memzero($string);
@@ -308,7 +198,7 @@ abstract class Util
      * @param array<int, string> $pieces
      * @return string
      */
-    public static function pack(array $pieces)
+    public static function pack(array $pieces): string
     {
         $output = SodiumUtil::store32_le(\count($pieces));
         foreach ($pieces as $piece) {
@@ -321,55 +211,21 @@ abstract class Util
     }
 
     /**
-     * @param string $string
-     * @return int
      * @throws \SodiumException
      */
-    public static function stringToInt($string)
+    public static function stringToInt(string $string): int
     {
         return SodiumUtil::load64_le($string);
     }
 
     /**
-     * @param string $string
-     * @return float
-     *
      * @throws \SodiumException
      */
-    public static function stringToFloat($string)
+    public static function stringToFloat(string $string): float
     {
         SodiumUtil::declareScalarType($string, 'string');
-        /** @var bool|null $wrongEndian */
-        static $wrongEndian = null;
-
-        if (PHP_VERSION_ID >= 70015 && PHP_VERSION_ID !== 70100) {
-            // PHP >= 7.0.15 or >= 7.1.1
-            /** @var array{1: float} $unpacked */
-            $unpacked = \unpack('e', (string) $string);
-            return (float) $unpacked[1];
-        } else {
-            if (\is_null($wrongEndian)) {
-                $wrongEndian = self::getWrongEndianness();
-            }
-            if ($wrongEndian) {
-                $string = \strrev((string) $string);
-            }
-            $unpacked = \unpack('d', (string) $string);
-            return (float) $unpacked[1];
-        }
-    }
-
-    /**
-     * @return bool|null
-     */
-    private static function getWrongEndianness()
-    {
-        $x = \pack('d', 1.618);
-        if ($x === "\x17\xd9\xce\xf7\x53\xe3\xf9\x3f") {
-            return false;
-        } elseif ($x === "\x3f\xf9\xe3\x53\xf7\xce\xd9\x17") {
-            return true;
-        }
-        return null;
+        /** @var array{1: float} $unpacked */
+        $unpacked = \unpack('e', (string) $string);
+        return (float) $unpacked[1];
     }
 }
