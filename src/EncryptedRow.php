@@ -345,13 +345,14 @@ class EncryptedRow
     }
 
     /**
-     * Decrypt all of the appropriate fields in the given array.
+     * Decrypt any of the appropriate fields in the given array.
      *
      * If any columns are defined in this object to be decrypted, the value
      * will be decrypted in-place in the returned array.
      *
      * @param array<string, string> $row
      * @return array<string, string|int|float|bool|null|scalar[]>
+     *
      * @throws CipherSweetException
      * @throws CryptoOperationException
      * @throws InvalidCiphertextException
@@ -372,7 +373,7 @@ class EncryptedRow
                 $this->tableName,
                 $field
             );
-            if (is_null($row[$field])) {
+            if (\is_null($row[$field])) {
                 $return[$field] = null;
                 continue;
             }
@@ -623,10 +624,7 @@ class EncryptedRow
         }
 
         $backend = $this->engine->getBackend();
-        /** @var string $name */
         $name = $index->getName();
-
-        /** @var SymmetricKey $subKey */
         $subKey = new SymmetricKey(
             \hash_hmac(
                 'sha256',
@@ -646,7 +644,6 @@ class EncryptedRow
         /** @var string|bool|int|float|null $unconverted */
         $unconverted = $row[$column];
 
-        /** @var string $plaintext */
         $plaintext = $index->getTransformed(
             $this->convertToString($unconverted, $fieldType)
         );
@@ -691,10 +688,7 @@ class EncryptedRow
         }
 
         $backend = $this->engine->getBackend();
-        /** @var string $name */
         $name = $index->getName();
-
-        /** @var SymmetricKey $subKey */
         $subKey = new SymmetricKey(
             \hash_hmac(
                 'sha256',
@@ -706,8 +700,6 @@ class EncryptedRow
 
         /** @var string $plaintext */
         $plaintext = $index->getPacked($row);
-
-
         if ($index->getFastHash()) {
             return $backend->blindIndexFast(
                 $plaintext,

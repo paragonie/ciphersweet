@@ -77,7 +77,7 @@ class EncryptedJsonField
      */
     public function addBooleanField($indices)
     {
-        if (is_string($indices) || is_int($indices)) {
+        if (\is_string($indices) || \is_int($indices)) {
             $indices = [$indices];
         }
         return $this->addField($indices, Constants::TYPE_BOOLEAN);
@@ -91,7 +91,7 @@ class EncryptedJsonField
      */
     public function addFloatField($indices)
     {
-        if (is_string($indices) || is_int($indices)) {
+        if (\is_string($indices) || \is_int($indices)) {
             $indices = [$indices];
         }
         return $this->addField($indices, Constants::TYPE_FLOAT);
@@ -105,7 +105,7 @@ class EncryptedJsonField
      */
     public function addIntegerField($indices)
     {
-        if (is_string($indices) || is_int($indices)) {
+        if (\is_string($indices) || \is_int($indices)) {
             $indices = [$indices];
         }
         return $this->addField($indices, Constants::TYPE_INT);
@@ -119,7 +119,7 @@ class EncryptedJsonField
      */
     public function addTextField($indices)
     {
-        if (is_string($indices) || is_int($indices)) {
+        if (\is_string($indices) || \is_int($indices)) {
             $indices = [$indices];
         }
         return $this->addField($indices, Constants::TYPE_TEXT);
@@ -147,8 +147,8 @@ class EncryptedJsonField
      */
     public function decryptJson($encoded, $aad = '')
     {
-        $field = json_decode($encoded, true);
-        if (!is_array($field)) {
+        $field = \json_decode($encoded, true);
+        if (!\is_array($field)) {
             throw new CipherSweetException("Could not decode JSON");
         }
 
@@ -248,14 +248,14 @@ class EncryptedJsonField
         // Walk down the path
         $curr = &$field;
         foreach ($path as $next) {
-            if (!array_key_exists($next, $curr)) {
+            if (!\array_key_exists($next, $curr)) {
                 $this->throwIfStrict(true);
                 return;
             }
             /** @var array<array-key, mixed|array>|null $curr */
             $curr =& $curr[$next];
         }
-        if (is_null($curr)) {
+        if (\is_null($curr)) {
             return;
         }
         $decrypted = $this->backend->decrypt($curr, $derivedKey, $aad);
@@ -284,7 +284,7 @@ class EncryptedJsonField
         // Walk down the path
         $curr = &$field;
         foreach ($path as $next) {
-            if (!array_key_exists($next, $curr)) {
+            if (!\array_key_exists($next, $curr)) {
                 $this->throwIfStrict();
                 return;
             }
@@ -292,7 +292,7 @@ class EncryptedJsonField
             /** @var array<array-key, mixed|array>|null $curr */
             $curr =& $curr[$next];
         }
-        if (is_null($curr)) {
+        if (\is_null($curr)) {
             return;
         }
         $curr = $this->backend->encrypt(

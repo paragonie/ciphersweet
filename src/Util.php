@@ -27,7 +27,6 @@ abstract class Util
             return '';
         }
         $length = Binary::safeStrlen($plaintext);
-        /** @var int $numBlocks */
         $numBlocks = (($length - 1) >> 4) + 1;
         $stream = '';
         for ($i = 0; $i < $numBlocks; ++$i) {
@@ -93,10 +92,7 @@ abstract class Util
         } else {
             throw new \TypeError('Only TRUE, FALSE, or NULL allowed');
         }
-        /** @var string $string */
-        $string = \pack('C', $int);
-
-        return $string;
+        return \pack('C', $int);
     }
 
     /**
@@ -146,7 +142,6 @@ abstract class Util
             if (\is_null($wrongEndian)) {
                 $wrongEndian = self::getWrongEndianness();
             }
-            /** @var string $packed */
             $packed = (string) \pack('d', $float);
             if ($wrongEndian) {
                 return \strrev($packed);
@@ -173,7 +168,7 @@ abstract class Util
         if (!\is_string($b)) {
             throw new \TypeError('Expected a string for argument 2');
         }
-        return (bool) SodiumUtil::hashEquals($a, $b);
+        return SodiumUtil::hashEquals($a, $b);
     }
 
     /**
@@ -228,7 +223,6 @@ abstract class Util
         if ($nativeHKDF === null) {
             $nativeHKDF = \is_callable('\\hash_hkdf');
         }
-        /** @var string $ikm */
         $ikm = $key->getRawKey();
 
         if ($nativeHKDF) {
@@ -283,9 +277,7 @@ abstract class Util
         }
 
         // ORM = first L octets of T
-        /** @var string $orm */
-        $orm = Binary::safeSubstr($t, 0, $length);
-        return (string) $orm;
+        return Binary::safeSubstr($t, 0, $length);
     }
 
     /**

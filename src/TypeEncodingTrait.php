@@ -1,5 +1,7 @@
 <?php
+
 namespace ParagonIE\CipherSweet;
+
 use SodiumException;
 
 trait TypeEncodingTrait

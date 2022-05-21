@@ -28,11 +28,11 @@ class JsonFieldMap
             throw new CipherSweetException("CRC32C invalid; was config corrupted?");
         }
 
-        $decoded = json_decode($json, true);
-        if (!is_array($decoded)) {
+        $decoded = \json_decode($json, true);
+        if (!\is_array($decoded)) {
             throw new CipherSweetException("Invalid JSON encoding");
         }
-        if (!array_key_exists('fields', $decoded)) {
+        if (!\array_key_exists('fields', $decoded)) {
             throw new CipherSweetException("Invalid JSON: no fields key");
         }
 
@@ -41,7 +41,7 @@ class JsonFieldMap
 
         // Let's validate the input:
         foreach ($decoded['fields'] as $flat => $type) {
-            if (!is_string($flat) || !is_string($type)) {
+            if (!\is_string($flat) || !\is_string($type)) {
                 throw new CipherSweetException("Invalid field");
             }
 
@@ -62,7 +62,7 @@ class JsonFieldMap
      */
     public function addBooleanField($indices)
     {
-        if (is_string($indices) || is_int($indices)) {
+        if (\is_string($indices) || \is_int($indices)) {
             $indices = [$indices];
         }
         return $this->addField($indices, Constants::TYPE_BOOLEAN);
@@ -76,7 +76,7 @@ class JsonFieldMap
      */
     public function addFloatField($indices)
     {
-        if (is_string($indices) || is_int($indices)) {
+        if (\is_string($indices) || \is_int($indices)) {
             $indices = [$indices];
         }
         return $this->addField($indices, Constants::TYPE_FLOAT);
@@ -90,7 +90,7 @@ class JsonFieldMap
      */
     public function addIntegerField($indices)
     {
-        if (is_string($indices) || is_int($indices)) {
+        if (\is_string($indices) || \is_int($indices)) {
             $indices = [$indices];
         }
         return $this->addField($indices, Constants::TYPE_INT);
@@ -104,7 +104,7 @@ class JsonFieldMap
      */
     public function addTextField($indices)
     {
-        if (is_string($indices) || is_int($indices)) {
+        if (\is_string($indices) || \is_int($indices)) {
             $indices = [$indices];
         }
         return $this->addField($indices, Constants::TYPE_TEXT);
@@ -134,9 +134,9 @@ class JsonFieldMap
     {
         $pieces = [];
         foreach ($indices as $index) {
-            if (is_int($index)) {
+            if (\is_int($index)) {
                 $pieces []= '#' . Hex::encode(pack('J', $index));
-            } elseif (is_string($index)) {
+            } elseif (\is_string($index)) {
                 $pieces []= '$' . Hex::encode($index);
             } else {
                 throw new JsonMapException('Invalid type');
@@ -153,12 +153,12 @@ class JsonFieldMap
      */
     protected function unflattenPath($flattened)
     {
-        $pieces = explode('.', $flattened);
+        $pieces = \explode('.', $flattened);
         $path = [];
         foreach ($pieces as $piece) {
             $decoded = Hex::decode(Binary::safeSubstr($piece, 1));
             if ($piece[0] === '#') {
-                $unpack = unpack('J', $decoded);
+                $unpack = \unpack('J', $decoded);
                 $path[] = $unpack[1];
             } elseif ($piece[0] === '$') {
                 $path[] = $decoded;
@@ -192,8 +192,8 @@ class JsonFieldMap
      */
     public function toString()
     {
-        $json = json_encode(['fields' => $this->fields]);
-        $crc = hash('crc32c', $json);
+        $json = \json_encode(['fields' => $this->fields]);
+        $crc = \hash('crc32c', $json);
         return $crc . $json;
     }
 

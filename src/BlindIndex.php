@@ -108,7 +108,6 @@ class BlindIndex
         if (empty($this->transformations)) {
             return $input;
         }
-        /** @var string $output */
         $output = $input;
         foreach ($this->transformations as $tf) {
             if ($tf instanceof TransformationInterface) {

@@ -50,7 +50,7 @@ class EncryptedMultiRows
      */
     public function addTable($tableName)
     {
-        if (array_key_exists($tableName, $this->tables)) {
+        if (\array_key_exists($tableName, $this->tables)) {
             throw new CipherSweetException('Table already exists');
         }
         $this->tables[$tableName] = new EncryptedRow($this->engine, $tableName);
