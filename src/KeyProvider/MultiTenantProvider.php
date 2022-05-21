@@ -13,10 +13,10 @@ use ParagonIE\CipherSweet\Exception\CipherSweetException;
 class MultiTenantProvider implements KeyProviderInterface, MultiTenantAwareProviderInterface
 {
     /** @var array<array-key, KeyProviderInterface> $tenants */
-    protected $tenants = [];
+    protected array $tenants = [];
 
     /** @var array-key|null $active */
-    protected $active;
+    protected string|int|null $active;
 
     /**
      * MultiTenantProvider constructor.
@@ -24,7 +24,7 @@ class MultiTenantProvider implements KeyProviderInterface, MultiTenantAwareProvi
      * @param array<array-key, KeyProviderInterface> $keyProviders
      * @param array-key|null $active
      */
-    public function __construct(array $keyProviders, $active = null)
+    public function __construct(array $keyProviders, string|int|null $active = null)
     {
         foreach ($keyProviders as $name => $keyProvider) {
             $this->tenants[$name] = $keyProvider;
@@ -35,9 +35,9 @@ class MultiTenantProvider implements KeyProviderInterface, MultiTenantAwareProvi
     /**
      * @param array-key $index
      * @param KeyProviderInterface $provider
-     * @return self
+     * @return static
      */
-    public function addTenant($index, KeyProviderInterface $provider)
+    public function addTenant(string|int $index, KeyProviderInterface $provider): static
     {
         $this->tenants[$index] = $provider;
         return $this;
@@ -45,9 +45,9 @@ class MultiTenantProvider implements KeyProviderInterface, MultiTenantAwareProvi
 
     /**
      * @param array-key $index
-     * @return self
+     * @return static
      */
-    public function setActiveTenant($index)
+    public function setActiveTenant(string|int $index): static
     {
         $this->active = $index;
         return $this;
@@ -59,7 +59,7 @@ class MultiTenantProvider implements KeyProviderInterface, MultiTenantAwareProvi
      * @throws CipherSweetException
      * @psalm-suppress PossiblyNullArrayOffset
      */
-    public function getTenant($name)
+    public function getTenant(string|int $name): KeyProviderInterface
     {
         if (!\array_key_exists($name, $this->tenants)) {
             throw new CipherSweetException('Tenant does not exist');
@@ -71,7 +71,7 @@ class MultiTenantProvider implements KeyProviderInterface, MultiTenantAwareProvi
      * @return KeyProviderInterface
      * @throws CipherSweetException
      */
-    public function getActiveTenant()
+    public function getActiveTenant(): KeyProviderInterface
     {
         if (\is_null($this->active)) {
             throw new CipherSweetException('Active tenant not set');
@@ -86,7 +86,7 @@ class MultiTenantProvider implements KeyProviderInterface, MultiTenantAwareProvi
      * @return SymmetricKey
      * @throws CipherSweetException
      */
-    public function getSymmetricKey()
+    public function getSymmetricKey(): SymmetricKey
     {
         if (\is_null($this->active)) {
             throw new CipherSweetException('Active tenant not set');
@@ -101,11 +101,11 @@ class MultiTenantProvider implements KeyProviderInterface, MultiTenantAwareProvi
      *
      * @param array $row
      * @param string $tableName
-     * @return string
+     * @return string|int
      *
      * @throws CipherSweetException
      */
-    public function getTenantFromRow(array $row, $tableName)
+    public function getTenantFromRow(array $row, string $tableName): string|int
     {
         if (!$this->active) {
             throw new CipherSweetException('This is not implemented. Please override in a child class.');
@@ -120,7 +120,7 @@ class MultiTenantProvider implements KeyProviderInterface, MultiTenantAwareProvi
      * @param string $tableName
      * @return array
      */
-    public function injectTenantMetadata(array $row, $tableName)
+    public function injectTenantMetadata(array $row, string $tableName): array
     {
         return $row;
     }

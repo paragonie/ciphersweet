@@ -15,11 +15,11 @@ interface KeyRotationInterface
      * @return bool
      * @throws InvalidCiphertextException
      */
-    public function needsReEncrypt($ciphertext = '');
+    public function needsReEncrypt(string|array $ciphertext = ''): bool;
 
     /**
      * @param string|array<string, string> $values
      * @return array
      */
-    public function prepareForUpdate($values);
+    public function prepareForUpdate(string|array $values): array;
 }

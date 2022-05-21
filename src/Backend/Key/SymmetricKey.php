@@ -9,25 +9,8 @@ use ParagonIE\CipherSweet\Util;
  */
 class SymmetricKey
 {
-    /**
-     * @var string $keyMaterial
-     */
-    private $keyMaterial;
-
-    /**
-     * SymmetricKey constructor.
-     *
-     * @param string $rawKeyMaterial
-     */
-    public function __construct($rawKeyMaterial)
-    {
-        /** @psalm-suppress RedundantConditionGivenDocblockType */
-        if (!\is_string($rawKeyMaterial)) {
-            throw new \TypeError('String expected');
-        }
-
-        $this->keyMaterial = $rawKeyMaterial;
-    }
+    public function __construct(private string $keyMaterial)
+    {}
 
     /**
      * Attempt to wipe memory.
@@ -42,7 +25,7 @@ class SymmetricKey
     /**
      * @return string
      */
-    public function getRawKey()
+    public function getRawKey(): string
     {
         return $this->keyMaterial;
     }

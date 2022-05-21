@@ -40,8 +40,11 @@ class ModernCrypto implements BackendInterface
      * @throws CryptoOperationException
      * @throws \SodiumException
      */
-    public function encrypt($plaintext, SymmetricKey $key, $aad = '')
-    {
+    public function encrypt(
+        string $plaintext,
+        SymmetricKey $key,
+        string $aad = ''
+    ): string {
         try {
             $nonce = \random_bytes(self::NONCE_SIZE);
         } catch (\Exception $ex) {
@@ -67,8 +70,11 @@ class ModernCrypto implements BackendInterface
      * @throws InvalidCiphertextException
      * @throws \SodiumException
      */
-    public function decrypt($ciphertext, SymmetricKey $key, $aad = '')
-    {
+    public function decrypt(
+        string $ciphertext,
+        SymmetricKey $key,
+        string $aad = ''
+    ): string {
         // Make sure we're using the correct version:
         $header = Binary::safeSubstr($ciphertext, 0, 5);
         if (!SodiumUtil::hashEquals($header, self::MAGIC_HEADER)) {
@@ -104,10 +110,10 @@ class ModernCrypto implements BackendInterface
      * @throws \SodiumException
      */
     public function blindIndexFast(
-        $plaintext,
+        string $plaintext,
         SymmetricKey $key,
-        $bitLength = null
-    ) {
+        ?int $bitLength = null
+    ): string {
         if (\is_null($bitLength)) {
             $bitLength = 256;
         }
@@ -137,11 +143,11 @@ class ModernCrypto implements BackendInterface
      * @throws \SodiumException
      */
     public function blindIndexSlow(
-        $plaintext,
+        string $plaintext,
         SymmetricKey $key,
-        $bitLength = null,
+        ?int $bitLength = null,
         array $config = []
-    ) {
+    ): string {
         if (!SodiumCompat::crypto_pwhash_is_available()) {
             throw new \SodiumException(
                 'Not using the native libsodium bindings'
@@ -190,8 +196,11 @@ class ModernCrypto implements BackendInterface
      * @return string
      * @throws \SodiumException
      */
-    public function getIndexTypeColumn($tableName, $fieldName, $indexName)
-    {
+    public function getIndexTypeColumn(
+        string $tableName,
+        string $fieldName,
+        string $indexName
+    ): string {
         $hash = SodiumCompat::crypto_shorthash(
             Util::pack([$fieldName, $indexName]),
             SodiumCompat::crypto_generichash($tableName, '', 16)
@@ -206,8 +215,10 @@ class ModernCrypto implements BackendInterface
      *
      * @throws \SodiumException
      */
-    public function deriveKeyFromPassword($password, $salt)
-    {
+    public function deriveKeyFromPassword(
+        string $password,
+        string $salt
+    ): SymmetricKey {
         return new SymmetricKey(
             SodiumCompat::crypto_pwhash(
                 32,
@@ -233,8 +244,8 @@ class ModernCrypto implements BackendInterface
         $inputFP,
         $outputFP,
         SymmetricKey $key,
-        $chunkSize = 8192
-    ) {
+        int $chunkSize = 8192
+    ): bool {
         \fseek($inputFP, 0, SEEK_SET);
         \fseek($outputFP, 0, SEEK_SET);
         $adlen = 45; // 5 + 24 + 16
@@ -340,9 +351,9 @@ class ModernCrypto implements BackendInterface
         $inputFP,
         $outputFP,
         SymmetricKey $key,
-        $chunkSize = 8192,
-        $salt = Constants::DUMMY_SALT
-    ) {
+        int $chunkSize = 8192,
+        string $salt = Constants::DUMMY_SALT
+    ): bool {
         \fseek($inputFP, 0, SEEK_SET);
         \fseek($outputFP, 0, SEEK_SET);
         $adlen = 45; // 5 + 24 + 16
@@ -408,7 +419,7 @@ class ModernCrypto implements BackendInterface
     /**
      * @return int
      */
-    public function getFileEncryptionSaltOffset()
+    public function getFileEncryptionSaltOffset(): int
     {
         return 21;
     }
@@ -416,7 +427,7 @@ class ModernCrypto implements BackendInterface
     /**
      * @return string
      */
-    public function getPrefix()
+    public function getPrefix(): string
     {
         return (string) static::MAGIC_HEADER;
     }

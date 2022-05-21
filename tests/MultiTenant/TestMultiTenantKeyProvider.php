@@ -19,7 +19,7 @@ class TestMultiTenantKeyProvider extends MultiTenantProvider
      *
      * @throws CipherSweetException
      */
-    public function getTenantFromRow(array $row, $tableName)
+    public function getTenantFromRow(array $row, string $tableName): string
     {
         switch ($row['tenant']) {
             case 'foo':
@@ -37,7 +37,7 @@ class TestMultiTenantKeyProvider extends MultiTenantProvider
      * @return array
      * @throws CipherSweetException
      */
-    public function injectTenantMetadata(array $row, $tableName)
+    public function injectTenantMetadata(array $row, string $tableName): array
     {
         if ($tableName !== 'meta') {
             $row['tenant-extra'] = $tableName;
@@ -57,7 +57,7 @@ class TestMultiTenantKeyProvider extends MultiTenantProvider
      * @throws CipherSweetException
      * @throws \SodiumException
      */
-    protected function wrapKey($tableName = '')
+    protected function wrapKey(string $tableName = ''): string
     {
         $wrappingKey = sodium_crypto_generichash('unit tests');
         $nonce = random_bytes(24);

@@ -12,10 +12,10 @@ use ParagonIE\CipherSweet\Exception\PlannerException;
 class FieldIndexPlanner
 {
     /** @var int $population */
-    protected $population = 0;
+    protected int $population = 0;
 
     /** @var array<string, array<string, int>> $indexes */
-    protected $indexes = [];
+    protected array $indexes = [];
 
     /**
      * Create a predictor from an EncryptedField.
@@ -26,10 +26,10 @@ class FieldIndexPlanner
      * estimates for K_i when populating from an object, but L_i is accurate.
      *
      * @param EncryptedField $field
-     * @return self
+     * @return static
      * @psalm-suppress UnsafeInstantiation
      */
-    public static function fromEncryptedField(EncryptedField $field)
+    public static function fromEncryptedField(EncryptedField $field): static
     {
         $self = new static();
         /**
@@ -46,9 +46,9 @@ class FieldIndexPlanner
      * @param string $name,
      * @param int $L
      * @param int $K
-     * @return self
+     * @return static
      */
-    public function addExistingIndex($name, $L, $K = PHP_INT_MAX)
+    public function addExistingIndex(string $name, int $L, int $K = PHP_INT_MAX): static
     {
         $this->indexes[$name] = ['L' => $L, 'K' => $K];
         return $this;
@@ -57,7 +57,7 @@ class FieldIndexPlanner
     /**
      * @return float
      */
-    public function getCoincidenceCount()
+    public function getCoincidenceCount(): float|int
     {
         $indexes = \array_values($this->indexes);
         return $this->coincidenceCounter($indexes, $this->population);
@@ -69,7 +69,7 @@ class FieldIndexPlanner
      *
      * @throws PlannerException
      */
-    public function recommend($extraFieldPopulationBits = PHP_INT_MAX)
+    public function recommend(int $extraFieldPopulationBits = PHP_INT_MAX): array
     {
         if ($this->population < 1) {
             throw new PlannerException('An empty population is not useful for estimates');
@@ -123,7 +123,7 @@ class FieldIndexPlanner
      *
      * @throws PlannerException
      */
-    public function recommendLow($extraFieldPopulationBits = PHP_INT_MAX)
+    public function recommendLow(int $extraFieldPopulationBits = PHP_INT_MAX): int
     {
         /** @var array<string, int> $recommend */
         $recommend = $this->recommend($extraFieldPopulationBits);
@@ -136,7 +136,7 @@ class FieldIndexPlanner
      *
      * @throws PlannerException
      */
-    public function recommendHigh($extraFieldPopulationBits = PHP_INT_MAX)
+    public function recommendHigh(int $extraFieldPopulationBits = PHP_INT_MAX): int
     {
         /** @var array<string, int> $recommend */
         $recommend = $this->recommend($extraFieldPopulationBits);
@@ -145,9 +145,9 @@ class FieldIndexPlanner
 
     /**
      * @param int $int
-     * @return self
+     * @return static
      */
-    public function setEstimatedPopulation($int)
+    public function setEstimatedPopulation(int $int): static
     {
         $this->population = $int;
         return $this;
@@ -155,11 +155,10 @@ class FieldIndexPlanner
 
     /**
      * @param int $int
-     * @return self
+     * @return static
      */
-    public function withPopulation($int)
+    public function withPopulation(int $int): static
     {
-        /** @var self $clone */
         $clone = clone $this;
         return $clone->setEstimatedPopulation($int);
     }
@@ -169,7 +168,7 @@ class FieldIndexPlanner
      * @param int $R
      * @return float
      */
-    protected function coincidenceCounter(array $indexes, $R)
+    protected function coincidenceCounter(array $indexes, int $R): float
     {
         /** @var int|float $exponent */
         $exponent = 0;

@@ -50,8 +50,11 @@ class FIPSCrypto implements BackendInterface, MultiTenantSafeBackendInterface
      * @throws CryptoOperationException
      * @throws \SodiumException
      */
-    public function encrypt($plaintext, SymmetricKey $key, $aad = '')
-    {
+    public function encrypt(
+        string $plaintext,
+        SymmetricKey $key,
+        string $aad = ''
+    ): string {
         try {
             $hkdfSalt = \random_bytes(self::SALT_SIZE);
             $ctrNonce = \random_bytes(self::NONCE_SIZE);
@@ -90,8 +93,11 @@ class FIPSCrypto implements BackendInterface, MultiTenantSafeBackendInterface
      * @throws InvalidCiphertextException
      * @throws \SodiumException
      */
-    public function decrypt($ciphertext, SymmetricKey $key, $aad = '')
-    {
+    public function decrypt(
+        string $ciphertext,
+        SymmetricKey $key,
+        string $aad = ''
+    ): string {
         // Make sure we're using the correct version:
         $header = Binary::safeSubstr($ciphertext, 0, 5);
         if (!SodiumUtil::hashEquals($header, self::MAGIC_HEADER)) {
@@ -144,10 +150,10 @@ class FIPSCrypto implements BackendInterface, MultiTenantSafeBackendInterface
      * @throws \SodiumException
      */
     public function blindIndexFast(
-        $plaintext,
+        string $plaintext,
         SymmetricKey $key,
-        $bitLength = null
-    ) {
+        ?int $bitLength = null
+    ): string {
         if (\is_null($bitLength)) {
             $bitLength = 256;
         }
@@ -175,11 +181,11 @@ class FIPSCrypto implements BackendInterface, MultiTenantSafeBackendInterface
      * @throws \SodiumException
      */
     public function blindIndexSlow(
-        $plaintext,
+        string $plaintext,
         SymmetricKey $key,
-        $bitLength = null,
+        ?int $bitLength = null,
         array $config = []
-    ) {
+    ): string {
         if (\is_null($bitLength)) {
             $bitLength = 256;
         }
@@ -208,8 +214,11 @@ class FIPSCrypto implements BackendInterface, MultiTenantSafeBackendInterface
      * @param string $indexName
      * @return string
      */
-    public function getIndexTypeColumn($tableName, $fieldName, $indexName)
-    {
+    public function getIndexTypeColumn(
+        string $tableName,
+        string $fieldName,
+        string $indexName
+    ): string {
         $hash = \hash_hmac(
             'sha384',
             Util::pack([$fieldName, $indexName]),
@@ -229,8 +238,11 @@ class FIPSCrypto implements BackendInterface, MultiTenantSafeBackendInterface
      *
      * @throws CryptoOperationException
      */
-    private static function aes256ctr($plaintext, $key, $nonce)
-    {
+    private static function aes256ctr(
+        string $plaintext,
+        string $key,
+        string $nonce
+    ): string {
         if (!\in_array('aes-256-ctr', \openssl_get_cipher_methods(), true)) {
             if (!\in_array('aes-256-ecb', \openssl_get_cipher_methods(), true)) {
                 throw new CryptoOperationException(
@@ -258,8 +270,10 @@ class FIPSCrypto implements BackendInterface, MultiTenantSafeBackendInterface
      * @param string $salt
      * @return SymmetricKey
      */
-    public function deriveKeyFromPassword($password, $salt)
-    {
+    public function deriveKeyFromPassword(
+        string $password,
+        string $salt
+    ): SymmetricKey {
         return new SymmetricKey(
             \hash_pbkdf2(
                 'sha384',
@@ -286,8 +300,8 @@ class FIPSCrypto implements BackendInterface, MultiTenantSafeBackendInterface
         $inputFP,
         $outputFP,
         SymmetricKey $key,
-        $chunkSize = 8192
-    ) {
+        int $chunkSize = 8192
+    ): bool {
         \fseek($inputFP, 0, SEEK_SET);
         \fseek($outputFP, 0, SEEK_SET);
         $header = \fread($inputFP, 5);
@@ -374,9 +388,9 @@ class FIPSCrypto implements BackendInterface, MultiTenantSafeBackendInterface
         $inputFP,
         $outputFP,
         SymmetricKey $key,
-        $chunkSize = 8192,
-        $salt = Constants::DUMMY_SALT
-    ) {
+        int $chunkSize = 8192,
+        string $salt = Constants::DUMMY_SALT
+    ): bool {
         \fseek($inputFP, 0, SEEK_SET);
         \fseek($outputFP, 0, SEEK_SET);
         try {
@@ -426,7 +440,7 @@ class FIPSCrypto implements BackendInterface, MultiTenantSafeBackendInterface
     /**
      * @return int
      */
-    public function getFileEncryptionSaltOffset()
+    public function getFileEncryptionSaltOffset(): int
     {
         return 53;
     }
@@ -434,7 +448,7 @@ class FIPSCrypto implements BackendInterface, MultiTenantSafeBackendInterface
     /**
      * @return string
      */
-    public function getPrefix()
+    public function getPrefix(): string
     {
         return (string) static::MAGIC_HEADER;
     }

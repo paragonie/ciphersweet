@@ -156,10 +156,11 @@ final class CipherSweet
     /**
      * @param array $row
      * @param string $tableName
-     * @return string
+     * @return string|int
+     *
      * @throws CipherSweetException
      */
-    public function getTenantFromRow(array $row, string $tableName = ''): string
+    public function getTenantFromRow(array $row, string $tableName = ''): string|int
     {
         /** @param MultiTenantAwareProviderInterface $kp */
         if ($this->keyProvider instanceof MultiTenantAwareProviderInterface) {
@@ -170,15 +171,15 @@ final class CipherSweet
     }
 
     /**
-     * @param string $name
+     * @param string|int $tenant
      * @return void
      * @throws CipherSweetException
      */
-    public function setActiveTenant(string $name): void
+    public function setActiveTenant(string|int $tenant): void
     {
         /** @param MultiTenantAwareProviderInterface $kp */
         if ($this->keyProvider instanceof MultiTenantAwareProviderInterface) {
-            $this->keyProvider->setActiveTenant($name);
+            $this->keyProvider->setActiveTenant($tenant);
             return;
         }
         throw new CipherSweetException('Your Key Provider is not multi-tenant aware');

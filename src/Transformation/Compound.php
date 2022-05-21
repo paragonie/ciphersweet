@@ -19,7 +19,7 @@ class Compound implements RowTransformationInterface
      * @return string
      * @throws \Exception
      */
-    public function __invoke($input)
+    public function __invoke(mixed $input): string
     {
         if (!\is_array($input)) {
             throw new \TypeError('Compound Transformation expects an array');
@@ -31,7 +31,7 @@ class Compound implements RowTransformationInterface
      * @param string $string
      * @return string
      */
-    public function packString($string)
+    public function packString(string $string): string
     {
         $len = Binary::safeStrlen($string);
         $l = Hex::encode(SodiumUtil::store64_le($len));
@@ -45,7 +45,7 @@ class Compound implements RowTransformationInterface
      * @return array|string
      * @throws \Exception
      */
-    public function processArray(array $input, $layer = 0)
+    public function processArray(array $input, int $layer = 0): array|string
     {
         if ($layer > 255) {
             throw new \Exception('Too much recursion');

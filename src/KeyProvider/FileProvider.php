@@ -14,7 +14,7 @@ class FileProvider implements KeyProviderInterface
     /**
      * @var string|null $symmetricKeyPath
      */
-    protected $symmetricKeyPath = null;
+    protected ?string $symmetricKeyPath = null;
 
     /**
      * FileProvider constructor.
@@ -22,7 +22,7 @@ class FileProvider implements KeyProviderInterface
      * @param string|null $symmetricKeyPath
      */
     public function __construct(
-        $symmetricKeyPath = null
+        ?string $symmetricKeyPath = null
     ) {
         $this->symmetricKeyPath = $symmetricKeyPath;
     }
@@ -31,7 +31,7 @@ class FileProvider implements KeyProviderInterface
      * @return SymmetricKey
      * @throws KeyProviderException
      */
-    public function getSymmetricKey()
+    public function getSymmetricKey(): SymmetricKey
     {
         if (\is_null($this->symmetricKeyPath)) {
             throw new KeyProviderException('Symmetric key path was not provided');

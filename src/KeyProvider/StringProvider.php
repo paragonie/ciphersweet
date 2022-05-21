@@ -18,7 +18,7 @@ class StringProvider implements KeyProviderInterface
     /**
      * @var string $rootSymmetricKey
      */
-    private $rootSymmetricKey;
+    private string $rootSymmetricKey;
 
     /**
      * StringProvider constructor.
@@ -27,7 +27,7 @@ class StringProvider implements KeyProviderInterface
      *
      * @throws CryptoOperationException
      */
-    public function __construct($rawKey = '')
+    public function __construct(string $rawKey = '')
     {
         if (Binary::safeStrlen($rawKey) === 64) {
             $this->rootSymmetricKey = Hex::decode($rawKey);
@@ -53,7 +53,7 @@ class StringProvider implements KeyProviderInterface
     /**
      * @return SymmetricKey
      */
-    public function getSymmetricKey()
+    public function getSymmetricKey(): SymmetricKey
     {
         return new SymmetricKey($this->rootSymmetricKey);
     }
