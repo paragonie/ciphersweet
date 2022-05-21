@@ -35,6 +35,11 @@ class EncryptedRow
     protected $jsonMaps = [];
 
     /**
+     * @var array<string, bool> $jsonStrict
+     */
+    protected $jsonStrict = [];
+
+    /**
      * @var array<string, string> $aadSourceField
      */
     protected $aadSourceField = [];
@@ -138,6 +143,7 @@ class EncryptedRow
     public function addJsonField($fieldName, JsonFieldMap $fieldMap, $aadSource = '', $strict = true)
     {
         $this->jsonMaps[$fieldName] = $fieldMap;
+        $this->jsonStrict[$fieldName] = $strict;
         return $this->addField($fieldName, Constants::TYPE_JSON, $aadSource);
     }
 
@@ -389,7 +395,12 @@ class EncryptedRow
 
             if ($type === Constants::TYPE_JSON && !empty($this->jsonMaps[$field])) {
                 // JSON is a special case
-                $jsonEncryptor = new EncryptedJsonField($backend, $key, $this->jsonMaps[$field]);
+                $jsonEncryptor = new EncryptedJsonField(
+                    $backend,
+                    $key,
+                    $this->jsonMaps[$field],
+                    $this->jsonStrict[$field]
+                );
                 $return[$field] = $jsonEncryptor->decryptJson($row[$field], $aad);
                 continue;
             }
@@ -440,7 +451,12 @@ class EncryptedRow
             }
             if ($type === Constants::TYPE_JSON && !empty($this->jsonMaps[$field])) {
                 // JSON is a special case
-                $jsonEncryptor = new EncryptedJsonField($backend, $key, $this->jsonMaps[$field]);
+                $jsonEncryptor = new EncryptedJsonField(
+                    $backend,
+                    $key,
+                    $this->jsonMaps[$field],
+                    $this->jsonStrict[$field]
+                );
                 /** @psalm-suppress InvalidArgument */
                 $return[$field] = $jsonEncryptor->encryptJson($row[$field], $aad);
                 continue;
