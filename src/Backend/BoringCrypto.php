@@ -1,20 +1,28 @@
 <?php
+declare(strict_types=1);
 namespace ParagonIE\CipherSweet\Backend;
 
 use ParagonIE\CipherSweet\Backend\Key\SymmetricKey;
 use ParagonIE\CipherSweet\Constants;
-use ParagonIE\CipherSweet\Contract\BackendInterface;
-use ParagonIE\CipherSweet\Contract\MultiTenantSafeBackendInterface;
-use ParagonIE\CipherSweet\Exception\CryptoOperationException;
-use ParagonIE\CipherSweet\Exception\InvalidCiphertextException;
+use ParagonIE\CipherSweet\Contract\{
+    BackendInterface,
+    MultiTenantSafeBackendInterface
+};
+use ParagonIE\CipherSweet\Exception\{
+    CryptoOperationException,
+    InvalidCiphertextException
+};
 use ParagonIE\CipherSweet\Util;
-use ParagonIE\ConstantTime\Base32;
-use ParagonIE\ConstantTime\Base64UrlSafe;
-use ParagonIE\ConstantTime\Binary;
+use ParagonIE\ConstantTime\{
+    Base32,
+    Base64UrlSafe,
+    Binary
+};
 use ParagonIE_Sodium_Compat as SodiumCompat;
 use ParagonIE\Sodium\Core\ChaCha20;
 use ParagonIE\Sodium\Core\HChaCha20;
 use ParagonIE_Sodium_Core_Util as SodiumUtil;
+use SodiumException;
 
 /**
  * Class BoringCrypto
@@ -32,7 +40,7 @@ class BoringCrypto implements BackendInterface, MultiTenantSafeBackendInterface
     /**
      * @param SymmetricKey $key
      * @return SymmetricKey
-     * @throws \SodiumException
+     * @throws SodiumException
      */
     protected function getEncryptionKey(SymmetricKey $key): SymmetricKey
     {
@@ -44,7 +52,7 @@ class BoringCrypto implements BackendInterface, MultiTenantSafeBackendInterface
     /**
      * @param SymmetricKey $key
      * @return SymmetricKey
-     * @throws \SodiumException
+     * @throws SodiumException
      */
     protected function getIntegrityKey(SymmetricKey $key): SymmetricKey
     {
@@ -63,7 +71,7 @@ class BoringCrypto implements BackendInterface, MultiTenantSafeBackendInterface
      * @return string
      *
      * @throws CryptoOperationException
-     * @throws \SodiumException
+     * @throws SodiumException
      */
     public function encrypt(
         string $plaintext,
@@ -100,7 +108,7 @@ class BoringCrypto implements BackendInterface, MultiTenantSafeBackendInterface
      *
      * @return string
      * @throws InvalidCiphertextException
-     * @throws \SodiumException
+     * @throws SodiumException
      */
     public function decrypt(
         string $ciphertext,
@@ -147,7 +155,7 @@ class BoringCrypto implements BackendInterface, MultiTenantSafeBackendInterface
      * @param int|null $bitLength
      *
      * @return string
-     * @throws \SodiumException
+     * @throws SodiumException
      */
     public function blindIndexFast(
         string $plaintext,
@@ -180,7 +188,7 @@ class BoringCrypto implements BackendInterface, MultiTenantSafeBackendInterface
      * @param array $config
      *
      * @return string
-     * @throws \SodiumException
+     * @throws SodiumException
      */
     public function blindIndexSlow(
         string $plaintext,
@@ -234,7 +242,7 @@ class BoringCrypto implements BackendInterface, MultiTenantSafeBackendInterface
      * @param string $fieldName
      * @param string $indexName
      * @return string
-     * @throws \SodiumException
+     * @throws SodiumException
      */
     public function getIndexTypeColumn(
         string $tableName,
@@ -253,7 +261,7 @@ class BoringCrypto implements BackendInterface, MultiTenantSafeBackendInterface
      * @param string $salt
      * @return SymmetricKey
      *
-     * @throws \SodiumException
+     * @throws SodiumException
      */
     public function deriveKeyFromPassword(
         string $password,
@@ -278,7 +286,7 @@ class BoringCrypto implements BackendInterface, MultiTenantSafeBackendInterface
      * @return bool
      *
      * @throws CryptoOperationException
-     * @throws \SodiumException
+     * @throws SodiumException
      */
     public function doStreamDecrypt(
         $inputFP,
@@ -331,7 +339,7 @@ class BoringCrypto implements BackendInterface, MultiTenantSafeBackendInterface
         SodiumCompat::crypto_generichash_update($b2mac, SodiumUtil::store64_le($len));
         $authTag = SodiumCompat::crypto_generichash_final($b2mac, self::MAC_SIZE);
 
-        if (!Util::hashEquals($storedAuthTag, $authTag)) {
+        if (!\hash_equals($storedAuthTag, $authTag)) {
             throw new CryptoOperationException('Invalid authentication tag');
         }
 
@@ -377,7 +385,7 @@ class BoringCrypto implements BackendInterface, MultiTenantSafeBackendInterface
      * @return bool
      *
      * @throws CryptoOperationException
-     * @throws \SodiumException
+     * @throws SodiumException
      */
     public function doStreamEncrypt(
         $inputFP,

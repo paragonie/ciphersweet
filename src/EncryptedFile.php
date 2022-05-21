@@ -3,10 +3,13 @@ declare(strict_types=1);
 namespace ParagonIE\CipherSweet;
 
 use ParagonIE\CipherSweet\Contract\BackendInterface;
-use ParagonIE\CipherSweet\Exception\CipherSweetException;
-use ParagonIE\CipherSweet\Exception\CryptoOperationException;
-use ParagonIE\CipherSweet\Exception\FilesystemException;
+use ParagonIE\CipherSweet\Exception\{
+    CipherSweetException,
+    CryptoOperationException,
+    FilesystemException
+};
 use ParagonIE\ConstantTime\Binary;
+use SodiumException;
 
 /**
  * Class EncryptedFile
@@ -91,7 +94,9 @@ class EncryptedFile
      * @param string $password
      * @return bool
      *
+     * @throws CryptoOperationException
      * @throws FilesystemException
+     * @throws SodiumException
      */
     public function decryptFileWithPassword(
         string $inputFile,
@@ -125,9 +130,8 @@ class EncryptedFile
      * @param resource $outputFP
      * @return bool
      *
-     * @throws CryptoOperationException
      * @throws CipherSweetException
-     * @throws \SodiumException
+     * @throws CryptoOperationException
      */
     public function decryptStream($inputFP, $outputFP): bool
     {
@@ -150,9 +154,6 @@ class EncryptedFile
      * @param resource $outputFP
      * @param string $password
      * @return bool
-     *
-     * @throws CryptoOperationException
-     * @throws \SodiumException
      */
     public function decryptStreamWithPassword(
         $inputFP,
@@ -177,8 +178,10 @@ class EncryptedFile
      * @param string $outputFile
      * @return bool
      *
+     * @throws CipherSweetException
      * @throws CryptoOperationException
      * @throws FilesystemException
+     * @throws SodiumException
      */
     public function encryptFile(string $inputFile, string $outputFile): bool
     {
@@ -204,10 +207,11 @@ class EncryptedFile
      * @param string $inputFile
      * @param string $outputFile
      * @param string $password
+     * @return bool
      *
      * @throws CryptoOperationException
      * @throws FilesystemException
-     * @return bool
+     * @throws SodiumException
      */
     public function encryptFileWithPassword(
         string $inputFile,
@@ -243,7 +247,6 @@ class EncryptedFile
      *
      * @throws CipherSweetException
      * @throws CryptoOperationException
-     * @throws \SodiumException
      */
     public function encryptStream($inputFP, $outputFP): bool
     {
@@ -268,7 +271,6 @@ class EncryptedFile
      * @return bool
      *
      * @throws CryptoOperationException
-     * @throws \SodiumException
      */
     public function encryptStreamWithPassword(
         $inputFP,
@@ -317,7 +319,7 @@ class EncryptedFile
      * @return bool
      *
      * @throws FilesystemException
-     * @throws \SodiumException
+     * @throws SodiumException
      */
     public function isFileEncrypted(string $filename): bool
     {
@@ -327,8 +329,6 @@ class EncryptedFile
     /**
      * @param resource $inputFile
      * @return bool
-     *
-     * @throws \SodiumException
      */
     public function isStreamEncrypted($inputFile): bool
     {
@@ -354,6 +354,7 @@ class EncryptedFile
      * @param string $fileName
      * @param string $mode
      * @return resource
+     *
      * @throws FilesystemException
      */
     public function getStreamForFile(string $fileName = 'php://temp', string $mode = 'wb')

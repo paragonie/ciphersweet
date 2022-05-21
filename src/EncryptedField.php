@@ -4,11 +4,12 @@ namespace ParagonIE\CipherSweet;
 
 use ParagonIE\CipherSweet\Backend\Key\SymmetricKey;
 use ParagonIE\CipherSweet\Contract\BackendInterface;
-use ParagonIE\CipherSweet\Exception\BlindIndexNameCollisionException;
-use ParagonIE\CipherSweet\Exception\BlindIndexNotFoundException;
-use ParagonIE\CipherSweet\Exception\CipherSweetException;
-use ParagonIE\CipherSweet\Exception\CryptoOperationException;
-use ParagonIE\CipherSweet\Exception\InvalidCiphertextException;
+use ParagonIE\CipherSweet\Exception\{
+    BlindIndexNameCollisionException,
+    BlindIndexNotFoundException,
+    CipherSweetException,
+    CryptoOperationException
+};
 use ParagonIE\ConstantTime\Hex;
 use SodiumException;
 
@@ -97,8 +98,6 @@ class EncryptedField
      * @return array<int, string|array>
      *
      * @throws BlindIndexNotFoundException
-     * @throws CipherSweetException
-     * @throws CryptoOperationException
      * @throws SodiumException
      */
     public function prepareForStorage(string $plaintext, string $aad = ''): array
@@ -115,10 +114,6 @@ class EncryptedField
      * @param string $plaintext
      * @param string $aad       Additional authenticated data
      * @return string
-     *
-     * @throws CryptoOperationException
-     * @throws CipherSweetException
-     * @throws SodiumException
      */
     public function encryptValue(string $plaintext, string $aad = ''): string
     {
@@ -134,10 +129,6 @@ class EncryptedField
 
     /**
      * Decrypt a single value, using the per-field symmetric key.
-     *
-     * @throws CipherSweetException
-     * @throws InvalidCiphertextException
-     * @throws SodiumException
      */
     public function decryptValue(string $ciphertext, string $aad = ''): string
     {
@@ -157,7 +148,6 @@ class EncryptedField
      * @return array<string, string|array>
      *
      * @throws BlindIndexNotFoundException
-     * @throws CryptoOperationException
      * @throws SodiumException
      */
     public function getAllBlindIndexes(string $plaintext): array
@@ -208,7 +198,6 @@ class EncryptedField
      * Get a particular blind index of a given plaintext.
      *
      * @throws BlindIndexNotFoundException
-     * @throws CryptoOperationException
      * @throws SodiumException
      */
     public function getBlindIndex(string $plaintext, string $name): string|array
@@ -248,8 +237,6 @@ class EncryptedField
      * Internal: Get the raw blind index. Returns a raw binary string.
      *
      * @throws BlindIndexNotFoundException
-     * @throws CryptoOperationException
-     * @throws SodiumException
      */
     protected function getBlindIndexRaw(
         string $plaintext,

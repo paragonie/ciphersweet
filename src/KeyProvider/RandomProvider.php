@@ -1,10 +1,13 @@
 <?php
+declare(strict_types=1);
 namespace ParagonIE\CipherSweet\KeyProvider;
 
-use ParagonIE\CipherSweet\Backend\BoringCrypto;
-use ParagonIE\CipherSweet\Backend\FIPSCrypto;
+use ParagonIE\CipherSweet\Backend\{
+    BoringCrypto,
+    FIPSCrypto,
+    ModernCrypto
+};
 use ParagonIE\CipherSweet\Backend\Key\SymmetricKey;
-use ParagonIE\CipherSweet\Backend\ModernCrypto;
 use ParagonIE\CipherSweet\Contract\BackendInterface;
 use ParagonIE\CipherSweet\Contract\KeyProviderInterface;
 

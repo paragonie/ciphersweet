@@ -2,8 +2,10 @@
 declare(strict_types=1);
 namespace ParagonIE\CipherSweet;
 
-use ParagonIE\CipherSweet\Contract\RowTransformationInterface;
-use ParagonIE\CipherSweet\Contract\TransformationInterface;
+use ParagonIE\CipherSweet\Contract\{
+    RowTransformationInterface,
+    TransformationInterface
+};
 use ParagonIE\CipherSweet\Transformation\Compound;
 
 /**

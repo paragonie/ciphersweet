@@ -1,11 +1,13 @@
 <?php
+declare(strict_types=1);
 namespace ParagonIE\CipherSweet\KeyRotation;
 
 use ParagonIE\CipherSweet\Contract\KeyRotationInterface;
 use ParagonIE\CipherSweet\EncryptedField;
-use ParagonIE\CipherSweet\Exception\BlindIndexNotFoundException;
-use ParagonIE\CipherSweet\Exception\CryptoOperationException;
-use ParagonIE\CipherSweet\Exception\InvalidCiphertextException;
+use ParagonIE\CipherSweet\Exception\{
+    BlindIndexNotFoundException,
+    InvalidCiphertextException
+};
 use ParagonIE\CipherSweet\Util;
 use ParagonIE\ConstantTime\Binary;
 use SodiumException;
@@ -37,8 +39,8 @@ class FieldRotator implements KeyRotationInterface
      * @param string|array $ciphertext
      * @param string $aad
      * @return bool
+     *
      * @throws InvalidCiphertextException
-     * @throws SodiumException
      */
     public function needsReEncrypt(string|array $ciphertext = '', string $aad = ''): bool
     {
@@ -66,8 +68,8 @@ class FieldRotator implements KeyRotationInterface
      * @param string $oldAad
      * @param string $newAad
      * @return array
+     *
      * @throws BlindIndexNotFoundException
-     * @throws CryptoOperationException
      * @throws SodiumException
      */
     public function prepareForUpdate(

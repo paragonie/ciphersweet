@@ -3,9 +3,9 @@ declare(strict_types=1);
 namespace ParagonIE\CipherSweet;
 
 use ParagonIE\CipherSweet\Backend\Key\SymmetricKey;
-use ParagonIE\CipherSweet\Exception\CryptoOperationException;
 use ParagonIE\ConstantTime\Binary;
 use ParagonIE_Sodium_Core_Util as SodiumUtil;
+use SodiumException;
 
 /**
  * Class Util
@@ -44,7 +44,7 @@ abstract class Util
     }
 
     /**
-     * @throws \SodiumException
+     * @throws SodiumException
      */
     public static function andMask(
         string $input,
@@ -111,7 +111,7 @@ abstract class Util
     }
 
     /**
-     * @throws \SodiumException
+     * @throws SodiumException
      */
     public static function floatToString(float $float): string
     {
@@ -121,7 +121,6 @@ abstract class Util
 
     /**
      * @throws \TypeError
-     * @throws \SodiumException
      */
     public static function hashEquals(string $a, string $b): bool
     {
@@ -174,7 +173,7 @@ abstract class Util
      * @param-out null $string
      * @return void
      *
-     * @throws \SodiumException
+     * @throws SodiumException
      * @psalm-suppress ReferenceConstraintViolation
      * @psalm-suppress InvalidOperand
      */
@@ -211,7 +210,7 @@ abstract class Util
     }
 
     /**
-     * @throws \SodiumException
+     * @throws SodiumException
      */
     public static function stringToInt(string $string): int
     {
@@ -219,7 +218,7 @@ abstract class Util
     }
 
     /**
-     * @throws \SodiumException
+     * @throws SodiumException
      */
     public static function stringToFloat(string $string): float
     {

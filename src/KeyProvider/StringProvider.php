@@ -1,13 +1,17 @@
 <?php
+declare(strict_types=1);
 namespace ParagonIE\CipherSweet\KeyProvider;
 
 use ParagonIE\CipherSweet\Backend\Key\SymmetricKey;
 use ParagonIE\CipherSweet\Contract\KeyProviderInterface;
 use ParagonIE\CipherSweet\Exception\CryptoOperationException;
 use ParagonIE\CipherSweet\Util;
-use ParagonIE\ConstantTime\Base64UrlSafe;
-use ParagonIE\ConstantTime\Binary;
-use ParagonIE\ConstantTime\Hex;
+use ParagonIE\ConstantTime\{
+    Base64UrlSafe,
+    Binary,
+    Hex
+};
+use SodiumException;
 
 /**
  * Class StringProvider
@@ -43,7 +47,7 @@ class StringProvider implements KeyProviderInterface
     /**
      * Attempt to wipe memory.
      *
-     * @throws \SodiumException
+     * @throws SodiumException
      */
     public function __destruct()
     {
@@ -61,7 +65,7 @@ class StringProvider implements KeyProviderInterface
     /**
      * @return array
      */
-    public function __debugInfo()
+    public function __debugInfo(): array
     {
         return [];
     }

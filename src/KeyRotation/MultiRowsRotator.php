@@ -1,11 +1,16 @@
 <?php
+declare(strict_types=1);
 namespace ParagonIE\CipherSweet\KeyRotation;
 
 use ParagonIE\CipherSweet\Contract\KeyRotationInterface;
 use ParagonIE\CipherSweet\EncryptedMultiRows;
-use ParagonIE\CipherSweet\Exception\ArrayKeyException;
-use ParagonIE\CipherSweet\Exception\CryptoOperationException;
-use ParagonIE\CipherSweet\Exception\InvalidCiphertextException;
+use ParagonIE\CipherSweet\Exception\{
+    ArrayKeyException,
+    CipherSweetException,
+    CryptoOperationException,
+    InvalidCiphertextException
+};
+use SodiumException;
 
 /**
  * Class MultiRowsRotator
@@ -51,10 +56,12 @@ class MultiRowsRotator implements KeyRotationInterface
     /**
      * @param string|array<string, array<string, string>> $values
      * @return array
+     *
      * @throws ArrayKeyException
+     * @throws CipherSweetException
      * @throws CryptoOperationException
      * @throws InvalidCiphertextException
-     * @throws \SodiumException
+     * @throws SodiumException
      */
     public function prepareForUpdate(array|string $values): array
     {

@@ -1,12 +1,15 @@
 <?php
+declare(strict_types=1);
 namespace ParagonIE\CipherSweet;
 
 use ParagonIE\CipherSweet\Backend\Key\SymmetricKey;
 use ParagonIE\CipherSweet\Contract\BackendInterface;
-use ParagonIE\CipherSweet\Exception\CipherSweetException;
-use ParagonIE\CipherSweet\Exception\CryptoOperationException;
-use ParagonIE\CipherSweet\Exception\InvalidCiphertextException;
-use ParagonIE\CipherSweet\Exception\JsonMapException;
+use ParagonIE\CipherSweet\Exception\{
+    CipherSweetException,
+    CryptoOperationException,
+    InvalidCiphertextException,
+    JsonMapException
+};
 use SodiumException;
 
 class EncryptedJsonField

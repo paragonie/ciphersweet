@@ -1,10 +1,13 @@
 <?php
+declare(strict_types=1);
 namespace ParagonIE\CipherSweet\Transformation;
 
 use ParagonIE\CipherSweet\Contract\RowTransformationInterface;
-use ParagonIE\ConstantTime\Base64UrlSafe;
-use ParagonIE\ConstantTime\Binary;
-use ParagonIE\ConstantTime\Hex;
+use ParagonIE\ConstantTime\{
+    Base64UrlSafe,
+    Binary,
+    Hex
+};
 use ParagonIE_Sodium_Core_Util as SodiumUtil;
 
 /**

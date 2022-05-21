@@ -3,10 +3,12 @@ declare(strict_types=1);
 namespace ParagonIE\CipherSweet;
 
 use ParagonIE\CipherSweet\Contract\BackendInterface;
-use ParagonIE\CipherSweet\Exception\ArrayKeyException;
-use ParagonIE\CipherSweet\Exception\BlindIndexNotFoundException;
-use ParagonIE\CipherSweet\Exception\CipherSweetException;
-use ParagonIE\CipherSweet\Exception\CryptoOperationException;
+use ParagonIE\CipherSweet\Exception\{
+    ArrayKeyException,
+    BlindIndexNotFoundException,
+    CipherSweetException,
+    CryptoOperationException
+};
 use SodiumException;
 
 /**

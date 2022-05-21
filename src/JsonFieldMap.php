@@ -2,11 +2,14 @@
 declare(strict_types=1);
 namespace ParagonIE\CipherSweet;
 
-use ParagonIE\CipherSweet\Exception\CipherSweetException;
-use ParagonIE\CipherSweet\Exception\JsonMapException;
-use ParagonIE\ConstantTime\Binary;
-use ParagonIE\ConstantTime\Hex;
-use SodiumException;
+use ParagonIE\CipherSweet\Exception\{
+    CipherSweetException,
+    JsonMapException
+};
+use ParagonIE\ConstantTime\{
+    Binary,
+    Hex
+};
 
 class JsonFieldMap
 {
@@ -18,7 +21,6 @@ class JsonFieldMap
      * @return static
      *
      * @throws CipherSweetException
-     * @throws SodiumException
      */
     public static function fromString(string $string): static
     {

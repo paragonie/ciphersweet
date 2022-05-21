@@ -2,14 +2,21 @@
 declare(strict_types=1);
 namespace ParagonIE\CipherSweet;
 
-use ParagonIE\CipherSweet\Backend\BoringCrypto;
-use ParagonIE\CipherSweet\Backend\Key\SymmetricKey;
-use ParagonIE\CipherSweet\Contract\BackendInterface;
-use ParagonIE\CipherSweet\Contract\KeyProviderInterface;
-use ParagonIE\CipherSweet\Contract\MultiTenantAwareProviderInterface;
-use ParagonIE\CipherSweet\Contract\MultiTenantSafeBackendInterface;
-use ParagonIE\CipherSweet\Exception\CipherSweetException;
-use ParagonIE\CipherSweet\Exception\CryptoOperationException;
+use ParagonIE\CipherSweet\Backend\{
+    BoringCrypto,
+    Key\SymmetricKey
+};
+use ParagonIE\CipherSweet\Contract\{
+    BackendInterface,
+    KeyProviderInterface,
+    MultiTenantAwareProviderInterface,
+    MultiTenantSafeBackendInterface
+};
+use ParagonIE\CipherSweet\Exception\{
+    CipherSweetException,
+    CryptoOperationException
+};
+use SodiumException;
 
 /**
  * Class CipherSweet
@@ -53,7 +60,7 @@ final class CipherSweet
     }
 
     /**
-     * @throws \SodiumException
+     * @throws SodiumException
      */
     public function getIndexTypeColumn(
         string $tableName,

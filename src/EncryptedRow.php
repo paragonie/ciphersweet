@@ -4,11 +4,13 @@ namespace ParagonIE\CipherSweet;
 
 use ParagonIE\CipherSweet\Backend\Key\SymmetricKey;
 use ParagonIE\CipherSweet\Contract\BackendInterface;
-use ParagonIE\CipherSweet\Exception\ArrayKeyException;
-use ParagonIE\CipherSweet\Exception\BlindIndexNotFoundException;
-use ParagonIE\CipherSweet\Exception\CipherSweetException;
-use ParagonIE\CipherSweet\Exception\CryptoOperationException;
-use ParagonIE\CipherSweet\Exception\InvalidCiphertextException;
+use ParagonIE\CipherSweet\Exception\{
+    ArrayKeyException,
+    BlindIndexNotFoundException,
+    CipherSweetException,
+    CryptoOperationException,
+    InvalidCiphertextException
+};
 use ParagonIE\ConstantTime\Hex;
 use SodiumException;
 
@@ -293,7 +295,7 @@ class EncryptedRow
      * @param string $column
      * @return array<string, BlindIndex>
      */
-    public function getBlindIndexObjectsForColumn($column): array
+    public function getBlindIndexObjectsForColumn(string $column): array
     {
         if (isset($this->blindIndexes[$column])) {
             return $this->blindIndexes[$column];
@@ -307,6 +309,7 @@ class EncryptedRow
      * @param string $column
      * @param string $name
      * @return string
+     *
      * @throws SodiumException
      */
     public function getBlindIndexType(string $column, string $name): string
@@ -323,6 +326,7 @@ class EncryptedRow
      *
      * @param string $name
      * @return string
+     *
      * @throws SodiumException
      */
     public function getCompoundIndexType(string $name): string
@@ -430,8 +434,8 @@ class EncryptedRow
      * will be encrypted in-place in the returned array.
      *
      * @param array<string, string|int|float|bool|null> $row
-     *
      * @return array<string, string>
+     *
      * @throws ArrayKeyException
      * @throws CryptoOperationException
      * @throws CipherSweetException
@@ -544,7 +548,6 @@ class EncryptedRow
      * @return array<string, string>|string
      *
      * @throws ArrayKeyException
-     * @throws Exception\CryptoOperationException
      * @throws SodiumException
      */
     protected function calcBlindIndex(array $row, string $column, BlindIndex $index): string|array
@@ -588,8 +591,8 @@ class EncryptedRow
      *
      * @param array $row
      * @param CompoundIndex $index
-     *
      * @return array<string, string>|string
+     *
      * @throws CryptoOperationException
      * @throws SodiumException
      */
@@ -636,7 +639,6 @@ class EncryptedRow
      * @param SymmetricKey|null $key
      *
      * @return string
-     * @throws Exception\CryptoOperationException
      * @throws ArrayKeyException
      * @throws SodiumException
      */
@@ -728,7 +730,6 @@ class EncryptedRow
             )
         );
 
-        /** @var string $plaintext */
         $plaintext = $index->getPacked($row);
         if ($index->getFastHash()) {
             return $backend->blindIndexFast(

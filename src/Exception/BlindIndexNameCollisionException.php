@@ -1,10 +1,7 @@
 <?php
+declare(strict_types=1);
 namespace ParagonIE\CipherSweet\Exception;
 
-/**
- * Class BlindIndexNameCollisionException
- * @package ParagonIE\CipherSweet\Exception
- */
 class BlindIndexNameCollisionException extends CipherSweetException
 {
 

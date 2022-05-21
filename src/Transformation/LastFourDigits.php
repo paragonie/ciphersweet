@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 namespace ParagonIE\CipherSweet\Transformation;
 
 use ParagonIE\ConstantTime\Binary;
