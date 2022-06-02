@@ -81,7 +81,7 @@ class EncryptedRow
     ) {
         $this->engine = $engine;
         $this->tableName = $tableName;
-        $this->typedIndexes = !$useTypedIndexes;
+        $this->typedIndexes = $useTypedIndexes;
     }
 
     /**
