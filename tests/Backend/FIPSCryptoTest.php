@@ -25,4 +25,13 @@ class FIPSCryptoTest extends TestCase
 
         $this->assertSame($message, $decrypted);
     }
+
+    public function testBlindIndexSlowEmpty()
+    {
+        $fips = new FIPSCrypto();
+        $keyProvider = new StringProvider(random_bytes(32));
+
+        $raw = $fips->blindIndexSlow('', $keyProvider->getSymmetricKey(), 32);
+        $this->assertNotEmpty($raw);
+    }
 }

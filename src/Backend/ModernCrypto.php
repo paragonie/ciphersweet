@@ -183,7 +183,7 @@ class ModernCrypto implements BackendInterface
             throw new \SodiumException('Output length is far too big');
         }
 
-        $hash = SodiumCompat::crypto_pwhash(
+        $hash = @sodium_crypto_pwhash(
             $pwHashLength,
             $plaintext,
             SodiumCompat::crypto_generichash($key->getRawKey(), '', 16),

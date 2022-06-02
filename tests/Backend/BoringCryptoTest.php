@@ -25,4 +25,13 @@ class BoringCryptoTest extends TestCase
 
         $this->assertSame($message, $decrypted);
     }
+
+    public function testBlindIndexSlowEmpty()
+    {
+        $brng = new BoringCrypto();
+        $keyProvider = new StringProvider(random_bytes(32));
+
+        $raw = $brng->blindIndexSlow('', $keyProvider->getSymmetricKey(), 32);
+        $this->assertNotEmpty($raw);
+    }
 }
