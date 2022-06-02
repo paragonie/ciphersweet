@@ -70,6 +70,12 @@ class EncryptedRowTest extends TestCase
         $this->brngRandom = $this->createBoringEngine();
     }
 
+    public function testConstructor()
+    {
+        $encRow = new EncryptedRow($this->brngEngine, 'test', true);
+        $this->assertTrue($encRow->getTypedIndexes(), 'Constructor argument not handled correctly');
+    }
+
     /**
      * @throws ArrayKeyException
      * @throws CryptoOperationException
@@ -254,8 +260,14 @@ class EncryptedRowTest extends TestCase
             'hivstatus' => true
         ];
         $eF = $this->getExampleRow($this->fipsEngine, true);
-
         $indexes = $eF->getAllBlindIndexes($row);
+        $this->assertEquals('a88e74ada916ab9b', $indexes['contact_ssn_last_four']);
+        $this->assertEquals('9c3d53214ab71d7f', $indexes['contact_ssnlast4_hivstatus']);
+
+        $eF->setTypedIndexes(true);
+        $indexes = $eF->getAllBlindIndexes($row);
+        $this->assertEquals('idlzpypmia6qu', $indexes['contact_ssn_last_four']['type']);
+        $this->assertEquals('dozudszz2yu5k', $indexes['contact_ssnlast4_hivstatus']['type']);
         $this->assertEquals('a88e74ada916ab9b', $indexes['contact_ssn_last_four']['value']);
         $this->assertEquals('9c3d53214ab71d7f', $indexes['contact_ssnlast4_hivstatus']['value']);
     }

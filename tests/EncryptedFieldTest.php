@@ -57,6 +57,12 @@ class EncryptedFieldTest extends TestCase
         $this->naclRandom = $this->createModernEngine();
     }
 
+    public function testConstructor()
+    {
+        $encField = new EncryptedField($this->naclEngine, 'test',  'field', true);
+        $this->assertTrue($encField->getTypedIndexes(), 'Constructor argument not handled correctly');
+    }
+
     /**
      * @throws BlindIndexNameCollisionException
      * @throws CryptoOperationException

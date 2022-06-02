@@ -26,6 +26,15 @@ class ModernCryptoTest extends TestCase
         $this->assertSame($message, $decrypted);
     }
 
+    public function testBlindIndexFastEmpty()
+    {
+        $nacl = new ModernCrypto();
+        $keyProvider = new StringProvider(random_bytes(32));
+
+        $raw = $nacl->blindIndexFast('', $keyProvider->getSymmetricKey(), 32);
+        $this->assertNotEmpty($raw);
+    }
+
     public function testBlindIndexSlowEmpty()
     {
         $nacl = new ModernCrypto();

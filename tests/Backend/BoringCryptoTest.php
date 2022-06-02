@@ -16,14 +16,23 @@ class BoringCryptoTest extends TestCase
      */
     public function testEncrypt()
     {
-        $nacl = new BoringCrypto();
+        $brng = new BoringCrypto();
         $keyProvider = new StringProvider(random_bytes(32));
 
         $message = 'This is just a test message';
-        $cipher = $nacl->encrypt($message, $keyProvider->getSymmetricKey());
-        $decrypted = $nacl->decrypt($cipher, $keyProvider->getSymmetricKey());
+        $cipher = $brng->encrypt($message, $keyProvider->getSymmetricKey());
+        $decrypted = $brng->decrypt($cipher, $keyProvider->getSymmetricKey());
 
         $this->assertSame($message, $decrypted);
+    }
+
+    public function testBlindIndexFastEmpty()
+    {
+        $brng = new BoringCrypto();
+        $keyProvider = new StringProvider(random_bytes(32));
+
+        $raw = $brng->blindIndexFast('', $keyProvider->getSymmetricKey(), 32);
+        $this->assertNotEmpty($raw);
     }
 
     public function testBlindIndexSlowEmpty()
