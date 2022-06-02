@@ -7,8 +7,8 @@ use ParagonIE\CipherSweet\BlindIndex;
 use ParagonIE\CipherSweet\CipherSweet;
 use ParagonIE\CipherSweet\EncryptedRow;
 use ParagonIE\CipherSweet\Exception\ArrayKeyException;
-use ParagonIE\CipherSweet\Exception\BlindIndexNameCollisionException;
 use ParagonIE\CipherSweet\Exception\BlindIndexNotFoundException;
+use ParagonIE\CipherSweet\Exception\CipherSweetException;
 use ParagonIE\CipherSweet\Exception\CryptoOperationException;
 use ParagonIE\CipherSweet\Exception\InvalidCiphertextException;
 use ParagonIE\CipherSweet\JsonFieldMap;
@@ -16,6 +16,7 @@ use ParagonIE\CipherSweet\Transformation\LastFourDigits;
 use ParagonIE\ConstantTime\Binary;
 use PHPUnit\Framework\TestCase;
 use ParagonIE\CipherSweet\Tests\Transformation\FirstInitialLastName;
+use SodiumException;
 
 /**
  * Class EncryptedRowTest
@@ -302,8 +303,9 @@ class EncryptedRowTest extends TestCase
 
     /**
      * @throws ArrayKeyException
+     * @throws CipherSweetException
      * @throws CryptoOperationException
-     * @throws \SodiumException
+     * @throws SodiumException
      */
     public function testEncrypt()
     {
@@ -314,9 +316,10 @@ class EncryptedRowTest extends TestCase
         ];
         $eF = $this->getExampleRow($this->fipsRandom, true);
         $eM = $this->getExampleRow($this->naclRandom, true);
+        $eB = $this->getExampleRow($this->naclRandom, true);
 
         /** @var EncryptedRow $engine */
-        foreach ([$eM, $eF] as $engine) {
+        foreach ([$eM, $eF, $eB] as $engine) {
             $store = $engine->encryptRow($row);
             $this->assertSame($store['extraneous'], $row['extraneous']);
             $this->assertNotSame($store['ssn'], $row['ssn']);
@@ -325,15 +328,20 @@ class EncryptedRowTest extends TestCase
     }
 
     /**
+     * @dataProvider engineProvider
+     *
+     * @param CipherSweet $engine
+     *
+     * @throws ArrayKeyException
      * @throws CryptoOperationException
-     * @throws \ParagonIE\CipherSweet\Exception\ArrayKeyException
-     * @throws \SodiumException
+     * @throws CipherSweetException
+     * @throws SodiumException
      */
-    public function testPrepareForStorage()
+    public function testPrepareForStorage(CipherSweet $engine)
     {
-        $eF = $this->getExampleRow($this->fipsRandom, true);
-        $flat = $this->getExampleRow($this->fipsRandom, true);
-        $flat->setFlatIndexes(true);
+        $typed = $this->getExampleRow($engine, true);
+        $flat = $this->getExampleRow($engine, true);
+        $typed->setTypedIndexes(true);
 
         $rows = [
             [
@@ -362,13 +370,14 @@ class EncryptedRowTest extends TestCase
             ]
         ];
         foreach ($rows as $row) {
-            list($store, $indexes) = $eF->prepareRowForStorage($row);
+            list($store, $indexes) = $typed->prepareRowForStorage($row);
             $this->assertTrue(\is_array($store));
             $this->assertTrue(\is_string($store['ssn']));
             $this->assertTrue(\is_string($store['hivstatus']));
             $this->assertNotSame($row['ssn'], $store['ssn']);
             $this->assertNotSame($row['hivstatus'], $store['hivstatus']);
             $this->assertTrue(\is_array($indexes));
+            $copy = $indexes;
 
             list($store, $indexes) = $flat->prepareRowForStorage($row);
             $this->assertTrue(\is_array($store));
@@ -377,6 +386,9 @@ class EncryptedRowTest extends TestCase
             $this->assertNotSame($row['ssn'], $store['ssn']);
             $this->assertNotSame($row['hivstatus'], $store['hivstatus']);
             $this->assertTrue(\is_array($indexes));
+            foreach ($copy as $key => $index) {
+                $this->assertSame($index['value'], $indexes[$key]);
+            }
         }
     }
 
@@ -418,14 +430,16 @@ class EncryptedRowTest extends TestCase
     }
 
     /**
+     * @dataProvider engineProvider
+     *
      * @throws ArrayKeyException
      * @throws CryptoOperationException
      * @throws BlindIndexNotFoundException
      * @throws \SodiumException
      */
-    public function testRowTransform()
+    public function testRowTransform(CipherSweet $engine)
     {
-        $row = (new EncryptedRow($this->fipsRandom, 'users'))
+        $row = (new EncryptedRow($engine, 'users'))
             ->addTextField('first_name')
             ->addTextField('last_name');
         $row->addCompoundIndex(
