@@ -1,15 +1,18 @@
 {
   "name": "paragonie/ciphersweet",
-  "description": "Searchable field-level encryption library for CRM software",
+  "description": "Searchable field-level encryption library for relational databases",
   "keywords": [
     "CRM",
     "cryptography",
+    "database encryption",
     "encrypt",
     "encryption",
     "field-level encryption",
     "FIPS 140-2",
     "libsodium",
-    "searchable encryption"
+    "queryable encryption",
+    "searchable encryption",
+    "SQL encryption"
   ],
   "license": "ISC",
   "type": "library",
