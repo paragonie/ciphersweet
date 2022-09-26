@@ -18,7 +18,6 @@ use ParagonIE\ConstantTime\{
     Base64UrlSafe,
     Binary
 };
-use ParagonIE_Sodium_Core_Util as SodiumUtil;
 
 /**
  * Class FIPSCrypto
