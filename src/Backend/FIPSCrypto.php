@@ -57,8 +57,11 @@ class FIPSCrypto implements BackendInterface, MultiTenantSafeBackendInterface
      * @throws \SodiumException
      */
     public function encrypt(
+        #[\SensitiveParameter]
         string $plaintext,
+        #[\SensitiveParameter]
         SymmetricKey $key,
+        #[\SensitiveParameter]
         string $aad = ''
     ): string {
         try {
@@ -100,8 +103,11 @@ class FIPSCrypto implements BackendInterface, MultiTenantSafeBackendInterface
      * @throws \SodiumException
      */
     public function decrypt(
+        #[\SensitiveParameter]
         string $ciphertext,
+        #[\SensitiveParameter]
         SymmetricKey $key,
+        #[\SensitiveParameter]
         string $aad = ''
     ): string {
         // Make sure we're using the correct version:
@@ -156,7 +162,9 @@ class FIPSCrypto implements BackendInterface, MultiTenantSafeBackendInterface
      * @throws \SodiumException
      */
     public function blindIndexFast(
+        #[\SensitiveParameter]
         string $plaintext,
+        #[\SensitiveParameter]
         SymmetricKey $key,
         ?int $bitLength = null
     ): string {
@@ -187,7 +195,9 @@ class FIPSCrypto implements BackendInterface, MultiTenantSafeBackendInterface
      * @throws \SodiumException
      */
     public function blindIndexSlow(
+        #[\SensitiveParameter]
         string $plaintext,
+        #[\SensitiveParameter]
         SymmetricKey $key,
         ?int $bitLength = null,
         array $config = []
@@ -221,8 +231,11 @@ class FIPSCrypto implements BackendInterface, MultiTenantSafeBackendInterface
      * @return string
      */
     public function getIndexTypeColumn(
+        #[\SensitiveParameter]
         string $tableName,
+        #[\SensitiveParameter]
         string $fieldName,
+        #[\SensitiveParameter]
         string $indexName
     ): string {
         $hash = \hash_hmac(
@@ -245,8 +258,11 @@ class FIPSCrypto implements BackendInterface, MultiTenantSafeBackendInterface
      * @throws CryptoOperationException
      */
     private static function aes256ctr(
+        #[\SensitiveParameter]
         string $plaintext,
+        #[\SensitiveParameter]
         string $key,
+        #[\SensitiveParameter]
         string $nonce
     ): string {
         if (!\in_array('aes-256-ctr', \openssl_get_cipher_methods(), true)) {
@@ -277,7 +293,9 @@ class FIPSCrypto implements BackendInterface, MultiTenantSafeBackendInterface
      * @return SymmetricKey
      */
     public function deriveKeyFromPassword(
+        #[\SensitiveParameter]
         string $password,
+        #[\SensitiveParameter]
         string $salt
     ): SymmetricKey {
         return new SymmetricKey(

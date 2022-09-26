@@ -19,8 +19,11 @@ abstract class Util
      * Userland polyfill for AES-256-CTR, using AES-256-ECB
      */
     public static function aes256ctr(
+        #[\SensitiveParameter]
         string $plaintext,
+        #[\SensitiveParameter]
         string $key,
+        #[\SensitiveParameter]
         string $nonce
     ): string {
         if (empty($plaintext)) {
@@ -49,6 +52,7 @@ abstract class Util
      * @throws SodiumException
      */
     public static function andMask(
+        #[\SensitiveParameter]
         string $input,
         int $bits,
         bool $bitwiseLeft = false
@@ -205,8 +209,12 @@ abstract class Util
     /**
      * @throws \TypeError
      */
-    public static function hashEquals(string $a, string $b): bool
-    {
+    public static function hashEquals(
+        #[\SensitiveParameter]
+        string $a,
+        #[\SensitiveParameter]
+        string $b
+    ): bool {
         return \hash_equals($a, $b);
     }
 
@@ -226,8 +234,11 @@ abstract class Util
      * @param int $amount
      * @return string
      */
-    public static function ctrNonceIncrease(string $nonce, int $amount = 1): string
-    {
+    public static function ctrNonceIncrease(
+        #[\SensitiveParameter]
+        string $nonce,
+        int $amount = 1
+    ): string {
         /** @var array<int, int> $pieces */
         $pieces = \unpack('C*', $nonce);
         $c = 0;
@@ -242,8 +253,11 @@ abstract class Util
     }
 
     public static function HKDF(
+        #[\SensitiveParameter]
         SymmetricKey $key,
+        #[\SensitiveParameter]
         ?string $salt = '',
+        #[\SensitiveParameter]
         string $info = '',
         int $length = 32,
         string $hash = 'sha384'
@@ -260,7 +274,10 @@ abstract class Util
      * @psalm-suppress ReferenceConstraintViolation
      * @psalm-suppress InvalidOperand
      */
-    public static function memzero(string &$string): void
+    public static function memzero(
+        #[\SensitiveParameter]
+        string &$string
+    ): void
     {
         if (\extension_loaded('sodium')) {
             \sodium_memzero($string);

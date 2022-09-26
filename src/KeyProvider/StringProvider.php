@@ -31,8 +31,10 @@ class StringProvider implements KeyProviderInterface
      *
      * @throws CryptoOperationException
      */
-    public function __construct(string $rawKey = '')
-    {
+    public function __construct(
+        #[\SensitiveParameter]
+        string $rawKey = ''
+    ) {
         if (Binary::safeStrlen($rawKey) === 64) {
             $this->rootSymmetricKey = Hex::decode($rawKey);
         } elseif (Binary::safeStrlen($rawKey) === 44) {
