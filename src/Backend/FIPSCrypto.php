@@ -107,7 +107,7 @@ class FIPSCrypto implements BackendInterface, MultiTenantSafeBackendInterface
     ): string {
         // Make sure we're using the correct version:
         $header = Binary::safeSubstr($ciphertext, 0, 5);
-        if (!SodiumUtil::hashEquals($header, self::MAGIC_HEADER)) {
+        if (!Util::hashEquals($header, self::MAGIC_HEADER)) {
             throw new InvalidCiphertextException('Invalid ciphertext header.');
         }
 
@@ -134,7 +134,7 @@ class FIPSCrypto implements BackendInterface, MultiTenantSafeBackendInterface
         );
 
 
-        if (!SodiumUtil::hashEquals($recalc, $mac)) {
+        if (!Util::hashEquals($recalc, $mac)) {
             throw new InvalidCiphertextException('Invalid MAC');
         }
 

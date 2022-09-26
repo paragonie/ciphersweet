@@ -5,7 +5,9 @@ namespace ParagonIE\CipherSweet;
 use ParagonIE\CipherSweet\Backend\Key\SymmetricKey;
 use ParagonIE\ConstantTime\Binary;
 use ParagonIE_Sodium_Core_Util as SodiumUtil;
+use ArrayAccess;
 use SodiumException;
+use TypeError;
 
 /**
  * Class Util
@@ -111,11 +113,92 @@ abstract class Util
     }
 
     /**
+     * If a variable does not match a given type, throw a TypeError.
+     *
+     * @param mixed $mixedVar
+     * @param string $type
+     * @param int $argumentIndex
+     * @throws TypeError
+     * @throws SodiumException
+     * @return void
+     */
+    public static function declareScalarType(
+        mixed &$mixedVar = null,
+        string $type = 'void',
+        int $argumentIndex = 0
+    ): void {
+        if (func_num_args() === 0) {
+            /* Tautology, by default */
+            return;
+        }
+        if (func_num_args() === 1) {
+            throw new TypeError('Declared void, but passed a variable');
+        }
+        $realType = strtolower(gettype($mixedVar));
+        $type = strtolower($type);
+        switch ($type) {
+            case 'null':
+                if ($mixedVar !== null) {
+                    throw new TypeError('Argument ' . $argumentIndex . ' must be null, ' . $realType . ' given.');
+                }
+                break;
+            case 'integer':
+            case 'int':
+                $allow = array('int', 'integer');
+                if (!in_array($type, $allow)) {
+                    throw new TypeError('Argument ' . $argumentIndex . ' must be an integer, ' . $realType . ' given.');
+                }
+                $mixedVar = (int) $mixedVar;
+                break;
+            case 'boolean':
+            case 'bool':
+                $allow = array('bool', 'boolean');
+                if (!in_array($type, $allow)) {
+                    throw new TypeError('Argument ' . $argumentIndex . ' must be a boolean, ' . $realType . ' given.');
+                }
+                $mixedVar = (bool) $mixedVar;
+                break;
+            case 'string':
+                if (!is_string($mixedVar)) {
+                    throw new TypeError('Argument ' . $argumentIndex . ' must be a string, ' . $realType . ' given.');
+                }
+                $mixedVar = (string) $mixedVar;
+                break;
+            case 'decimal':
+            case 'double':
+            case 'float':
+                $allow = array('decimal', 'double', 'float');
+                if (!in_array($type, $allow)) {
+                    throw new TypeError('Argument ' . $argumentIndex . ' must be a float, ' . $realType . ' given.');
+                }
+                $mixedVar = (float) $mixedVar;
+                break;
+            case 'object':
+                if (!is_object($mixedVar)) {
+                    throw new TypeError('Argument ' . $argumentIndex . ' must be an object, ' . $realType . ' given.');
+                }
+                break;
+            case 'array':
+                if (!is_array($mixedVar)) {
+                    if (is_object($mixedVar)) {
+                        if ($mixedVar instanceof ArrayAccess) {
+                            return;
+                        }
+                    }
+                    throw new TypeError('Argument ' . $argumentIndex . ' must be an array, ' . $realType . ' given.');
+                }
+                break;
+            default:
+                throw new SodiumException('Unknown type (' . $realType .') does not match expect type (' . $type . ')');
+        }
+    }
+
+    /**
      * @throws SodiumException
      */
     public static function floatToString(float $float): string
     {
-        SodiumUtil::declareScalarType($float, 'float');
+        Util::declareScalarType($float, 'float');
         return \pack('e', $float);
     }
 
@@ -222,7 +305,7 @@ abstract class Util
      */
     public static function stringToFloat(string $string): float
     {
-        SodiumUtil::declareScalarType($string, 'string');
+        Util::declareScalarType($string, 'string');
         /** @var array{1: float} $unpacked */
         $unpacked = \unpack('e', (string) $string);
         return (float) $unpacked[1];
