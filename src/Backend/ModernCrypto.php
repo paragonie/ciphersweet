@@ -46,8 +46,11 @@ class ModernCrypto implements BackendInterface
      * @throws \SodiumException
      */
     public function encrypt(
+        #[\SensitiveParameter]
         string $plaintext,
+        #[\SensitiveParameter]
         SymmetricKey $key,
+        #[\SensitiveParameter]
         string $aad = ''
     ): string {
         try {
@@ -76,8 +79,11 @@ class ModernCrypto implements BackendInterface
      * @throws \SodiumException
      */
     public function decrypt(
+        #[\SensitiveParameter]
         string $ciphertext,
+        #[\SensitiveParameter]
         SymmetricKey $key,
+        #[\SensitiveParameter]
         string $aad = ''
     ): string {
         // Make sure we're using the correct version:
@@ -115,8 +121,11 @@ class ModernCrypto implements BackendInterface
      * @throws \SodiumException
      */
     public function blindIndexFast(
+        #[\SensitiveParameter]
         string $plaintext,
+        #[\SensitiveParameter]
         SymmetricKey $key,
+        #[\SensitiveParameter]
         ?int $bitLength = null
     ): string {
         if (\is_null($bitLength)) {
@@ -148,7 +157,9 @@ class ModernCrypto implements BackendInterface
      * @throws \SodiumException
      */
     public function blindIndexSlow(
+        #[\SensitiveParameter]
         string $plaintext,
+        #[\SensitiveParameter]
         SymmetricKey $key,
         ?int $bitLength = null,
         array $config = []
@@ -202,8 +213,11 @@ class ModernCrypto implements BackendInterface
      * @throws \SodiumException
      */
     public function getIndexTypeColumn(
+        #[\SensitiveParameter]
         string $tableName,
+        #[\SensitiveParameter]
         string $fieldName,
+        #[\SensitiveParameter]
         string $indexName
     ): string {
         $hash = SodiumCompat::crypto_shorthash(
@@ -221,7 +235,9 @@ class ModernCrypto implements BackendInterface
      * @throws \SodiumException
      */
     public function deriveKeyFromPassword(
+        #[\SensitiveParameter]
         string $password,
+        #[\SensitiveParameter]
         string $salt
     ): SymmetricKey {
         return new SymmetricKey(

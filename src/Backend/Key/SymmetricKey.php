@@ -10,8 +10,9 @@ use ParagonIE\CipherSweet\Util;
  */
 class SymmetricKey
 {
-    public function __construct(private string $keyMaterial)
-    {}
+    public function __construct(
+        private string $keyMaterial
+    ) {}
 
     /**
      * Attempt to wipe memory.

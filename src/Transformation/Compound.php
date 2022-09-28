@@ -22,8 +22,10 @@ class Compound implements RowTransformationInterface
      * @return string
      * @throws \Exception
      */
-    public function __invoke(mixed $input): string
-    {
+    public function __invoke(
+        #[\SensitiveParameter]
+        mixed $input
+    ): string {
         if (!\is_array($input)) {
             throw new \TypeError('Compound Transformation expects an array');
         }
@@ -34,8 +36,10 @@ class Compound implements RowTransformationInterface
      * @param string $string
      * @return string
      */
-    public function packString(string $string): string
-    {
+    public function packString(
+        #[\SensitiveParameter]
+        string $string
+    ): string {
         $len = Binary::safeStrlen($string);
         $l = Hex::encode(SodiumUtil::store64_le($len));
         return $l . Base64UrlSafe::encode($string);

@@ -57,7 +57,9 @@ class EncryptedField
      */
     public function __construct(
         CipherSweet $engine,
+        #[\SensitiveParameter]
         string $tableName = '',
+        #[\SensitiveParameter]
         string $fieldName = '',
         bool $useTypedIndexes = false
     ) {
@@ -79,8 +81,10 @@ class EncryptedField
      * @throws CipherSweetException
      * @throws CryptoOperationException
      */
-    public function setActiveTenant(string $tenantIndex): static
-    {
+    public function setActiveTenant(
+        #[\SensitiveParameter]
+        string $tenantIndex
+    ): static {
         if (!$this->engine->isMultiTenantSupported()) {
             throw new CipherSweetException('This is only available for multi-tenant-aware engines/providers.');
         }
@@ -100,8 +104,12 @@ class EncryptedField
      * @throws BlindIndexNotFoundException
      * @throws SodiumException
      */
-    public function prepareForStorage(string $plaintext, string $aad = ''): array
-    {
+    public function prepareForStorage(
+        #[\SensitiveParameter]
+        string $plaintext,
+        #[\SensitiveParameter]
+        string $aad = ''
+    ): array {
         return [
             $this->encryptValue($plaintext, $aad),
             $this->getAllBlindIndexes($plaintext)
@@ -115,8 +123,12 @@ class EncryptedField
      * @param string $aad       Additional authenticated data
      * @return string
      */
-    public function encryptValue(string $plaintext, string $aad = ''): string
-    {
+    public function encryptValue(
+        #[\SensitiveParameter]
+        string $plaintext,
+        #[\SensitiveParameter]
+        string $aad = ''
+    ): string {
         return $this
             ->engine
             ->getBackend()
@@ -130,8 +142,12 @@ class EncryptedField
     /**
      * Decrypt a single value, using the per-field symmetric key.
      */
-    public function decryptValue(string $ciphertext, string $aad = ''): string
-    {
+    public function decryptValue(
+        #[\SensitiveParameter]
+        string $ciphertext,
+        #[\SensitiveParameter]
+        string $aad = ''
+    ): string {
         return $this
             ->engine
             ->getBackend()
@@ -150,8 +166,10 @@ class EncryptedField
      * @throws BlindIndexNotFoundException
      * @throws SodiumException
      */
-    public function getAllBlindIndexes(string $plaintext): array
-    {
+    public function getAllBlindIndexes(
+        #[\SensitiveParameter]
+        string $plaintext
+    ): array {
         /** @var array<string, string|array> $output */
         $output = [];
         $key = $this->engine->getBlindIndexRootKey(
@@ -200,8 +218,12 @@ class EncryptedField
      * @throws BlindIndexNotFoundException
      * @throws SodiumException
      */
-    public function getBlindIndex(string $plaintext, string $name): string|array
-    {
+    public function getBlindIndex(
+        #[\SensitiveParameter]
+        string $plaintext,
+        #[\SensitiveParameter]
+        string $name
+    ): string|array {
         $key = $this->engine->getBlindIndexRootKey(
             $this->tableName,
             $this->fieldName
@@ -239,8 +261,11 @@ class EncryptedField
      * @throws BlindIndexNotFoundException
      */
     protected function getBlindIndexRaw(
+        #[\SensitiveParameter]
         string $plaintext,
+        #[\SensitiveParameter]
         string $name,
+        #[\SensitiveParameter]
         SymmetricKey $key = null
     ): string {
         if (!isset($this->blindIndexes[$name])) {
@@ -297,8 +322,10 @@ class EncryptedField
      *
      * @throws SodiumException
      */
-    public function getBlindIndexType(string $name): string
-    {
+    public function getBlindIndexType(
+        #[\SensitiveParameter]
+        string $name
+    ): string {
         return $this->engine->getIndexTypeColumn(
             $this->tableName,
             $this->fieldName,

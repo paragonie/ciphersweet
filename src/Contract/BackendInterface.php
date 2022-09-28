@@ -11,26 +11,48 @@ use ParagonIE\CipherSweet\Constants;
  */
 interface BackendInterface
 {
-    public function encrypt(string $plaintext, SymmetricKey $key, string $aad = ''): string;
+    public function encrypt(
+        #[\SensitiveParameter]
+        string $plaintext,
+        #[\SensitiveParameter]
+        SymmetricKey $key,
+        #[\SensitiveParameter]
+        string $aad = ''
+    ): string;
 
-    public function decrypt(string $ciphertext, SymmetricKey $key, string $aad = ''): string;
+    public function decrypt(
+        #[\SensitiveParameter]
+        string $ciphertext,
+        #[\SensitiveParameter]
+        SymmetricKey $key,
+        #[\SensitiveParameter]
+        string $aad = '')
+    : string;
 
     public function blindIndexFast(
+        #[\SensitiveParameter]
         string $plaintext,
+        #[\SensitiveParameter]
         SymmetricKey $key,
+        #[\SensitiveParameter]
         ?int $bitLength = null
     ): string;
 
     public function blindIndexSlow(
+        #[\SensitiveParameter]
         string $plaintext,
+        #[\SensitiveParameter]
         SymmetricKey $key,
         ?int $bitLength = null,
         array $config = []
     ): string;
 
     public function getIndexTypeColumn(
+        #[\SensitiveParameter]
         string $tableName,
+        #[\SensitiveParameter]
         string $fieldName,
+        #[\SensitiveParameter]
         string $indexName
     ): string;
 
@@ -40,7 +62,9 @@ interface BackendInterface
      * @return SymmetricKey
      */
     public function deriveKeyFromPassword(
+        #[\SensitiveParameter]
         string $password,
+        #[\SensitiveParameter]
         string $salt
     ): SymmetricKey;
 
