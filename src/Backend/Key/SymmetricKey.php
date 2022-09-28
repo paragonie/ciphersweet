@@ -11,7 +11,6 @@ use ParagonIE\CipherSweet\Util;
 class SymmetricKey
 {
     public function __construct(
-        #[\SensitiveParameter]
         private string $keyMaterial
     ) {}
 
