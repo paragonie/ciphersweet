@@ -229,8 +229,10 @@ class EncryptedMultiRows
      * @throws SodiumException
      * @throws CipherSweetException
      */
-    public function decryptManyRows(array $rows): array
-    {
+    public function decryptManyRows(
+        #[\SensitiveParameter]
+        array $rows
+    ): array {
         foreach (\array_keys($this->tables) as $table) {
             if (isset($rows[$table])) {
                 /** @var array<string, string> $row */
@@ -265,8 +267,10 @@ class EncryptedMultiRows
      * @throws SodiumException
      * @throws CipherSweetException
      */
-    public function encryptManyRows(array $rows): array
-    {
+    public function encryptManyRows(
+        #[\SensitiveParameter]
+        array $rows
+    ): array {
         foreach (\array_keys($this->tables) as $table) {
             if (isset($rows[$table])) {
                 /** @var array<string, string> $row */
@@ -294,6 +298,7 @@ class EncryptedMultiRows
     public function getBlindIndex(
         string $tableName,
         string $indexName,
+        #[\SensitiveParameter]
         array $row
     ): string|array {
         return $this->getEncryptedRowObjectForTable($tableName)
@@ -312,8 +317,11 @@ class EncryptedMultiRows
      * @throws SodiumException
      * @throws CipherSweetException
      */
-    public function getBlindIndexesForTable(string $tableName, array $row): array
-    {
+    public function getBlindIndexesForTable(
+        string $tableName,
+        #[\SensitiveParameter]
+        array $row
+    ): array {
         return $this->getEncryptedRowObjectForTable($tableName)
             ->getAllBlindIndexes($row);
     }
@@ -339,8 +347,10 @@ class EncryptedMultiRows
      * @throws SodiumException
      * @throws CipherSweetException
      */
-    public function getAllBlindIndexes(array $rows): array
-    {
+    public function getAllBlindIndexes(
+        #[\SensitiveParameter]
+        array $rows
+    ): array {
         /** @var array<string, array<string, array<string, string>|string>> $tables */
         $tables = [];
         foreach (\array_keys($this->tables) as $table) {
@@ -438,8 +448,10 @@ class EncryptedMultiRows
      * @throws SodiumException
      * @throws CipherSweetException
      */
-    public function prepareForStorage(array $rows): array
-    {
+    public function prepareForStorage(
+        #[\SensitiveParameter]
+        array $rows
+    ): array {
         $indexes = [];
         $tables = [];
         foreach (\array_keys($this->tables) as $table) {

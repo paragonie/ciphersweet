@@ -76,6 +76,7 @@ class EncryptedRow
      */
     public function __construct(
         CipherSweet $engine,
+        #[\SensitiveParameter]
         string $tableName,
         bool $useTypedIndexes = false
     ) {
@@ -237,8 +238,11 @@ class EncryptedRow
      * @throws Exception\CryptoOperationException
      * @throws SodiumException
      */
-    public function getBlindIndex(string $indexName, array $row): string|array
-    {
+    public function getBlindIndex(
+        string $indexName,
+        #[\SensitiveParameter]
+        array $row
+    ): string|array {
         foreach ($this->blindIndexes as $column => $blindIndexes) {
             if (isset($blindIndexes[$indexName])) {
                 /** @var BlindIndex $blindIndex */
@@ -267,8 +271,10 @@ class EncryptedRow
      * @throws Exception\CryptoOperationException
      * @throws SodiumException
      */
-    public function getAllBlindIndexes(array $row): array
-    {
+    public function getAllBlindIndexes(
+        #[\SensitiveParameter]
+        array $row
+    ): array {
         /** @var array<string, array<string, string>|string> $return */
         $return = [];
         foreach ($this->blindIndexes as $column => $blindIndexes) {
@@ -382,8 +388,10 @@ class EncryptedRow
      *
      * @psalm-suppress InvalidReturnStatement
      */
-    public function decryptRow(array $row): array
-    {
+    public function decryptRow(
+        #[\SensitiveParameter]
+        array $row
+    ): array {
         /** @var array<string, string|int|float|bool|null|scalar[]> $return */
         $return = $row;
         $backend = $this->engine->getBackend();
@@ -441,8 +449,10 @@ class EncryptedRow
      * @throws CipherSweetException
      * @throws SodiumException
      */
-    public function encryptRow(array $row): array
-    {
+    public function encryptRow(
+        #[\SensitiveParameter]
+        array $row
+    ): array {
         /** @var array<string, string|int|float|bool|null|scalar[]> $return */
         $return = $row;
         $backend = $this->engine->getBackend();
@@ -507,8 +517,10 @@ class EncryptedRow
      * @throws CryptoOperationException
      * @throws SodiumException
      */
-    public function prepareRowForStorage(array $row): array
-    {
+    public function prepareRowForStorage(
+        #[\SensitiveParameter]
+        array $row
+    ): array {
         return [
             $this->encryptRow($row),
             $this->getAllBlindIndexes($row)
@@ -550,8 +562,12 @@ class EncryptedRow
      * @throws ArrayKeyException
      * @throws SodiumException
      */
-    protected function calcBlindIndex(array $row, string $column, BlindIndex $index): string|array
-    {
+    protected function calcBlindIndex(
+        #[\SensitiveParameter]
+        array $row,
+        string $column,
+        BlindIndex $index
+    ): string|array {
         $name = $index->getName();
         $key = $this->engine->getBlindIndexRootKey(
             $this->tableName,
@@ -596,8 +612,11 @@ class EncryptedRow
      * @throws CryptoOperationException
      * @throws SodiumException
      */
-    protected function calcCompoundIndex(array $row, CompoundIndex $index): string|array
-    {
+    protected function calcCompoundIndex(
+        #[\SensitiveParameter]
+        array $row,
+        CompoundIndex $index
+    ): string|array {
         $name = $index->getName();
         $key = $this->engine->getBlindIndexRootKey(
             $this->tableName,
@@ -643,6 +662,7 @@ class EncryptedRow
      * @throws SodiumException
      */
     protected function calcBlindIndexRaw(
+        #[\SensitiveParameter]
         array $row,
         string $column,
         BlindIndex $index,
@@ -708,6 +728,7 @@ class EncryptedRow
      * @throws Exception\CryptoOperationException
      */
     protected function calcCompoundIndexRaw(
+        #[\SensitiveParameter]
         array $row,
         CompoundIndex $index,
         SymmetricKey $key = null
