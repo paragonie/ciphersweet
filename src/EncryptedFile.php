@@ -2,6 +2,7 @@
 namespace ParagonIE\CipherSweet;
 
 use ParagonIE\CipherSweet\Contract\BackendInterface;
+use ParagonIE\CipherSweet\Exception\CipherSweetException;
 use ParagonIE\CipherSweet\Exception\CryptoOperationException;
 use ParagonIE\CipherSweet\Exception\FilesystemException;
 use ParagonIE\ConstantTime\Binary;
@@ -344,6 +345,29 @@ class EncryptedFile
             \stream_set_chunk_size($fp, $this->chunkSize);
         }
         return $fp;
+    }
+
+    /**
+     * Set the active tenant (only for multi-tenant key providers)
+     *
+     * @param string $tenant
+     * @param bool $dontError Suppress exception if not multi-tenant
+     * @return static
+     *
+     * @throws CipherSweetException
+     */
+    public function setActiveTenant($tenant, $dontError = false): static
+    {
+        if (!$this->getEngine()->isMultiTenantSupported()) {
+            if (!$dontError) {
+                return $this;
+            }
+            throw new CipherSweetException(
+                'Your Key Provider is not multi-tenant aware, or you specified an engine unsuitable for multiple keys'
+            );
+        }
+        $this->engine->setActiveTenant($tenant);
+        return $this;
     }
 
     /**
