@@ -6,6 +6,7 @@ use ParagonIE\CipherSweet\Backend\FIPSCrypto;
 use ParagonIE\CipherSweet\CipherSweet;
 use ParagonIE\CipherSweet\CompoundIndex;
 use ParagonIE\CipherSweet\EncryptedField;
+use ParagonIE\CipherSweet\EncryptedFile;
 use ParagonIE\CipherSweet\EncryptedMultiRows;
 use ParagonIE\CipherSweet\EncryptedRow;
 use ParagonIE\CipherSweet\Exception\ArrayKeyException;
@@ -15,6 +16,7 @@ use ParagonIE\CipherSweet\Exception\InvalidCiphertextException;
 use ParagonIE\CipherSweet\KeyProvider\StringProvider;
 use ParagonIE\CipherSweet\Transformation\LastFourDigits;
 use ParagonIE\ConstantTime\Base32;
+use ParagonIE\ConstantTime\Hex;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -110,6 +112,52 @@ class MultiTenantTest extends TestCase
                 $decryptFailed = true;
             }
             $this->assertTrue($decryptFailed, 'Swapping out tenant identifiers should fail decryption');
+        }
+    }
+
+    public function testEncryptedFile()
+    {
+        $message = "Paragon Initiative Enterprises\n" . \random_bytes(256);
+
+        foreach ([$this->csBoring, $this->csFips] as $cs) {
+            $fileCrypto = new EncryptedFile($cs);
+            $fileCrypto->setActiveTenant('foo');
+
+            $input = $fileCrypto->getStreamForFile('php://temp');
+            $output = $fileCrypto->getStreamForFile('php://temp');
+            $decrypted = $fileCrypto->getStreamForFile('php://temp');
+            \fwrite($input, $message);
+            \fseek($input, 0, SEEK_SET);
+
+            // Encrypt the stream
+            $fileCrypto->encryptStream($input, $output);
+
+            \fseek($output, 0, SEEK_SET);
+
+            // Decrypt the stream
+            $fileCrypto->decryptStream($output, $decrypted);
+
+            \fseek($input, 0, SEEK_SET);
+            \fseek($output, 0, SEEK_SET);
+            \fseek($decrypted, 0, SEEK_SET);
+            // We should get the same plaintext
+            $this->assertSame(
+                Hex::encode(\stream_get_contents($input)),
+                Hex::encode(\stream_get_contents($decrypted))
+            );
+
+            // Now let's change the active tenant
+            $fileCrypto->setActiveTenant('bar');
+            \fseek($output, 0, SEEK_SET);
+
+            // We should get a decryption error with the wrong tenant
+            $decrypted2 = $fileCrypto->getStreamForFile('php://temp');
+            try {
+                $fileCrypto->decryptStream($output, $decrypted2);
+                $this->fail("Switching active tenant should cause decryption failure");
+            } catch (CipherSweetException $ex) {
+                $this->assertSame('Invalid authentication tag', $ex->getMessage());
+            }
         }
     }
 

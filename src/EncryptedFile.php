@@ -371,6 +371,29 @@ class EncryptedFile
     }
 
     /**
+     * Set the active tenant (only for multi-tenant key providers)
+     *
+     * @param string $tenant
+     * @param bool $dontError Suppress exception if not multi-tenant
+     * @return static
+     *
+     * @throws CipherSweetException
+     */
+    public function setActiveTenant(string $tenant, bool $dontError = false): static
+    {
+        if (!$this->getEngine()->isMultiTenantSupported()) {
+            if (!$dontError) {
+                return $this;
+            }
+            throw new CipherSweetException(
+                'Your Key Provider is not multi-tenant aware, or you specified an engine unsuitable for multiple keys'
+            );
+        }
+        $this->engine->setActiveTenant($tenant);
+        return $this;
+    }
+
+    /**
      * @param resource $realStream
      * @return resource
      *
