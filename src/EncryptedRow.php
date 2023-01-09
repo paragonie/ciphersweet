@@ -9,6 +9,7 @@ use ParagonIE\CipherSweet\Exception\{
     BlindIndexNotFoundException,
     CipherSweetException,
     CryptoOperationException,
+    EmptyFieldException,
     InvalidCiphertextException
 };
 use ParagonIE\ConstantTime\Hex;
@@ -51,6 +52,11 @@ class EncryptedRow
      * @var array<string, array<string, BlindIndex>> $blindIndexes
      */
     protected array $blindIndexes = [];
+
+    /**
+     * @var bool $permitEmpty
+     */
+    protected bool $permitEmpty = false;
 
     /**
      * @var bool $typedIndexes
@@ -404,6 +410,12 @@ class EncryptedRow
                 $this->tableName,
                 $field
             );
+            if (!array_key_exists($field, $row)) {
+                if (!$this->permitEmpty) {
+                    throw new EmptyFieldException('Field is not defined in row: ' . $field);
+                }
+                continue;
+            }
             if (\is_null($row[$field])) {
                 $return[$field] = null;
                 continue;
@@ -798,6 +810,24 @@ class EncryptedRow
     public function setFlatIndexes(bool $bool): static
     {
         $this->typedIndexes = !$bool;
+        return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function getPermitEmpty(): bool
+    {
+        return $this->permitEmpty;
+    }
+
+    /**
+     * @param bool $permitted
+     * @return $this
+     */
+    public function setPermitEmpty(bool $permitted): static
+    {
+        $this->permitEmpty = $permitted;
         return $this;
     }
 
