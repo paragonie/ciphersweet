@@ -438,7 +438,7 @@ class EncryptedMultiRows
         $encryptedRow = $this->tables[$tableName];
         $encryptedRow->setTypedIndexes($this->typedIndexes);
         if (!is_null($this->permitEmpty)) {
-            $encryptedRow->setPermitEmtpy($this->permitEmpty);
+            $encryptedRow->setPermitEmpty($this->permitEmpty);
         }
         return $encryptedRow;
     }

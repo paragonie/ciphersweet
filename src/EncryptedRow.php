@@ -786,7 +786,7 @@ class EncryptedRow
     }
 
     /**
-     * @param $permitted
+     * @param bool $permitted
      * @return static
      */
     public function setPermitEmpty($permitted)
