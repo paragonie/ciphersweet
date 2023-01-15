@@ -33,6 +33,11 @@ class EncryptedMultiRows
     protected array $tables = [];
 
     /**
+     * @var bool|null $permitEmpty
+     */
+    protected ?bool $permitEmpty = null;
+
+    /**
      * EncryptedFieldSet constructor.
      *
      * @param CipherSweet $engine
@@ -406,6 +411,9 @@ class EncryptedMultiRows
         /** @var EncryptedRow $encryptedRow */
         $encryptedRow = $this->tables[$tableName];
         $encryptedRow->setTypedIndexes($this->typedIndexes);
+        if (!is_null($this->permitEmpty)) {
+            $encryptedRow->setPermitEmpty($this->permitEmpty);
+        }
         return $encryptedRow;
     }
 
