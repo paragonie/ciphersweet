@@ -1,6 +1,5 @@
 <?php
 declare(strict_types=1);
-
 namespace ParagonIE\CipherSweet;
 
 use ParagonIE\CipherSweet\Backend\Key\SymmetricKey;
@@ -84,10 +83,9 @@ class EncryptedRow
     public function __construct(
         CipherSweet $engine,
         #[\SensitiveParameter]
-        string      $tableName,
-        bool        $useTypedIndexes = false
-    )
-    {
+        string $tableName,
+        bool $useTypedIndexes = false
+    ) {
         $this->engine = $engine;
         $this->tableName = $tableName;
         $this->typedIndexes = $useTypedIndexes;
@@ -105,8 +103,7 @@ class EncryptedRow
         string $fieldName,
         string $type = Constants::TYPE_TEXT,
         string $aadSource = ''
-    ): static
-    {
+    ): static {
         $this->fieldsToEncrypt[$fieldName] = $type;
         if ($aadSource) {
             $this->aadSourceField[$fieldName] = $aadSource;
@@ -160,12 +157,11 @@ class EncryptedRow
      * @return static
      */
     public function addJsonField(
-        string       $fieldName,
+        string $fieldName,
         JsonFieldMap $fieldMap,
-        string       $aadSource = '',
-        bool         $strict = true
-    ): static
-    {
+        string $aadSource = '',
+        bool $strict = true
+    ): static {
         $this->jsonMaps[$fieldName] = $fieldMap;
         $this->jsonStrict[$fieldName] = $strict;
         return $this->addField($fieldName, Constants::TYPE_JSON, $aadSource);
@@ -220,12 +216,11 @@ class EncryptedRow
      */
     public function createCompoundIndex(
         string $name,
-        array  $columns = [],
-        int    $filterBits = 256,
-        bool   $fastHash = false,
-        array  $hashConfig = []
-    ): CompoundIndex
-    {
+        array $columns = [],
+        int $filterBits = 256,
+        bool $fastHash = false,
+        array $hashConfig = []
+    ): CompoundIndex {
         $index = new CompoundIndex(
             $name,
             $columns,
@@ -252,9 +247,8 @@ class EncryptedRow
     public function getBlindIndex(
         string $indexName,
         #[\SensitiveParameter]
-        array  $row
-    ): string|array
-    {
+        array $row
+    ): string|array {
         foreach ($this->blindIndexes as $column => $blindIndexes) {
             if (isset($blindIndexes[$indexName])) {
                 /** @var BlindIndex $blindIndex */
@@ -286,8 +280,7 @@ class EncryptedRow
     public function getAllBlindIndexes(
         #[\SensitiveParameter]
         array $row
-    ): array
-    {
+    ): array {
         /** @var array<string, array<string, string>|string> $return */
         $return = [];
         foreach ($this->blindIndexes as $column => $blindIndexes) {
@@ -404,8 +397,7 @@ class EncryptedRow
     public function decryptRow(
         #[\SensitiveParameter]
         array $row
-    ): array
-    {
+    ): array {
         /** @var array<string, string|int|float|bool|null|scalar[]> $return */
         $return = $row;
         $backend = $this->engine->getBackend();
@@ -430,10 +422,10 @@ class EncryptedRow
             }
             if (
                 !empty($this->aadSourceField[$field])
-                &&
+                    &&
                 \array_key_exists($this->aadSourceField[$field], $row)
             ) {
-                $aad = (string)$row[$this->aadSourceField[$field]];
+                $aad = (string) $row[$this->aadSourceField[$field]];
             } else {
                 $aad = '';
             }
@@ -472,8 +464,7 @@ class EncryptedRow
     public function encryptRow(
         #[\SensitiveParameter]
         array $row
-    ): array
-    {
+    ): array {
         /** @var array<string, string|int|float|bool|null|scalar[]> $return */
         $return = $row;
         $backend = $this->engine->getBackend();
@@ -481,7 +472,7 @@ class EncryptedRow
             if (!\array_key_exists($field, $row)) {
                 throw new ArrayKeyException(
                     'Expected value for column ' .
-                    $field .
+                        $field .
                     ' on array, nothing given.'
                 );
             }
@@ -491,16 +482,15 @@ class EncryptedRow
             );
             if (
                 !empty($this->aadSourceField[$field])
-                &&
+                    &&
                 \array_key_exists($this->aadSourceField[$field], $row)
             ) {
-                $aad = (string)$row[$this->aadSourceField[$field]];
+                $aad = (string) $row[$this->aadSourceField[$field]];
             } else {
                 $aad = '';
             }
             if ($type === Constants::TYPE_JSON && !empty($this->jsonMaps[$field])) {
-                //decode json field then to take key from it to encrypt it
-                $row[$field] = isset($row[$field]) ? (array)json_decode($row[$field]) : [];
+                $row[$field] = $this->formatJson($row[$field]);
                 // JSON is a special case
                 $jsonEncryptor = new EncryptedJsonField(
                     $backend,
@@ -520,6 +510,20 @@ class EncryptedRow
             return $this->engine->injectTenantMetadata($return, $this->tableName);
         }
         return $return;
+    }
+
+    /**
+     * Decoding json field
+     *
+     * @param string|null $field
+     * @return array<object,empty>
+     */
+    public function formatJson(
+        $field
+    ): array {
+        //decode json field then to take key from it to encrypt it
+        $field = isset($field) ? (array)json_decode($field) : [];
+        return $field;
     }
 
     /**
@@ -543,8 +547,7 @@ class EncryptedRow
     public function prepareRowForStorage(
         #[\SensitiveParameter]
         array $row
-    ): array
-    {
+    ): array {
         return [
             $this->encryptRow($row),
             $this->getAllBlindIndexes($row)
@@ -588,11 +591,10 @@ class EncryptedRow
      */
     protected function calcBlindIndex(
         #[\SensitiveParameter]
-        array      $row,
-        string     $column,
+        array $row,
+        string $column,
         BlindIndex $index
-    ): string|array
-    {
+    ): string|array {
         $name = $index->getName();
         $key = $this->engine->getBlindIndexRootKey(
             $this->tableName,
@@ -639,10 +641,9 @@ class EncryptedRow
      */
     protected function calcCompoundIndex(
         #[\SensitiveParameter]
-        array         $row,
+        array $row,
         CompoundIndex $index
-    ): string|array
-    {
+    ): string|array {
         $name = $index->getName();
         $key = $this->engine->getBlindIndexRootKey(
             $this->tableName,
@@ -689,12 +690,11 @@ class EncryptedRow
      */
     protected function calcBlindIndexRaw(
         #[\SensitiveParameter]
-        array        $row,
-        string       $column,
-        BlindIndex   $index,
+        array $row,
+        string $column,
+        BlindIndex $index,
         SymmetricKey $key = null
-    ): string
-    {
+    ): string {
         if (!$key) {
             $key = $this->engine->getBlindIndexRootKey(
                 $this->tableName,
@@ -749,18 +749,17 @@ class EncryptedRow
      * @param CompoundIndex $index
      * @param SymmetricKey|null $key
      * @return string
-     * @throws \Exception
-     * @throws Exception\CryptoOperationException
      * @internal
      *
+     * @throws \Exception
+     * @throws Exception\CryptoOperationException
      */
     protected function calcCompoundIndexRaw(
         #[\SensitiveParameter]
-        array         $row,
+        array $row,
         CompoundIndex $index,
-        SymmetricKey  $key = null
-    ): string
-    {
+        SymmetricKey $key = null
+    ): string {
         if (!$key) {
             $key = $this->engine->getBlindIndexRootKey(
                 $this->tableName,
