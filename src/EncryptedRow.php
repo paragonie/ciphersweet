@@ -422,7 +422,7 @@ class EncryptedRow
             }
             if (
                 !empty($this->aadSourceField[$field])
-                    &&
+                &&
                 \array_key_exists($this->aadSourceField[$field], $row)
             ) {
                 $aad = (string) $row[$this->aadSourceField[$field]];
@@ -472,7 +472,7 @@ class EncryptedRow
             if (!\array_key_exists($field, $row)) {
                 throw new ArrayKeyException(
                     'Expected value for column ' .
-                        $field .
+                    $field .
                     ' on array, nothing given.'
                 );
             }
@@ -482,7 +482,7 @@ class EncryptedRow
             );
             if (
                 !empty($this->aadSourceField[$field])
-                    &&
+                &&
                 \array_key_exists($this->aadSourceField[$field], $row)
             ) {
                 $aad = (string) $row[$this->aadSourceField[$field]];
