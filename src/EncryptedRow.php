@@ -454,6 +454,7 @@ class EncryptedRow
      * will be encrypted in-place in the returned array.
      *
      * @param array<string, string|int|float|bool|null> $row
+     * @param bool|false $decode_json
      * @return array<string, string>
      *
      * @throws ArrayKeyException
@@ -463,7 +464,8 @@ class EncryptedRow
      */
     public function encryptRow(
         #[\SensitiveParameter]
-        array $row
+        array $row,
+        bool $decode_json = false,
     ): array {
         /** @var array<string, string|int|float|bool|null|scalar[]> $return */
         $return = $row;
@@ -490,7 +492,10 @@ class EncryptedRow
                 $aad = '';
             }
             if ($type === Constants::TYPE_JSON && !empty($this->jsonMaps[$field])) {
-                $row[$field] = $this->formatJson($row[$field]);
+                // checks decode json option
+                if ($decode_json) {
+                    $row[$field] = $this->formatJson($row[$field]);
+                }
                 // JSON is a special case
                 $jsonEncryptor = new EncryptedJsonField(
                     $backend,
