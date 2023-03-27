@@ -492,9 +492,10 @@ class EncryptedRow
                 $aad = '';
             }
             if ($type === Constants::TYPE_JSON && !empty($this->jsonMaps[$field])) {
+                $return[$field] = $row[$field];
                 // checks decode json option
                 if ($decode_json) {
-                    $row[$field] = $this->formatJson($row[$field]);
+                    $return[$field] = $this->formatJson($row[$field]);
                 }
                 // JSON is a special case
                 $jsonEncryptor = new EncryptedJsonField(
@@ -504,7 +505,7 @@ class EncryptedRow
                     $this->jsonStrict[$field]
                 );
                 /** @psalm-suppress InvalidArgument */
-                $return[$field] = $jsonEncryptor->encryptJson($row[$field], $aad);
+                $return[$field] = $jsonEncryptor->encryptJson($return[$field], $aad);
                 continue;
             }
             $plaintext = $this->convertToString($row[$field], $type);
@@ -520,14 +521,14 @@ class EncryptedRow
     /**
      * Decoding json field
      *
-     * @param string|null $field
-     * @return array<object,empty>
+     * @param array<array-key, mixed>|mixed|null $field
+     * @return array<array-key, mixed>
      */
     public function formatJson(
         $field
     ): array {
         //decode json field then to take key from it to encrypt it
-        $field = isset($field) ? (array)json_decode($field) : [];
+        $field = isset($field) ? (is_string($field) ? (array)json_decode($field) : $field) : [];
         return $field;
     }
 
