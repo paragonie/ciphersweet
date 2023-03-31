@@ -215,6 +215,27 @@ class EncryptedMultiRows
     }
 
     /**
+     * Create a compound index. See EncryptedRow::createCompoundIndex().
+     *
+     * @throws CipherSweetException
+     */
+    public function createFastCompoundIndex(
+        string $tableName,
+        string $name,
+        array $columns = [],
+        int $filterBits = 256,
+        array $hashConfig = []
+    ): CompoundIndex {
+        return $this->getEncryptedRowObjectForTable($tableName)
+            ->createFastCompoundIndex(
+                $name,
+                $columns,
+                $filterBits,
+                $hashConfig
+            );
+    }
+
+    /**
      * Decrypt encrypted records from a database result set.
      * $rows should be formatted as follows:
      *

@@ -2,6 +2,7 @@
 namespace ParagonIE\CipherSweet\Tests;
 
 use ParagonIE\CipherSweet\BlindIndex;
+use ParagonIE\CipherSweet\FastBlindIndex;
 use ParagonIE\CipherSweet\Transformation\DigitsOnly;
 use PHPUnit\Framework\TestCase;
 
@@ -15,5 +16,12 @@ class BlindIndexTest extends TestCase
     {
         $digits = new BlindIndex('test', [new DigitsOnly()]);
         $this->assertEquals('12345', $digits->getTransformed('1a2b3?c4d5e'));
+    }
+
+    public function testFastBlindIndex()
+    {
+        $digits = new FastBlindIndex('test', [new DigitsOnly()]);
+        $this->assertEquals('12345', $digits->getTransformed('1a2b3?c4d5e'));
+        $this->assertSame(true, $digits->getFastHash());
     }
 }

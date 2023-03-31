@@ -234,6 +234,34 @@ class EncryptedRow
     }
 
     /**
+     * Create a fast compound blind index then add it to this EncryptedRow object.
+     *
+     * @param string $name
+     * @param array<int, string> $columns
+     * @param int $filterBits
+     * @param array $hashConfig
+     * @return CompoundIndex
+     *
+     * @throws CipherSweetException
+     */
+    public function createFastCompoundIndex(
+        string $name,
+        array $columns = [],
+        int $filterBits = 256,
+        array $hashConfig = []
+    ): CompoundIndex {
+        $index = new FastCompoundIndex(
+            $name,
+            $columns,
+            $filterBits,
+            true,
+            $hashConfig
+        );
+        $this->addCompoundIndex($index);
+        return $index;
+    }
+
+    /**
      * Calculate a blind index (or compound blind index) output for this row.
      *
      * @param string $indexName
