@@ -14,6 +14,7 @@ use ParagonIE\CipherSweet\Exception\{
 };
 use ParagonIE\ConstantTime\Hex;
 use SodiumException;
+use TypeError;
 
 /**
  * Class EncryptedRow
@@ -425,7 +426,7 @@ class EncryptedRow
                     &&
                 \array_key_exists($this->aadSourceField[$field], $row)
             ) {
-                $aad = (string) $row[$this->aadSourceField[$field]];
+                $aad = $this->coaxAadToString($row[$this->aadSourceField[$field]]);
             } else {
                 $aad = '';
             }
@@ -453,7 +454,7 @@ class EncryptedRow
      * If any columns are defined in this object to be encrypted, the value
      * will be encrypted in-place in the returned array.
      *
-     * @param array<string, string|int|float|bool|null> $row
+     * @param array<string, scalar|scalar[]|null> $row
      * @return array<string, string>
      *
      * @throws ArrayKeyException
@@ -485,7 +486,7 @@ class EncryptedRow
                     &&
                 \array_key_exists($this->aadSourceField[$field], $row)
             ) {
-                $aad = (string) $row[$this->aadSourceField[$field]];
+                $aad = $this->coaxAadToString($row[$this->aadSourceField[$field]]);
             } else {
                 $aad = '';
             }
@@ -497,9 +498,11 @@ class EncryptedRow
                     $this->jsonMaps[$field],
                     $this->jsonStrict[$field]
                 );
-                /** @psalm-suppress InvalidArgument */
-                $return[$field] = $jsonEncryptor->encryptJson($row[$field], $aad);
+                $return[$field] = $jsonEncryptor->encryptJson($this->coaxToArray($row[$field]), $aad);
                 continue;
+            }
+            if (!is_scalar($row[$field])) {
+                throw new TypeError('Invalid type for ' . $field);
             }
             $plaintext = $this->convertToString($row[$field], $type);
             $return[$field] = $backend->encrypt($plaintext, $key, $aad);
@@ -847,5 +850,43 @@ class EncryptedRow
     {
         $this->typedIndexes = $bool;
         return $this;
+    }
+
+    /**
+     * @param mixed $input
+     * @return array
+     */
+    protected function coaxToArray(mixed $input): array
+    {
+        if (is_array($input)) {
+            return $input;
+        }
+        if (is_null($input)) {
+            return [];
+        }
+        if (is_object($input)) {
+            /** psalm-suppress PossiblyInvalidCast */
+            return (array) $input;
+        }
+        if (is_string($input)) {
+            return json_decode($input, true);
+        }
+        throw new TypeError("Cannot coax to array: " . gettype($input));
+    }
+
+    /**
+     * @param mixed $input
+     * @return string
+     */
+    protected function coaxAadToString(mixed $input): string
+    {
+        if (is_string($input)) {
+            return $input;
+        }
+        if (is_numeric($input)) {
+            return '' . $input;
+        }
+        /** psalm-suppress PossiblyInvalidCast */
+        return (string) $input;
     }
 }
