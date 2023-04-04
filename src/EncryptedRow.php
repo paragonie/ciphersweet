@@ -482,8 +482,8 @@ class EncryptedRow
      * If any columns are defined in this object to be encrypted, the value
      * will be encrypted in-place in the returned array.
      *
-     * @param array<string, scalar|scalar[]|null> $row
      * @param bool|false $decode_json
+     * @param array<string, scalar|scalar[]|null> $row
      * @return array<string, string>
      *
      * @throws ArrayKeyException
@@ -524,7 +524,7 @@ class EncryptedRow
                 $return[$field] = $row[$field];
                 // checks decode json option
                 if ($decode_json) {
-                    $return[$field] = $this->formatJson($row[$field]);
+                    $row[$field] = $this->formatJson($row[$field]);
                 }
                 // JSON is a special case
                 $jsonEncryptor = new EncryptedJsonField(
@@ -533,7 +533,7 @@ class EncryptedRow
                     $this->jsonMaps[$field],
                     $this->jsonStrict[$field]
                 );
-                $return[$field] = $jsonEncryptor->encryptJson($this->coaxToArray($return[$field]), $aad);
+                $return[$field] = $jsonEncryptor->encryptJson($this->coaxToArray($row[$field]), $aad);
                 continue;
             }
             if (!is_scalar($row[$field])) {
