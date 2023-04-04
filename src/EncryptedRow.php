@@ -482,7 +482,6 @@ class EncryptedRow
      * If any columns are defined in this object to be encrypted, the value
      * will be encrypted in-place in the returned array.
      *
-     *
      * @param array<string, scalar|scalar[]|null> $row
      * @return array<string, string>
      *
