@@ -28,6 +28,20 @@ abstract class Constants
      */
     const DS_JSON = "\xD9\xA7\x36\xFF\x8E\xB9\xD8\xCC\x6D\xD2\xF9\x1A\x6E\x55\xE7\x8E\x44\x43\x37\x36\x57\x3B\x4E\xDA\x34\xBB\x23\x46\x09\xC8\xB6\xA5";
 
+    /*
+     * Domain separation constant for CipherSweet extensions
+     *
+     * Calculated as:
+     * SHA256("ciphersweet extensions") xor SHA256("CIPHERSWEET EXTENSIONS")
+     *
+     * 1ce46264e18a7cdc40ead6f379bc1e233d356c5a95f4c48fbd89c6076960338b
+     *                                 xor
+     * 98f0e454e75dddb6108c32294be2db4c2b664b0ad8da1aa072d7493dc0654866
+     * ----------------------------------------------------------------
+     * 8414863006d7a16a5066e4da325ec56f165327504d2ede2fcf5e8f3aa9057bed
+     */
+    const DS_EXT = "\x84\x14\x86\x30\x06\xd7\xa1\x6a\x50\x66\xe4\xda\x32\x5e\xc5\x6f\x16\x53\x27\x50\x4d\x2e\xde\x2f\xcf\x5e\x8f\x3a\xa9\x05\x7b\xed";
+
     const TYPE_JSON = 'json';
     const TYPE_BOOLEAN = 'bool';
     const TYPE_TEXT = 'string';

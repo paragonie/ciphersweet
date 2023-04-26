@@ -128,6 +128,40 @@ final class CipherSweet
     }
 
     /**
+     * Get a key for use with CipherSweet extensions
+     *
+     * @param string $extensionUniqueName
+     * @param string ...$extra
+     *
+     * @return SymmetricKey
+     *
+     * @throws CipherSweetException
+     * @throws CryptoOperationException
+     */
+    public function getExtensionKey(string $extensionUniqueName, string ...$extra): SymmetricKey
+    {
+        $info = Constants::DS_EXT . Util::pack([$extensionUniqueName, ...$extra]);
+
+        if ($this->isMultiTenantSupported()) {
+            return new SymmetricKey(
+                Util::HKDF(
+                    $this->getKeyProviderForActiveTenant()->getSymmetricKey(),
+                    '',
+                    $info
+                )
+            );
+        }
+
+        return new SymmetricKey(
+            Util::HKDF(
+                $this->keyProvider->getSymmetricKey(),
+                '',
+                $info
+            )
+        );
+    }
+
+    /**
      * Get the key provider for a given tenant
      *
      * @return KeyProviderInterface
