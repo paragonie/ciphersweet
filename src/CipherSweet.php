@@ -26,6 +26,7 @@ final class CipherSweet
 {
     private BackendInterface $backend;
     private KeyProviderInterface $keyProvider;
+    private bool $enableMultiTenantCountCheck = true;
 
     /**
      * CipherSweet constructor.
@@ -195,6 +196,14 @@ final class CipherSweet
     }
 
     /**
+     * @return bool
+     */
+    public function getMultiTenantCountCheckEnabled(): bool
+    {
+        return $this->enableMultiTenantCountCheck;
+    }
+
+    /**
      * @param array $row
      * @param string $tableName
      * @return string|int
@@ -227,15 +236,39 @@ final class CipherSweet
     }
 
     /**
+     * @param bool $value
+     * @return self
+     */
+    public function setMultiTenantCountCheckEnabled(bool $value): self
+    {
+        $this->enableMultiTenantCountCheck = $value;
+        return $this;
+    }
+
+    /**
      * @param array $row
      * @param string $tableName
      * @return array
+     *
      * @throws CipherSweetException
      */
     public function injectTenantMetadata(array $row, string $tableName = ''): array
     {
         if ($this->keyProvider instanceof MultiTenantAwareProviderInterface) {
             $kp = $this->keyProvider;
+
+            // This check is to prevent implementation mistakes with multi-tenant key providers.
+            if ($this->enableMultiTenantCountCheck) {
+                $injected = $kp->injectTenantMetadata($row, $tableName);
+                if (count($injected) < count($row)) {
+                    $message = 'Injecting tenant metadata should not decrease the size of the array. ';
+                    $message .= 'Before: ' . count($row) . '. After: ' . count($injected) . '.';
+                    throw new CipherSweetException($message);
+                }
+                return $injected;
+            }
+
+            // If the above check was disabled, we just return the result naively like before:
             return $kp->injectTenantMetadata($row, $tableName);
         }
         throw new CipherSweetException('Multi-tenant is not supported');
