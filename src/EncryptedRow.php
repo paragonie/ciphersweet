@@ -451,7 +451,7 @@ class EncryptedRow
             }
             if (
                 !empty($this->aadSourceField[$field])
-                    &&
+                &&
                 \array_key_exists($this->aadSourceField[$field], $row)
             ) {
                 $aad = $this->coaxAadToString($row[$this->aadSourceField[$field]]);
@@ -492,7 +492,8 @@ class EncryptedRow
      */
     public function encryptRow(
         #[\SensitiveParameter]
-        array $row
+        array $row,
+        bool $decode_json = false,
     ): array {
         /** @var array<string, string|int|float|bool|null|scalar[]> $return */
         $return = $row;
@@ -501,7 +502,7 @@ class EncryptedRow
             if (!\array_key_exists($field, $row)) {
                 throw new ArrayKeyException(
                     'Expected value for column ' .
-                        $field .
+                    $field .
                     ' on array, nothing given.'
                 );
             }
@@ -511,7 +512,7 @@ class EncryptedRow
             );
             if (
                 !empty($this->aadSourceField[$field])
-                    &&
+                &&
                 \array_key_exists($this->aadSourceField[$field], $row)
             ) {
                 $aad = $this->coaxAadToString($row[$this->aadSourceField[$field]]);
@@ -519,6 +520,11 @@ class EncryptedRow
                 $aad = '';
             }
             if ($type === Constants::TYPE_JSON && !empty($this->jsonMaps[$field])) {
+                $return[$field] = $row[$field];
+                // checks decode json option
+                if ($decode_json) {
+                    $row[$field] = $this->formatJson($row[$field]);
+                }
                 // JSON is a special case
                 $jsonEncryptor = new EncryptedJsonField(
                     $backend,
@@ -540,6 +546,20 @@ class EncryptedRow
             return $this->engine->injectTenantMetadata($return, $this->tableName);
         }
         return $return;
+    }
+
+    /**
+     * Decoding json field
+     *
+     * @param array<array-key, mixed>|mixed|null $field
+     * @return array<array-key, mixed>
+     */
+    public function formatJson(
+        $field
+    ): array {
+        //decode json field then to take key from it to encrypt it
+        $field = isset($field) ? (is_string($field) ? (array)json_decode($field) : $field) : [];
+        return $field;
     }
 
     /**
