@@ -128,6 +128,30 @@ class JsonFieldMap
     }
 
     /**
+     * Adds an object's configuration
+     *
+     * @param array|int|string $rootIndices
+     * @param JsonFieldMap $template
+     * @return static
+     *
+     * @throws CipherSweetException
+     */
+    public function addMapFieldFromTemplate(
+        array|int|string $rootIndices,
+        JsonFieldMap $template
+    ): static {
+        if (\is_string($rootIndices) || \is_int($rootIndices)) {
+            $rootIndices = [$rootIndices];
+        }
+
+        foreach ($template->getMapping() as $mapping) {
+            $indices = [...$rootIndices, ...$mapping['path']];
+            $this->addField($indices, $mapping['type']);
+        }
+        return $this;
+    }
+
+    /**
      * @param array<array-key, string|int> $indices
      * @return string
      *

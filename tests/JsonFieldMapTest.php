@@ -55,4 +55,25 @@ class JsonFieldMapTest extends TestCase
         $this->assertCount(3, $new);
         $this->assertSame($mapped, $new);
     }
+
+    public function testTemplate()
+    {
+        $parent = new JsonFieldMap();
+        $template = (new JsonFieldMap())
+            ->addTextField(['foo', 'bar'])
+            ->addIntegerField(['bar', 'baz']);
+        $parent->addMapFieldFromTemplate(['data', 0], $template);
+        $parent->addMapFieldFromTemplate(['data', 1], $template);
+
+        $mapping = $parent->toString();
+        $this->assertSame(
+            '3be7ae2c{"fields":{' .
+                '"$64617461.#0000000000000000.$666f6f.$626172":"string",' .
+                '"$64617461.#0000000000000000.$626172.$62617a":"int",' .
+                '"$64617461.#0000000000000001.$666f6f.$626172":"string",' .
+                '"$64617461.#0000000000000001.$626172.$62617a":"int"' .
+            '}}',
+            $mapping
+        );
+    }
 }
