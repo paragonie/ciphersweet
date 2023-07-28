@@ -48,6 +48,17 @@ abstract class Constants
     const TYPE_INT = 'int';
     const TYPE_FLOAT = 'float';
 
+    const TYPE_OPTIONAL_JSON = '?json';
+    const TYPE_OPTIONAL_BOOLEAN = '?bool';
+    const TYPE_OPTIONAL_TEXT = '?string';
+    const TYPE_OPTIONAL_INT = '?int';
+    const TYPE_OPTIONAL_FLOAT = '?float';
+
+    // Lists of type constants for ease-of-inlining
+    const TYPES_OPTIONAL = ['?json', '?bool', '?string', '?int', '?float'];
+    const TYPES_BOOLEAN = ['?bool', 'bool'];
+    const TYPES_JSON = ['?json', 'json'];
+
     const COMPOUND_SPECIAL = 'special__compound__indexes';
 
     const FILE_TABLE = "special__file__encryption";

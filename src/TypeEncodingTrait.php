@@ -15,10 +15,13 @@ trait TypeEncodingTrait
     protected function convertFromString(string $data, string $type): int|string|float|bool|null
     {
         return match ($type) {
-            Constants::TYPE_BOOLEAN => Util::chrToBool($data),
-            Constants::TYPE_FLOAT => Util::stringToFloat($data),
-            Constants::TYPE_INT => Util::stringToInt($data),
-            default => (string) $data,
+            Constants::TYPE_OPTIONAL_BOOLEAN, Constants::TYPE_BOOLEAN =>
+                Util::chrToBool($data),
+            Constants::TYPE_OPTIONAL_FLOAT, Constants::TYPE_FLOAT =>
+                Util::stringToFloat($data),
+            Constants::TYPE_OPTIONAL_INT, Constants::TYPE_INT =>
+                Util::stringToInt($data),
+            default => $data,
         };
     }
 
@@ -37,18 +40,21 @@ trait TypeEncodingTrait
     {
         switch ($type) {
             // Will return a 1-byte string:
+            case Constants::TYPE_OPTIONAL_BOOLEAN:
             case Constants::TYPE_BOOLEAN:
                 if (!\is_null($data) && !\is_bool($data)) {
                     $data = !empty($data);
                 }
                 return Util::boolToChr($data);
             // Will return a fixed-length string:
+            case Constants::TYPE_OPTIONAL_FLOAT:
             case Constants::TYPE_FLOAT:
                 if (!\is_float($data)) {
                     throw new \TypeError('Expected a float');
                 }
                 return Util::floatToString($data);
             // Will return a fixed-length string:
+            case Constants::TYPE_OPTIONAL_INT:
             case Constants::TYPE_INT:
                 if (!\is_int($data)) {
                     throw new \TypeError('Expected an integer');

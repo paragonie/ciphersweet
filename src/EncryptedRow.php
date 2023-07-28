@@ -149,6 +149,74 @@ class EncryptedRow
     }
 
     /**
+     * Define a boolean field that will be encrypted. Permits NULL.
+     *
+     * @param string $fieldName
+     * @param string $aadSource Field name to source AAD from
+     * @return static
+     */
+    public function addOptionalBooleanField(string $fieldName, string $aadSource = ''): static
+    {
+        return $this->addField($fieldName, Constants::TYPE_OPTIONAL_BOOLEAN, $aadSource);
+    }
+
+    /**
+     * Define a floating point number (decimal) field that will be encrypted. Permits NULL.
+     *
+     * @param string $fieldName
+     * @param string $aadSource Field name to source AAD from
+     * @return static
+     */
+    public function addOptionalFloatField(string $fieldName, string $aadSource = ''): static
+    {
+        return $this->addField($fieldName, Constants::TYPE_OPTIONAL_FLOAT, $aadSource);
+    }
+
+    /**
+     * Define an integer field that will be encrypted. Permits NULL.
+     *
+     * @param string $fieldName
+     * @param string $aadSource Field name to source AAD from
+     * @return static
+     */
+    public function addOptionalIntegerField(string $fieldName, string $aadSource = ''): static
+    {
+        return $this->addField($fieldName, Constants::TYPE_OPTIONAL_INT, $aadSource);
+    }
+
+    /**
+     * Define an integer field that will be encrypted. Permits NULL.
+     *
+     * @param string $fieldName
+     * @param string $aadSource Field name to source AAD from
+     * @return static
+     */
+    public function addOptionalTextField(string $fieldName, string $aadSource = ''): static
+    {
+        return $this->addField($fieldName, Constants::TYPE_OPTIONAL_TEXT, $aadSource);
+    }
+
+    /**
+     * Define a JSON field that will be encrypted. Permits NULL.
+     *
+     * @param string $fieldName
+     * @param JsonFieldMap $fieldMap
+     * @param string $aadSource Field name to source AAD from
+     * @param bool $strict
+     * @return static
+     */
+    public function addNullableJsonField(
+        string $fieldName,
+        JsonFieldMap $fieldMap,
+        string $aadSource = '',
+        bool $strict = true
+    ): static {
+        $this->jsonMaps[$fieldName] = $fieldMap;
+        $this->jsonStrict[$fieldName] = $strict;
+        return $this->addField($fieldName, Constants::TYPE_OPTIONAL_JSON, $aadSource);
+    }
+
+    /**
      * Define a JSON field that will be encrypted.
      *
      * @param string $fieldName
@@ -445,9 +513,16 @@ class EncryptedRow
                 }
                 continue;
             }
-            if (\is_null($row[$field])) {
-                $return[$field] = null;
-                continue;
+            // Support for nullable types
+            if (in_array($type, Constants::TYPES_OPTIONAL, true)) {
+                if (is_null($row[$field])) {
+                    $return[$field] = null;
+                    continue;
+                }
+            }
+            // Encrypted booleans will be scalar values as ciphertext
+            if (!is_scalar($row[$field])) {
+                throw new TypeError('Invalid type for ' . $field);
             }
             if (
                 !empty($this->aadSourceField[$field])
@@ -459,7 +534,7 @@ class EncryptedRow
                 $aad = '';
             }
 
-            if ($type === Constants::TYPE_JSON && !empty($this->jsonMaps[$field])) {
+            if (in_array($type, Constants::TYPES_JSON, true) && !empty($this->jsonMaps[$field])) {
                 // JSON is a special case
                 $jsonEncryptor = new EncryptedJsonField(
                     $backend,
@@ -518,7 +593,7 @@ class EncryptedRow
             } else {
                 $aad = '';
             }
-            if ($type === Constants::TYPE_JSON && !empty($this->jsonMaps[$field])) {
+            if (in_array($type, Constants::TYPES_JSON, true) && !empty($this->jsonMaps[$field])) {
                 // JSON is a special case
                 $jsonEncryptor = new EncryptedJsonField(
                     $backend,
@@ -529,7 +604,24 @@ class EncryptedRow
                 $return[$field] = $jsonEncryptor->encryptJson($this->coaxToArray($row[$field]), $aad);
                 continue;
             }
+
+            // Support nullable types
+            if (in_array($type, Constants::TYPES_OPTIONAL, true)) {
+                if (is_null($row[$field])) {
+                    continue;
+                }
+            }
+
+            // Boolean always supported NULL as a value to encrypt
+            if (in_array($type, Constants::TYPES_BOOLEAN, true) && is_null($row[$field])) {
+                $plaintext = $this->convertToString($row[$field], Constants::TYPE_BOOLEAN);
+                $return[$field] = $backend->encrypt($plaintext, $key, $aad);
+                continue;
+            }
+
+            // All others must be scalar
             if (!is_scalar($row[$field])) {
+                // NULL is not permitted.
                 throw new TypeError('Invalid type for ' . $field);
             }
             $plaintext = $this->convertToString($row[$field], $type);

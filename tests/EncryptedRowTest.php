@@ -518,4 +518,27 @@ class EncryptedRowTest extends TestCase
         $this->assertSame(1234, $array['qux']);
         $this->assertSame($plaintext, $eR->decryptRow($some));
     }
+
+    /**
+     * @dataProvider engineProvider
+     */
+    public function tesOptionalFields(CipherSweet $engine): void
+    {
+        $eR = new EncryptedRow($engine, 'foo');
+        $eR
+            ->addOptionalBooleanField('bar')
+            ->addOptionalFloatField('baz')
+            ->addOptionalIntegerField('qux')
+            ->addOptionalTextField('quux');
+
+        $null = ['bar' => null, 'baz' => null, 'qux' => null, 'quux' => null];
+        $encrypted = $eR->encryptRow($null);
+        $this->assertSame($null, $encrypted);
+
+        // Boolean fields treat NULl as a value. Optional booleans do not.
+        $eR->addBooleanField('testing');
+        $null['testing'] = null;
+        $encrypted = $eR->encryptRow($null);
+        $this->assertNotSame($null, $encrypted);
+    }
 }
