@@ -168,6 +168,96 @@ class EncryptedMultiRows
         );
     }
 
+
+    /**
+     * Mark a column to be encrypted as boolean input. Permits NULL.
+     *
+     * @throws CipherSweetException
+     */
+    public function addOptionalBooleanField(
+        string $tableName,
+        string $fieldName,
+        string $aadSource = ''
+    ): static {
+        return $this->addField(
+            $tableName,
+            $fieldName,
+            Constants::TYPE_OPTIONAL_BOOLEAN,
+            $aadSource
+        );
+    }
+
+    /**
+     * Mark a column to be encrypted as floating point input. Permits NULL.
+     *
+     * @throws CipherSweetException
+     */
+    public function addOptionalFloatField(
+        string $tableName,
+        string $fieldName,
+        string $aadSource = ''
+    ): static {
+        return $this->addField(
+            $tableName,
+            $fieldName,
+            Constants::TYPE_OPTIONAL_FLOAT,
+            $aadSource
+        );
+    }
+
+    /**
+     * Mark a column to be encrypted as integer input. Permits NULL.
+     *
+     * @throws CipherSweetException
+     */
+    public function addOptionalIntegerField(
+        string $tableName,
+        string $fieldName,
+        string $aadSource = ''
+    ): static {
+        return $this->addField(
+            $tableName,
+            $fieldName,
+            Constants::TYPE_OPTIONAL_INT,
+            $aadSource
+        );
+    }
+
+    /**
+     * Mark a column to be encryption as a JSON blob. Permits NULL.
+     *
+     * @throws CipherSweetException
+     */
+    public function addOptionalJsonField(
+        string $tableName,
+        string $fieldName,
+        JsonFieldMap $fieldMap,
+        string $aadSource = '',
+        bool $strict = true
+    ): static {
+        $this->getEncryptedRowObjectForTable($tableName)
+            ->addNullableJsonField($fieldName, $fieldMap, $aadSource, $strict);
+        return $this;
+    }
+
+    /**
+     * Mark a column to be encrypted as text input. Permits NULL.
+     *
+     * @throws CipherSweetException
+     */
+    public function addOptionalTextField(
+        string $tableName,
+        string $fieldName,
+        string $aadSource = ''
+    ): static {
+        return $this->addField(
+            $tableName,
+            $fieldName,
+            Constants::TYPE_OPTIONAL_TEXT,
+            $aadSource
+        );
+    }
+
     /**
      * Add a blind index to a specific table.
      * @throws CipherSweetException

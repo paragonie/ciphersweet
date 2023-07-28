@@ -283,4 +283,28 @@ class EncryptedMultiRowsTest extends TestCase
             [$this->boringRandom]
         ];
     }
+
+    /**
+     * @dataProvider engineProvider
+     */
+    public function testOptionalFields(CipherSweet $engine): void
+    {
+        $eR = new EncryptedMultiRows($engine);
+        $eR
+            ->addOptionalBooleanField('foo', 'bar')
+            ->addOptionalFloatField('foo', 'baz')
+            ->addOptionalIntegerField('foo', 'qux')
+            ->addOptionalTextField('foo', 'quux');
+
+        $null = ['foo' => ['bar' => null, 'baz' => null, 'qux' => null, 'quux' => null]];
+        $encrypted = $eR->encryptManyRows($null);
+        $this->assertSame($null, $encrypted);
+
+        // Boolean fields treat NULl as a value. Optional booleans do not.
+        $eR->addBooleanField('foo', 'testing');
+        $null['foo']['testing'] = null;
+        $encrypted = $eR->encryptManyRows($null);
+        $this->assertNotSame($null, $encrypted);
+
+    }
 }
