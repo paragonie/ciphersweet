@@ -15,6 +15,11 @@ use ParagonIE\CipherSweet\Exception\{
 use ParagonIE\ConstantTime\Hex;
 use SodiumException;
 use TypeError;
+use function
+    array_key_exists,
+    in_array,
+    is_null,
+    is_scalar;
 
 /**
  * Class EncryptedRow
@@ -573,7 +578,7 @@ class EncryptedRow
         $return = $row;
         $backend = $this->engine->getBackend();
         foreach ($this->fieldsToEncrypt as $field => $type) {
-            if (!\array_key_exists($field, $row)) {
+            if (!array_key_exists($field, $row)) {
                 throw new ArrayKeyException(
                     'Expected value for column ' .
                         $field .
@@ -587,7 +592,7 @@ class EncryptedRow
             if (
                 !empty($this->aadSourceField[$field])
                     &&
-                \array_key_exists($this->aadSourceField[$field], $row)
+                array_key_exists($this->aadSourceField[$field], $row)
             ) {
                 $aad = $this->coaxAadToString($row[$this->aadSourceField[$field]]);
             } else {
