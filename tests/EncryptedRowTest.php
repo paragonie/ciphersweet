@@ -522,6 +522,37 @@ class EncryptedRowTest extends TestCase
     /**
      * @dataProvider engineProvider
      */
+    public function testFieldsAreNotSwappable(CipherSweet $engine): void
+    {
+        $eR = new EncryptedRow($engine, 'foo');
+        $eR
+            ->addOptionalTextField('field1')
+            ->addOptionalTextField('field2');
+
+        $plain = ['field1' => 'example', 'field2' => 'message'];
+        $encrypted = $eR->encryptRow($plain);
+        $swapped = [];
+        [$swapped['field1'], $swapped['field2']] = [$encrypted['field2'], $encrypted['field1']];
+        // Sanity check: Did we actually swap them?
+        $this->assertSame($swapped['field2'], $encrypted['field1']);
+        $this->assertSame($swapped['field1'], $encrypted['field2']);
+
+        // Is decryption successful still?
+        $decrypted = $eR->decryptRow($encrypted);
+        $this->assertSame($plain['field1'], $decrypted['field1']);
+        $this->assertSame($plain['field2'], $decrypted['field2']);
+
+        // Okay, let's decryptRow() on the swapped values. This must throw.
+        try {
+            $eR->decryptRow($swapped);
+            $this->fail('Expected decryptRow() to fail.');
+        } catch (CipherSweetException|SodiumException) {
+        }
+    }
+
+    /**
+     * @dataProvider engineProvider
+     */
     public function tesOptionalFields(CipherSweet $engine): void
     {
         $eR = new EncryptedRow($engine, 'foo');

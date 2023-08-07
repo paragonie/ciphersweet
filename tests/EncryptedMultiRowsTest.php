@@ -287,6 +287,37 @@ class EncryptedMultiRowsTest extends TestCase
     /**
      * @dataProvider engineProvider
      */
+    public function testFieldsAreNotSwappable(CipherSweet $engine): void
+    {
+        $eR = new EncryptedMultiRows($engine);
+        $eR
+            ->addOptionalTextField('foo', 'field1')
+            ->addOptionalTextField('foo', 'field2');
+
+        $plain = ['foo' => ['field1' => 'example', 'field2' => 'message']];
+        $encrypted = $eR->encryptManyRows($plain);
+        $swapped = [];
+        [$swapped['foo']['field1'], $swapped['foo']['field2']] = [$encrypted['foo']['field2'], $encrypted['foo']['field1']];
+        // Sanity check: Did we actually swap them?
+        $this->assertSame($swapped['foo']['field2'], $encrypted['foo']['field1']);
+        $this->assertSame($swapped['foo']['field1'], $encrypted['foo']['field2']);
+
+        // Is decryption successful still?
+        $decrypted = $eR->decryptManyRows($encrypted);
+        $this->assertSame($plain['foo']['field1'], $decrypted['foo']['field1']);
+        $this->assertSame($plain['foo']['field2'], $decrypted['foo']['field2']);
+
+        // Okay, let's decryptRow() on the swapped values. This must throw.
+        try {
+            $eR->decryptManyRows($swapped);
+            $this->fail('Expected decryptRow() to fail.');
+        } catch (CipherSweetException|SodiumException) {
+        }
+    }
+
+    /**
+     * @dataProvider engineProvider
+     */
     public function testOptionalFields(CipherSweet $engine): void
     {
         $eR = new EncryptedMultiRows($engine);
