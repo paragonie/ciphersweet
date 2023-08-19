@@ -48,10 +48,11 @@ class FileProvider implements KeyProviderInterface
             $binaryKey = Util::convertSymmetricStringKeyToBinary(trim($contents));
             return new SymmetricKey($binaryKey);
         }catch(CryptoOperationException $e){
-            // otherwise read as binary
-            return new SymmetricKey($contents);
+           
         }
-
+        
+        // otherwise read as binary
+        return new SymmetricKey($contents);
     }
 
     /**
