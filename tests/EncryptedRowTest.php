@@ -541,4 +541,23 @@ class EncryptedRowTest extends TestCase
         $encrypted = $eR->encryptRow($null);
         $this->assertNotSame($null, $encrypted);
     }
+
+    /**
+     * @dataProvider engineProvider
+     */
+    public function testOptionalFieldsMisconfigured(CipherSweet $engine): void
+    {
+        $eR = new EncryptedRow($engine, 'foo');
+        $eR
+            ->addOptionalTextField('bar')
+            ->addTextField('baz');
+
+        $null = ['bar' => 'bar', 'baz' => null];
+
+        $this->expectExceptionMessage(
+            'Received a NULL value for baz, which has a non-optional type. To fix this, try changing the type' .
+            ' declaration from Constants::TYPE_TEXT to Constants::TYPE_OPTIONAL_TEXT.'
+        );
+        $eR->encryptRow($null);
+    }
 }

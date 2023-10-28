@@ -527,6 +527,9 @@ class EncryptedRow
             }
             // Encrypted booleans will be scalar values as ciphertext
             if (!is_scalar($row[$field])) {
+                if (is_null($row[$field])) {
+                    $this->fieldNotOptional($field, $type);
+                }
                 throw new TypeError('Invalid type for ' . $field);
             }
             if (
@@ -627,6 +630,9 @@ class EncryptedRow
             // All others must be scalar
             if (!is_scalar($row[$field])) {
                 // NULL is not permitted.
+                if (is_null($row[$field])) {
+                    $this->fieldNotOptional($field, $type);
+                }
                 throw new TypeError('Invalid type for ' . $field);
             }
             $plaintext = $this->convertToString($row[$field], $type);
@@ -1013,5 +1019,50 @@ class EncryptedRow
         }
         /** psalm-suppress PossiblyInvalidCast */
         return (string) $input;
+    }
+
+    /**
+     * New exception message to make it clear this is a deliberate behavior, not a bug.
+     *
+     * Instead of, like, Constants::TYPE_TEXT, if you want to accept null parameters, you need to
+     * use something like Constants::TYPE_OPTIONAL_TEXT.
+     *
+     * If you don't tell CipherSweet that NULL is an acceptable return type, it doesn't tolerate
+     * NULL. To do this, you must change the declaration.
+     *
+     * This switch block tries to point the user of this library towards the correct constant to use
+     * for this field, in order to populate the correct error message.
+     */
+    protected function fieldNotOptional(string $field, string $type): void
+    {
+        switch ($type) {
+            case Constants::TYPE_JSON:
+                $oldConst = 'Constants::TYPE_JSON';
+                $newConst = 'Constants::TYPE_OPTIONAL_JSON';
+                break;
+            case Constants::TYPE_BOOLEAN:
+                $oldConst = 'Constants::TYPE_BOOLEAN';
+                $newConst = 'Constants::TYPE_OPTIONAL_BOOLEAN';
+                break;
+            case Constants::TYPE_TEXT:
+                $oldConst = 'Constants::TYPE_TEXT';
+                $newConst = 'Constants::TYPE_OPTIONAL_TEXT';
+                break;
+            case Constants::TYPE_FLOAT:
+                $oldConst = 'Constants::TYPE_FLOAT';
+                $newConst = 'Constants::TYPE_OPTIONAL_FLOAT';
+                break;
+            case Constants::TYPE_INT:
+                $oldConst = 'Constants::TYPE_INT';
+                $newConst = 'Constants::TYPE_OPTIONAL_INT';
+                break;
+            default:
+                $oldConst = $type;
+                $newConst = '?' . $type;
+        }
+        throw new TypeError(
+            'Received a NULL value for ' . $field . ', which has a non-optional type. ' .
+            'To fix this, try changing the type declaration from ' . $oldConst . ' to ' . $newConst . '.'
+        );
     }
 }
