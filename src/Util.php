@@ -2,13 +2,17 @@
 declare(strict_types=1);
 namespace ParagonIE\CipherSweet;
 
+use ParagonIE\CipherSweet\Exception\CryptoOperationException;
 use ParagonIE\CipherSweet\Backend\Key\SymmetricKey;
-use ParagonIE\ConstantTime\Binary;
 use ParagonIE_Sodium_Core_Util as SodiumUtil;
 use ArrayAccess;
 use SodiumException;
 use TypeError;
-
+use ParagonIE\ConstantTime\{
+    Base64UrlSafe,
+    Binary,
+    Hex
+};
 /**
  * Class Util
  * @package ParagonIE\CipherSweet
@@ -315,6 +319,27 @@ abstract class Util
     public static function stringToInt(string $string): int
     {
         return SodiumUtil::load64_le($string);
+    }
+
+    /**
+     * Parse string symetric key
+     *
+     * @param string $key
+     *
+     * @throws CryptoOperationException
+     */
+    public static function convertSymmetricStringKeyToBinary(string $key): string
+    {
+        if (Binary::safeStrlen($key) === 64) 
+            return Hex::decode($key);
+         
+        if (Binary::safeStrlen($key) === 44) 
+            return Base64UrlSafe::decode($key);
+        
+        if (Binary::safeStrlen($key) === 32) 
+            return $key;
+    
+        throw new CryptoOperationException('Invalid key size');
     }
 
     /**
