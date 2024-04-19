@@ -23,9 +23,9 @@ class JsonFieldMap
     {
         $crc32 = Binary::safeSubstr($string, 0, 8);
         $json = Binary::safeSubstr($string, 8);
-        $calc = hash('crc32c', $json);
+        $calc = hash('crc32', $json);
         if (!Util::hashEquals($calc, $crc32)) {
-            throw new CipherSweetException("CRC32C invalid; was config corrupted?");
+            throw new CipherSweetException("CRC32 invalid; was config corrupted?");
         }
 
         $decoded = \json_decode($json, true);
@@ -193,7 +193,7 @@ class JsonFieldMap
     public function toString()
     {
         $json = \json_encode(['fields' => $this->fields]);
-        $crc = \hash('crc32c', $json);
+        $crc = \hash('crc32', $json);
         return $crc . $json;
     }
 
