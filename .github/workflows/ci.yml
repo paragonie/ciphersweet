@@ -27,9 +27,7 @@ jobs:
         run: composer self-update --1; composer install
 
       - name: PHPUnit tests
-        uses: php-actions/phpunit@v2
-        with:
-          memory_limit: 256M
+        run: vendor/bin/phpunit
 
   modern:
     name: PHP ${{ matrix.php-versions }} Test on ${{ matrix.operating-system }}
@@ -47,13 +45,11 @@ jobs:
         with:
           php-version: ${{ matrix.php-versions }}
           extensions: mbstring, intl, sodium
-          ini-values: post_max_size=256M, max_execution_time=180
-          tools: psalm, phpunit
+          ini-values: error_reporting=-1, display_errors=On
+          coverage: none
 
-      - name: Install dependencies
-        run: composer install
+      - name: Install Composer dependencies
+        uses: "ramsey/composer-install@v2"
 
       - name: PHPUnit tests
-        uses: php-actions/phpunit@v2
-        with:
-          memory_limit: 256M
+        run: vendor/bin/phpunit
