@@ -356,7 +356,7 @@ class EncryptedFile
      *
      * @throws CipherSweetException
      */
-    public function setActiveTenant($tenant, $dontError = false): static
+    public function setActiveTenant($tenant, $dontError = false)
     {
         if (!$this->getEngine()->isMultiTenantSupported()) {
             if (!$dontError) {
