@@ -273,6 +273,7 @@ abstract class Util
      * @throws SodiumException
      * @psalm-suppress ReferenceConstraintViolation
      * @psalm-suppress InvalidOperand
+     * @psalm-suppress UndefinedFunction
      */
     public static function memzero(
         #[\SensitiveParameter]
