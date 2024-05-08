@@ -36,7 +36,7 @@
     "php": "^8.1",
     "ext-json": "*",
     "ext-openssl": "*",
-    "paragonie/constant_time_encoding": "^2",
+    "paragonie/constant_time_encoding": "^2|^3",
     "paragonie/sodium_compat": "^1|^2"
   },
   "require-dev": {
