@@ -34,7 +34,7 @@ or noncommercial, open source or proprietary, at no cost to you.
   diverse range of compliance requirements. More can be added as needed:
   * `BoringCrypto` uses [libsodium](https://download.libsodium.org/doc/), the de
     facto standard encryption library for software developers.
-    [Algorithm details](https://ciphersweet.paragonie.com/security#moderncrypto).
+    [Algorithm details](https://ciphersweet.paragonie.com/security#boringcrypto).
   * `FIPSCrypto` only uses the cryptographic algorithms covered by the
     FIPS 140-3 recommendations to avoid auditing complexity.
     [Algorithm details](https://ciphersweet.paragonie.com/security#fipscrypto).
