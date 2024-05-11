@@ -38,15 +38,24 @@ class EncryptedMultiRows
     protected ?bool $permitEmpty = null;
 
     /**
+     * @var bool $autoBindContext
+     */
+    protected bool $autoBindContext = false;
+
+    /**
      * EncryptedFieldSet constructor.
      *
      * @param CipherSweet $engine
      * @param bool $useTypedIndexes
      */
-    public function __construct(CipherSweet $engine, bool $useTypedIndexes = false)
-    {
+    public function __construct(
+        CipherSweet $engine,
+        bool $useTypedIndexes = false,
+        bool $autoBindContext = false
+    ) {
         $this->engine = $engine;
         $this->typedIndexes = $useTypedIndexes;
+        $this->autoBindContext = $autoBindContext;
     }
 
     /**
@@ -72,10 +81,18 @@ class EncryptedMultiRows
         string $tableName,
         string $fieldName,
         string $type = Constants::TYPE_TEXT,
-        string $aadSource = ''
+        string|AAD $aadSource = ''
     ): static {
+        if ($this->autoBindContext) {
+            // We automatically bind every field to the table and column name
+            if (empty($aadSource)) {
+                $aadSource = new AAD();
+            }
+            $aadSource = AAD::field($aadSource)
+                ->merge(AAD::literal('table=' . $tableName . ';field=' . $fieldName));
+        }
         $this->getEncryptedRowObjectForTable($tableName)
-            ->addField($fieldName, $type, $aadSource);
+            ->addField($fieldName, $type, $aadSource, $this->autoBindContext);
         return $this;
     }
 
@@ -87,7 +104,7 @@ class EncryptedMultiRows
     public function addBooleanField(
         string $tableName,
         string $fieldName,
-        string $aadSource = ''
+        string|AAD $aadSource = ''
     ): static {
         return $this->addField(
             $tableName,
@@ -105,7 +122,7 @@ class EncryptedMultiRows
     public function addFloatField(
         string $tableName,
         string $fieldName,
-        string $aadSource = ''
+        string|AAD $aadSource = ''
     ): static {
         return $this->addField(
             $tableName,
@@ -123,7 +140,7 @@ class EncryptedMultiRows
     public function addIntegerField(
         string $tableName,
         string $fieldName,
-        string $aadSource = ''
+        string|AAD $aadSource = ''
     ): static {
         return $this->addField(
             $tableName,
@@ -142,7 +159,7 @@ class EncryptedMultiRows
         string $tableName,
         string $fieldName,
         JsonFieldMap $fieldMap,
-        string $aadSource = '',
+        string|AAD $aadSource = '',
         bool $strict = true
     ): static {
         $this->getEncryptedRowObjectForTable($tableName)
@@ -158,7 +175,7 @@ class EncryptedMultiRows
     public function addTextField(
         string $tableName,
         string $fieldName,
-        string $aadSource = ''
+        string|AAD $aadSource = ''
     ): static {
         return $this->addField(
             $tableName,
@@ -177,7 +194,7 @@ class EncryptedMultiRows
     public function addOptionalBooleanField(
         string $tableName,
         string $fieldName,
-        string $aadSource = ''
+        string|AAD $aadSource = ''
     ): static {
         return $this->addField(
             $tableName,
@@ -195,7 +212,7 @@ class EncryptedMultiRows
     public function addOptionalFloatField(
         string $tableName,
         string $fieldName,
-        string $aadSource = ''
+        string|AAD $aadSource = ''
     ): static {
         return $this->addField(
             $tableName,
@@ -213,7 +230,7 @@ class EncryptedMultiRows
     public function addOptionalIntegerField(
         string $tableName,
         string $fieldName,
-        string $aadSource = ''
+        string|AAD $aadSource = ''
     ): static {
         return $this->addField(
             $tableName,
@@ -232,7 +249,7 @@ class EncryptedMultiRows
         string $tableName,
         string $fieldName,
         JsonFieldMap $fieldMap,
-        string $aadSource = '',
+        string|AAD $aadSource = '',
         bool $strict = true
     ): static {
         $this->getEncryptedRowObjectForTable($tableName)
@@ -248,7 +265,7 @@ class EncryptedMultiRows
     public function addOptionalTextField(
         string $tableName,
         string $fieldName,
-        string $aadSource = ''
+        string|AAD $aadSource = ''
     ): static {
         return $this->addField(
             $tableName,
@@ -537,9 +554,29 @@ class EncryptedMultiRows
     }
 
     /**
+     * @param bool $autoBindContext
+     * @return self
+     */
+    public function setAutoBindContext(bool $autoBindContext = false): self
+    {
+        $this->autoBindContext = $autoBindContext;
+        return $this;
+    }
+
+    /**
      * @throws CipherSweetException
      */
-    public function setAadSourceField(string $tableName, string $fieldName, string $aadSource): static
+    public function setPrimaryKeyColumnName(string $tableName, ?string $columnName): self
+    {
+        $this->getEncryptedRowObjectForTable($tableName)
+            ->setPrimaryKeyColumnName($columnName);
+        return $this;
+    }
+
+    /**
+     * @throws CipherSweetException
+     */
+    public function setAadSourceField(string $tableName, string $fieldName, string|AAD $aadSource): static
     {
         $this->getEncryptedRowObjectForTable($tableName)
             ->setAadSourceField($fieldName, $aadSource);

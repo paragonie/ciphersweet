@@ -63,12 +63,14 @@ class EncryptedFile
      *
      * @param string $inputFile
      * @param string $outputFile
+     * @param ?AAD $aad
      * @return bool
      *
+     * @throws CipherSweetException
      * @throws CryptoOperationException
      * @throws FilesystemException
      */
-    public function decryptFile(string $inputFile, string $outputFile): bool
+    public function decryptFile(string $inputFile, string $outputFile, ?AAD $aad = null): bool
     {
         if (\realpath($inputFile) === \realpath($outputFile)) {
             $inputRealStream = $this->getStreamForFile($inputFile, 'rb');
@@ -79,7 +81,7 @@ class EncryptedFile
         }
         $outputStream = $this->getStreamForFile($outputFile);
         try {
-            return $this->decryptStream($inputStream, $outputStream);
+            return $this->decryptStream($inputStream, $outputStream, $aad);
         } finally {
             \fclose($inputStream);
             \fclose($outputStream);
@@ -92,16 +94,16 @@ class EncryptedFile
      * @param string $inputFile
      * @param string $outputFile
      * @param string $password
+     * @param ?AAD $aad
      * @return bool
      *
-     * @throws CryptoOperationException
      * @throws FilesystemException
-     * @throws SodiumException
      */
     public function decryptFileWithPassword(
         string $inputFile,
         string $outputFile,
-        string $password
+        string $password,
+        ?AAD $aad = null
     ): bool {
         if (\realpath($inputFile) === \realpath($outputFile)) {
             $inputRealStream = $this->getStreamForFile($inputFile, 'rb');
@@ -115,7 +117,8 @@ class EncryptedFile
             return $this->decryptStreamWithPassword(
                 $inputStream,
                 $outputStream,
-                $password
+                $password,
+                $aad
             );
         } finally {
             \fclose($inputStream);
@@ -128,12 +131,13 @@ class EncryptedFile
      *
      * @param resource $inputFP
      * @param resource $outputFP
+     * @param ?AAD $aad
      * @return bool
      *
      * @throws CipherSweetException
      * @throws CryptoOperationException
      */
-    public function decryptStream($inputFP, $outputFP): bool
+    public function decryptStream($inputFP, $outputFP, ?AAD $aad = null): bool
     {
         $key = $this->engine->getFieldSymmetricKey(
             Constants::FILE_TABLE,
@@ -143,7 +147,8 @@ class EncryptedFile
             $inputFP,
             $outputFP,
             $key,
-            $this->chunkSize
+            $this->chunkSize,
+            $aad
         );
     }
 
@@ -153,12 +158,14 @@ class EncryptedFile
      * @param resource $inputFP
      * @param resource $outputFP
      * @param string $password
+     * @param ?AAD $aad
      * @return bool
      */
     public function decryptStreamWithPassword(
         $inputFP,
         $outputFP,
-        string $password
+        string $password,
+        ?AAD $aad = null
     ): bool {
         $backend = $this->engine->getBackend();
         $salt = $this->getSaltFromStream($inputFP);
@@ -167,7 +174,8 @@ class EncryptedFile
             $inputFP,
             $outputFP,
             $key,
-            $this->chunkSize
+            $this->chunkSize,
+            $aad
         );
     }
 
@@ -176,14 +184,14 @@ class EncryptedFile
      *
      * @param string $inputFile
      * @param string $outputFile
+     * @param ?AAD $aad
      * @return bool
      *
      * @throws CipherSweetException
      * @throws CryptoOperationException
      * @throws FilesystemException
-     * @throws SodiumException
      */
-    public function encryptFile(string $inputFile, string $outputFile): bool
+    public function encryptFile(string $inputFile, string $outputFile, ?AAD $aad = null): bool
     {
         if (\realpath($inputFile) === \realpath($outputFile)) {
             $inputRealStream = $this->getStreamForFile($inputFile, 'rb');
@@ -194,7 +202,7 @@ class EncryptedFile
         }
         $outputStream = $this->getStreamForFile($outputFile);
         try {
-            return $this->encryptStream($inputStream, $outputStream);
+            return $this->encryptStream($inputStream, $outputStream, $aad);
         } finally {
             \fclose($inputStream);
             \fclose($outputStream);
@@ -207,16 +215,17 @@ class EncryptedFile
      * @param string $inputFile
      * @param string $outputFile
      * @param string $password
+     * @param ?AAD $aad
      * @return bool
      *
      * @throws CryptoOperationException
      * @throws FilesystemException
-     * @throws SodiumException
      */
     public function encryptFileWithPassword(
         string $inputFile,
         string $outputFile,
-        string $password
+        string $password,
+        ?AAD $aad = null
     ): bool {
         if (\realpath($inputFile) === \realpath($outputFile)) {
             $inputRealStream = $this->getStreamForFile($inputFile, 'rb');
@@ -230,7 +239,8 @@ class EncryptedFile
             return $this->encryptStreamWithPassword(
                 $inputStream,
                 $outputStream,
-                $password
+                $password,
+                $aad
             );
         } finally {
             \fclose($inputStream);
@@ -243,12 +253,13 @@ class EncryptedFile
      *
      * @param resource $inputFP
      * @param resource $outputFP
+     * @param ?AAD $aad
      * @return bool
      *
      * @throws CipherSweetException
      * @throws CryptoOperationException
      */
-    public function encryptStream($inputFP, $outputFP): bool
+    public function encryptStream($inputFP, $outputFP, ?AAD $aad = null): bool
     {
         $key = $this->engine->getFieldSymmetricKey(
             Constants::FILE_TABLE,
@@ -258,7 +269,9 @@ class EncryptedFile
             $inputFP,
             $outputFP,
             $key,
-            $this->chunkSize
+            $this->chunkSize,
+            Constants::DUMMY_SALT,
+            $aad
         );
     }
 
@@ -268,6 +281,7 @@ class EncryptedFile
      * @param resource $inputFP
      * @param resource $outputFP
      * @param string $password
+     * @param ?AAD $aad
      * @return bool
      *
      * @throws CryptoOperationException
@@ -275,7 +289,8 @@ class EncryptedFile
     public function encryptStreamWithPassword(
         $inputFP,
         $outputFP,
-        string $password
+        string $password,
+        ?AAD $aad = null
     ): bool {
         try {
             // Do not generate a dummy salt!
@@ -293,7 +308,8 @@ class EncryptedFile
             $outputFP,
             $key,
             $this->chunkSize,
-            $salt
+            $salt,
+            $aad
         );
     }
 
@@ -319,7 +335,6 @@ class EncryptedFile
      * @return bool
      *
      * @throws FilesystemException
-     * @throws SodiumException
      */
     public function isFileEncrypted(string $filename): bool
     {

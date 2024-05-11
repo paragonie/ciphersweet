@@ -1,6 +1,7 @@
 <?php
 namespace ParagonIE\CipherSweet\Tests;
 
+use Exception;
 use ParagonIE\CipherSweet\BlindIndex;
 use ParagonIE\CipherSweet\CipherSweet;
 use ParagonIE\CipherSweet\EncryptedMultiRows;
@@ -8,6 +9,7 @@ use ParagonIE\CipherSweet\Exception\ArrayKeyException;
 use ParagonIE\CipherSweet\Exception\CipherSweetException;
 use ParagonIE\CipherSweet\Exception\CryptoOperationException;
 use ParagonIE\CipherSweet\Exception\InvalidCiphertextException;
+use ParagonIE\CipherSweet\Exception\JsonMapException;
 use ParagonIE\CipherSweet\JsonFieldMap;
 use ParagonIE\CipherSweet\Transformation\Lowercase;
 use PHPUnit\Framework\TestCase;
@@ -24,39 +26,39 @@ class EncryptedMultiRowsTest extends TestCase
     /**
      * @var CipherSweet $fipsEngine
      */
-    protected $fipsEngine;
+    protected CipherSweet $fipsEngine;
 
     /**
      * @var CipherSweet $naclEngine
      */
-    protected $naclEngine;
+    protected CipherSweet $naclEngine;
 
     /**
      * @var CipherSweet $boringEngine
      */
-    protected $boringEngine;
+    protected CipherSweet $boringEngine;
 
     /**
      * @var CipherSweet $fipsRandom
      */
-    protected $fipsRandom;
+    protected CipherSweet $fipsRandom;
 
     /**
      * @var CipherSweet $naclRandom
      */
-    protected $naclRandom;
+    protected CipherSweet $naclRandom;
 
     /**
      * @var CipherSweet $boringRandom
      */
-    protected $boringRandom;
+    protected CipherSweet $boringRandom;
 
     /**
      * @beforeClass
      * @before
-     * @throws \Exception
+     * @throws Exception
      */
-    public function before()
+    public function before(): void
     {
         $this->fipsEngine = $this->createFipsEngine('4e1c44f87b4cdf21808762970b356891db180a9dd9850e7baf2a79ff3ab8a2fc');
         $this->naclEngine = $this->createModernEngine('4e1c44f87b4cdf21808762970b356891db180a9dd9850e7baf2a79ff3ab8a2fc');
@@ -67,7 +69,7 @@ class EncryptedMultiRowsTest extends TestCase
         $this->boringRandom = $this->createBoringEngine();
     }
 
-    public function testFlatInherits()
+    public function testFlatInherits(): void
     {
         $engines = [$this->fipsEngine, $this->fipsRandom, $this->naclEngine, $this->naclRandom];
         foreach ($engines as $engine) {
@@ -84,7 +86,7 @@ class EncryptedMultiRowsTest extends TestCase
         }
     }
 
-    public function testEncryptedMultiRowsSetup()
+    public function testEncryptedMultiRowsSetup(): void
     {
         $engines = [$this->fipsEngine, $this->fipsRandom, $this->naclEngine, $this->naclRandom];
         foreach ($engines as $engine) {
@@ -112,9 +114,12 @@ class EncryptedMultiRowsTest extends TestCase
     }
 
     /**
+     * @param ?CipherSweet $engine
      * @return EncryptedMultiRows
+     * @throws CipherSweetException
+     * @throws JsonMapException
      */
-    public function getMultiRows($engine = null)
+    public function getMultiRows(?CipherSweet $engine = null): EncryptedMultiRows
     {
         if (empty($engine)) {
             $engine = $this->fipsEngine;
@@ -148,13 +153,15 @@ class EncryptedMultiRowsTest extends TestCase
      * @throws CipherSweetException
      * @throws SodiumException
      */
-    public function testUsage()
+    public function testUsage(): void
     {
         $mr = $this->getMultiRows();
         $rows = $this->getDummyPlaintext();
 
         $mr->setTypedIndexes(true);
         list($outRow, $indexes) = $mr->prepareForStorage($rows);
+        $again = $mr->getBlindIndexesForTable('foo', $rows['foo']);
+        $this->assertSame($again, $indexes['foo']);
         $decrypted = $mr->decryptManyRows($outRow);
         $this->assertIsNotArray($outRow['foo']['column4'], 'column4 not encrypted');
         $this->assertNotSame($outRow, $decrypted, 'prepareForStorage() encryption');
@@ -186,18 +193,18 @@ class EncryptedMultiRowsTest extends TestCase
         try {
             $mr->decryptManyRows($outRow2);
             $this->fail('AAD stripping was permitted');
-        } catch (\Exception $ex) {
+        } catch (Exception $ex) {
             $this->assertInstanceOf(InvalidCiphertextException::class, $ex);
         }
         try {
             $mr2->decryptManyRows($outRow);
             $this->fail('AAD stripping was permitted');
-        } catch (\Exception $ex) {
+        } catch (Exception $ex) {
             $this->assertInstanceOf(InvalidCiphertextException::class, $ex);
         }
     }
 
-    private function getDummyPlaintext()
+    private function getDummyPlaintext(): array
     {
         return [
             'foo' => [
@@ -229,7 +236,7 @@ class EncryptedMultiRowsTest extends TestCase
      * @throws CipherSweetException
      * @throws SodiumException
      */
-    public function testXAllEngines(CipherSweet $engine = null)
+    public function testXAllEngines(CipherSweet $engine = null): void
     {
         $mr = $this->getMultiRows($engine);
         $rows = $this->getDummyPlaintext();
@@ -257,18 +264,18 @@ class EncryptedMultiRowsTest extends TestCase
         try {
             $mr->decryptManyRows($outRow2);
             $this->fail('AAD stripping was permitted');
-        } catch (\Exception $ex) {
+        } catch (Exception $ex) {
             $this->assertInstanceOf(InvalidCiphertextException::class, $ex);
         }
         try {
             $mr2->decryptManyRows($outRow);
             $this->fail('AAD stripping was permitted');
-        } catch (\Exception $ex) {
+        } catch (Exception $ex) {
             $this->assertInstanceOf(InvalidCiphertextException::class, $ex);
         }
     }
 
-    public function engineProvider()
+    public function engineProvider(): array
     {
         if (!isset($this->fipsEngine)) {
             $this->before();
@@ -336,6 +343,92 @@ class EncryptedMultiRowsTest extends TestCase
         $null['foo']['testing'] = null;
         $encrypted = $eR->encryptManyRows($null);
         $this->assertNotSame($null, $encrypted);
+    }
 
+    /**
+     * @dataProvider engineProvider
+     */
+    public function testAutoBind(CipherSweet $engine): void
+    {
+        $eR = (new EncryptedMultiRows($engine))
+            ->setAutoBindContext(true)
+            ->setPrimaryKeyColumnName('users', 'user_id')
+            ->addTextField('users', 'first_name', 'tenant_id')
+            ->addTextField('users', 'last_name', 'tenant_id')
+            ->addOptionalIntegerField('users', 'salary')
+            ->addFloatField('payments', 'amount')
+            ->addOptionalJsonField('payments', 'metadata', (new JsonFieldMap()));
+
+        $eR->createCompoundIndex(
+            'users',
+            'users_full_name',
+            ['first_name', 'last_name'],
+            16
+        );
+        $eR->createFastCompoundIndex(
+            'users',
+            'users_full_name_salary',
+            ['first_name', 'last_name', 'salary'],
+            16
+        );
+
+        $encrypted = $eR->encryptManyRows(['users' => [
+            'user_id' => 12345,
+            'tenant_id' => 'local_library_34120',
+            'first_name' => 'Samuel',
+            'last_name' => 'Clemens',
+            'salary' => 55000
+        ]]);
+        $table = $eR->getEncryptedRowObjectForTable('users');
+
+        $decrypted = $eR->decryptManyRows($encrypted);
+        $this->assertSame($decrypted['users']['first_name'], 'Samuel');
+        $this->assertSame($decrypted['users']['salary'], 55000);
+
+        // Verify we cannot swap them and still decrypt
+        try {
+            $badColumns = $encrypted;
+            [
+                $badColumns['users']['last_name'],
+                $badColumns['users']['first_name']
+            ] = [
+                $encrypted['users']['first_name'],
+                $encrypted['users']['last_name']
+            ];
+            $eR->decryptManyRows($badColumns);
+            $this->fail('Confused deputy attack is possible');
+        } catch (InvalidCiphertextException|SodiumException) {
+        }
+
+        // Drop the primary key
+        try {
+            $eR->encryptManyRows(['users' => [
+                // 'user_id' => 12345,
+                'tenant_id' => 'local_library_34120',
+                'first_name' => 'Samuel',
+                'last_name' => 'Clemens',
+                'salary' => 55000
+            ]]);
+            $this->fail('Primary key binding requires primary key to be defined');
+        } catch (CipherSweetException) {
+        }
+
+        // Drop the AAD column: tenant_id
+        try {
+            $badColumns = $encrypted;
+            unset($badColumns['users']['tenant_id']);
+            $eR->decryptManyRows($badColumns);
+            $this->fail('AAD column is necessary to decrypt');
+        } catch (CipherSweetException|SodiumException) {
+        }
+
+        // Alter the AAD column: tenant_id
+        try {
+            $badColumns = $encrypted;
+            $badColumns['users']['tenant_id'] = 'wromg value lol';
+            $eR->decryptManyRows($badColumns);
+            $this->fail('Incorrect AAD column accepted');
+        } catch (CipherSweetException|SodiumException) {
+        }
     }
 }

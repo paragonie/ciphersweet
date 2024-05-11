@@ -2,6 +2,7 @@
 declare(strict_types=1);
 namespace ParagonIE\CipherSweet\Backend;
 
+use ParagonIE\CipherSweet\AAD;
 use ParagonIE\CipherSweet\Backend\Key\SymmetricKey;
 use ParagonIE\CipherSweet\Constants;
 use ParagonIE\CipherSweet\Contract\{
@@ -302,6 +303,7 @@ class BoringCrypto implements BackendInterface, MultiTenantSafeBackendInterface
      * @param resource $outputFP
      * @param SymmetricKey $key
      * @param int $chunkSize
+     * @param ?AAD $aad
      * @return bool
      *
      * @throws CryptoOperationException
@@ -311,7 +313,8 @@ class BoringCrypto implements BackendInterface, MultiTenantSafeBackendInterface
         $inputFP,
         $outputFP,
         SymmetricKey $key,
-        int $chunkSize = 8192
+        int $chunkSize = 8192,
+        ?AAD $aad = null
     ): bool {
         \fseek($inputFP, 0, SEEK_SET);
         \fseek($outputFP, 0, SEEK_SET);
@@ -339,6 +342,13 @@ class BoringCrypto implements BackendInterface, MultiTenantSafeBackendInterface
             self::MAC_SIZE
         );
         SodiumCompat::crypto_generichash_update($b2mac, (string) (static::MAGIC_HEADER) . $salt . $nonce);
+        // Include optional AAD
+        if ($aad) {
+            $aadCanon = $aad->canonicalize();
+            $adlen += Binary::safeStrlen($aadCanon);
+            SodiumCompat::crypto_generichash_update($b2mac, $aadCanon);
+            unset($aadCanon);
+        }
         $pos = \ftell($inputFP);
         $chunkMacKey = $this->getIntegrityKey($this->getIntegrityKey($key))->getRawKey();
 
@@ -401,6 +411,7 @@ class BoringCrypto implements BackendInterface, MultiTenantSafeBackendInterface
      * @param SymmetricKey $key
      * @param int $chunkSize
      * @param string $salt
+     * @param ?AAD $aad
      * @return bool
      *
      * @throws CryptoOperationException
@@ -411,7 +422,8 @@ class BoringCrypto implements BackendInterface, MultiTenantSafeBackendInterface
         $outputFP,
         SymmetricKey $key,
         int $chunkSize = 8192,
-        string $salt = Constants::DUMMY_SALT
+        string $salt = Constants::DUMMY_SALT,
+        ?AAD $aad = null
     ): bool {
         \fseek($inputFP, 0, SEEK_SET);
         \fseek($outputFP, 0, SEEK_SET);
@@ -440,6 +452,13 @@ class BoringCrypto implements BackendInterface, MultiTenantSafeBackendInterface
             self::MAC_SIZE
         );
         SodiumCompat::crypto_generichash_update($b2mac, (string) (static::MAGIC_HEADER) . $salt . $nonce);
+        // Include optional AAD
+        if ($aad) {
+            $aadCanon = $aad->canonicalize();
+            $adlen += Binary::safeStrlen($aadCanon);
+            SodiumCompat::crypto_generichash_update($b2mac, $aadCanon);
+            unset($aadCanon);
+        }
 
         $ctr = 1;
         $ctrIncrease = ($chunkSize + 63) >> 6;

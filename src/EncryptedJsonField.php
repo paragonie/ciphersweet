@@ -137,7 +137,7 @@ class EncryptedJsonField
     /**
      * @throws CipherSweetException
      */
-    public function decryptJson(string $encoded, string $aad = ''): array
+    public function decryptJson(string $encoded, string|AAD $aad = ''): array
     {
         $field = \json_decode($encoded, true);
         if (!\is_array($field)) {
@@ -169,7 +169,7 @@ class EncryptedJsonField
      * @throws CipherSweetException
      * @throws SodiumException
      */
-    public function encryptJson(array $field, string $aad = ''): string
+    public function encryptJson(array $field, string|AAD $aad = ''): string
     {
         /**
          * @var array{flat: string, path: array, type: string} $mapped
@@ -214,7 +214,7 @@ class EncryptedJsonField
      * @param array<array-key, mixed|array> &$field
      * @param array<array-key, int|string> $path
      * @param string $type
-     * @param string $aad
+     * @param string|AAD $aad
      * @return void
      *
      * @throws CipherSweetException
@@ -226,7 +226,7 @@ class EncryptedJsonField
         array &$field,
         array $path,
         string $type,
-        string $aad = ''
+        string|AAD $aad = ''
     ): void {
         // Walk down the path
         $curr = &$field;
@@ -243,7 +243,7 @@ class EncryptedJsonField
         if (\is_null($curr)) {
             return;
         }
-        $decrypted = $this->backend->decrypt($curr, $derivedKey, $aad);
+        $decrypted = $this->backend->decrypt($curr, $derivedKey, AAD::literal($aad)->canonicalize());
         $curr = $this->convertFromString($decrypted, $type);
     }
 
@@ -252,7 +252,7 @@ class EncryptedJsonField
      * @param array<array-key, mixed|array> &$field
      * @param array<array-key, int|string> $path
      * @param string $type
-     * @param string $aad
+     * @param string|AAD $aad
      * @return void
      *
      * @throws CipherSweetException
@@ -264,7 +264,7 @@ class EncryptedJsonField
         array &$field,
         array $path,
         string $type,
-        string $aad = ''
+        string|AAD $aad = ''
     ): void {
         // Walk down the path
         $curr = &$field;
@@ -285,7 +285,7 @@ class EncryptedJsonField
         $curr = $this->backend->encrypt(
             $this->convertToString($curr, $type),
             $derivedKey,
-            $aad
+            AAD::literal($aad)->canonicalize()
         );
     }
 
