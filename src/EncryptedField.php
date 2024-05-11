@@ -108,7 +108,7 @@ class EncryptedField
         #[\SensitiveParameter]
         string $plaintext,
         #[\SensitiveParameter]
-        string $aad = ''
+        string|AAD $aad = ''
     ): array {
         return [
             $this->encryptValue($plaintext, $aad),
@@ -120,14 +120,14 @@ class EncryptedField
      * Encrypt a single value, using the per-field symmetric key.
      *
      * @param string $plaintext
-     * @param string $aad       Additional authenticated data
+     * @param string|AAD $aad   Additional authenticated data
      * @return string
      */
     public function encryptValue(
         #[\SensitiveParameter]
         string $plaintext,
         #[\SensitiveParameter]
-        string $aad = ''
+        string|AAD $aad = ''
     ): string {
         return $this
             ->engine
@@ -135,7 +135,7 @@ class EncryptedField
             ->encrypt(
                 $plaintext,
                 $this->key,
-                $aad
+                AAD::literal($aad)->canonicalize()
             );
     }
 
@@ -146,7 +146,7 @@ class EncryptedField
         #[\SensitiveParameter]
         string $ciphertext,
         #[\SensitiveParameter]
-        string $aad = ''
+        string|AAD $aad = ''
     ): string {
         return $this
             ->engine
@@ -154,7 +154,7 @@ class EncryptedField
             ->decrypt(
                 $ciphertext,
                 $this->key,
-                $aad
+                AAD::literal($aad)->canonicalize()
             );
     }
 

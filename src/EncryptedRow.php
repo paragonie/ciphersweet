@@ -10,6 +10,7 @@ use ParagonIE\CipherSweet\Exception\{
     CipherSweetException,
     CryptoOperationException,
     EmptyFieldException,
+    InvalidAADException,
     InvalidCiphertextException
 };
 use ParagonIE\ConstantTime\Hex;
@@ -50,7 +51,7 @@ class EncryptedRow
     protected array $jsonStrict = [];
 
     /**
-     * @var array<string, string> $aadSourceField
+     * @var array<string, AAD> $aadSourceField
      */
     protected array $aadSourceField = [];
 
@@ -80,21 +81,29 @@ class EncryptedRow
     protected string $tableName;
 
     /**
+     * @var ?string $primaryKeyColumnName
+     */
+    protected ?string $primaryKeyColumnName;
+
+    /**
      * EncryptedFieldSet constructor.
      *
      * @param CipherSweet $engine
      * @param string $tableName
      * @param bool $useTypedIndexes
+     * @param ?string $primaryKeyColumnName
      */
     public function __construct(
         CipherSweet $engine,
         #[\SensitiveParameter]
         string $tableName,
-        bool $useTypedIndexes = false
+        bool $useTypedIndexes = false,
+        ?string $primaryKeyColumnName = null
     ) {
         $this->engine = $engine;
         $this->tableName = $tableName;
         $this->typedIndexes = $useTypedIndexes;
+        $this->primaryKeyColumnName = $primaryKeyColumnName;
     }
 
     /**
@@ -102,17 +111,25 @@ class EncryptedRow
      *
      * @param string $fieldName
      * @param string $type
-     * @param string $aadSource Field name to source AAD from
+     * @param string|AAD $aadSource Field name to source AAD from
      * @return static
      */
     public function addField(
         string $fieldName,
         string $type = Constants::TYPE_TEXT,
-        string $aadSource = ''
+        string|AAD $aadSource = '',
+        bool $autoBindContext = false
     ): static {
         $this->fieldsToEncrypt[$fieldName] = $type;
-        if ($aadSource) {
-            $this->aadSourceField[$fieldName] = $aadSource;
+        // If we set a primary key column name, we bind it to that field's value:
+        if ($autoBindContext) {
+            if (!is_null($this->primaryKeyColumnName)) {
+                $aadSource = AAD::field($aadSource)
+                    ->merge(AAD::field($this->primaryKeyColumnName));
+            }
+            $this->aadSourceField[$fieldName] = AAD::field($aadSource);
+        } elseif ($aadSource) {
+            $this->aadSourceField[$fieldName] = AAD::field($aadSource);
         }
         return $this;
     }
@@ -121,10 +138,10 @@ class EncryptedRow
      * Define a boolean field that will be encrypted. Nullable.
      *
      * @param string $fieldName
-     * @param string $aadSource Field name to source AAD from
+     * @param string|AAD $aadSource Field name to source AAD from
      * @return static
      */
-    public function addBooleanField(string $fieldName, string $aadSource = ''): static
+    public function addBooleanField(string $fieldName, string|AAD $aadSource = ''): static
     {
         return $this->addField($fieldName, Constants::TYPE_BOOLEAN, $aadSource);
     }
@@ -133,10 +150,10 @@ class EncryptedRow
      * Define a floating point number (decimal) field that will be encrypted.
      *
      * @param string $fieldName
-     * @param string $aadSource Field name to source AAD from
+     * @param string|AAD $aadSource Field name to source AAD from
      * @return static
      */
-    public function addFloatField(string $fieldName, string $aadSource = ''): static
+    public function addFloatField(string $fieldName, string|AAD $aadSource = ''): static
     {
         return $this->addField($fieldName, Constants::TYPE_FLOAT, $aadSource);
     }
@@ -145,10 +162,10 @@ class EncryptedRow
      * Define an integer field that will be encrypted.
      *
      * @param string $fieldName
-     * @param string $aadSource Field name to source AAD from
+     * @param string|AAD $aadSource Field name to source AAD from
      * @return static
      */
-    public function addIntegerField(string $fieldName, string $aadSource = ''): static
+    public function addIntegerField(string $fieldName, string|AAD $aadSource = ''): static
     {
         return $this->addField($fieldName, Constants::TYPE_INT, $aadSource);
     }
@@ -157,10 +174,10 @@ class EncryptedRow
      * Define a boolean field that will be encrypted. Permits NULL.
      *
      * @param string $fieldName
-     * @param string $aadSource Field name to source AAD from
+     * @param string|AAD $aadSource Field name to source AAD from
      * @return static
      */
-    public function addOptionalBooleanField(string $fieldName, string $aadSource = ''): static
+    public function addOptionalBooleanField(string $fieldName, string|AAD $aadSource = ''): static
     {
         return $this->addField($fieldName, Constants::TYPE_OPTIONAL_BOOLEAN, $aadSource);
     }
@@ -169,10 +186,10 @@ class EncryptedRow
      * Define a floating point number (decimal) field that will be encrypted. Permits NULL.
      *
      * @param string $fieldName
-     * @param string $aadSource Field name to source AAD from
+     * @param string|AAD $aadSource Field name to source AAD from
      * @return static
      */
-    public function addOptionalFloatField(string $fieldName, string $aadSource = ''): static
+    public function addOptionalFloatField(string $fieldName, string|AAD $aadSource = ''): static
     {
         return $this->addField($fieldName, Constants::TYPE_OPTIONAL_FLOAT, $aadSource);
     }
@@ -181,10 +198,10 @@ class EncryptedRow
      * Define an integer field that will be encrypted. Permits NULL.
      *
      * @param string $fieldName
-     * @param string $aadSource Field name to source AAD from
+     * @param string|AAD $aadSource Field name to source AAD from
      * @return static
      */
-    public function addOptionalIntegerField(string $fieldName, string $aadSource = ''): static
+    public function addOptionalIntegerField(string $fieldName, string|AAD $aadSource = ''): static
     {
         return $this->addField($fieldName, Constants::TYPE_OPTIONAL_INT, $aadSource);
     }
@@ -193,10 +210,10 @@ class EncryptedRow
      * Define an integer field that will be encrypted. Permits NULL.
      *
      * @param string $fieldName
-     * @param string $aadSource Field name to source AAD from
+     * @param string|AAD $aadSource Field name to source AAD from
      * @return static
      */
-    public function addOptionalTextField(string $fieldName, string $aadSource = ''): static
+    public function addOptionalTextField(string $fieldName, string|AAD $aadSource = ''): static
     {
         return $this->addField($fieldName, Constants::TYPE_OPTIONAL_TEXT, $aadSource);
     }
@@ -206,14 +223,14 @@ class EncryptedRow
      *
      * @param string $fieldName
      * @param JsonFieldMap $fieldMap
-     * @param string $aadSource Field name to source AAD from
+     * @param string|AAD $aadSource Field name to source AAD from
      * @param bool $strict
      * @return static
      */
     public function addNullableJsonField(
         string $fieldName,
         JsonFieldMap $fieldMap,
-        string $aadSource = '',
+        string|AAD $aadSource = '',
         bool $strict = true
     ): static {
         $this->jsonMaps[$fieldName] = $fieldMap;
@@ -226,14 +243,14 @@ class EncryptedRow
      *
      * @param string $fieldName
      * @param JsonFieldMap $fieldMap
-     * @param string $aadSource Field name to source AAD from
+     * @param string|AAD $aadSource Field name to source AAD from
      * @param bool $strict
      * @return static
      */
     public function addJsonField(
         string $fieldName,
         JsonFieldMap $fieldMap,
-        string $aadSource = '',
+        string|AAD $aadSource = '',
         bool $strict = true
     ): static {
         $this->jsonMaps[$fieldName] = $fieldMap;
@@ -245,10 +262,10 @@ class EncryptedRow
      * Define a text field that will be encrypted.
      *
      * @param string $fieldName
-     * @param string $aadSource Field name to source AAD from
+     * @param string|AAD $aadSource Field name to source AAD from
      * @return static
      */
-    public function addTextField(string $fieldName, string $aadSource = ''): static
+    public function addTextField(string $fieldName, string|AAD $aadSource = ''): static
     {
         return $this->addField($fieldName, Constants::TYPE_TEXT, $aadSource);
     }
@@ -500,6 +517,7 @@ class EncryptedRow
         #[\SensitiveParameter]
         array $row
     ): array {
+        $this->throwIfPrimaryKeyMisconfigured($row);
         /** @var array<string, string|int|float|bool|null|scalar[]> $return */
         $return = $row;
         $backend = $this->engine->getBackend();
@@ -532,16 +550,7 @@ class EncryptedRow
                 }
                 throw new TypeError('Invalid type for ' . $field);
             }
-            if (
-                !empty($this->aadSourceField[$field])
-                    &&
-                \array_key_exists($this->aadSourceField[$field], $row)
-            ) {
-                $aad = $this->coaxAadToString($row[$this->aadSourceField[$field]]);
-            } else {
-                $aad = '';
-            }
-
+            $aad = $this->canonicalizeAADForField($field, $row);
             if (in_array($type, Constants::TYPES_JSON, true) && !empty($this->jsonMaps[$field])) {
                 // JSON is a special case
                 $jsonEncryptor = new EncryptedJsonField(
@@ -577,6 +586,7 @@ class EncryptedRow
         #[\SensitiveParameter]
         array $row
     ): array {
+        $this->throwIfPrimaryKeyMisconfigured($row);
         /** @var array<string, string|int|float|bool|null|scalar[]> $return */
         $return = $row;
         $backend = $this->engine->getBackend();
@@ -592,15 +602,7 @@ class EncryptedRow
                 $this->tableName,
                 $field
             );
-            if (
-                !empty($this->aadSourceField[$field])
-                    &&
-                array_key_exists($this->aadSourceField[$field], $row)
-            ) {
-                $aad = $this->coaxAadToString($row[$this->aadSourceField[$field]]);
-            } else {
-                $aad = '';
-            }
+            $aad = $this->canonicalizeAADForField($field, $row);
             if (in_array($type, Constants::TYPES_JSON, true) && !empty($this->jsonMaps[$field])) {
                 // JSON is a special case
                 $jsonEncryptor = new EncryptedJsonField(
@@ -688,12 +690,12 @@ class EncryptedRow
      * column.
      *
      * @param string $fieldName
-     * @param string $aadSource
+     * @param string|AAD $aadSource
      * @return static
      */
-    public function setAadSourceField(string $fieldName, string $aadSource): static
+    public function setAadSourceField(string $fieldName, string|AAD $aadSource): static
     {
-        $this->aadSourceField[$fieldName] = $aadSource;
+        $this->aadSourceField[$fieldName] = AAD::field($aadSource);
         return $this;
     }
 
@@ -914,6 +916,24 @@ class EncryptedRow
     }
 
     /**
+     * Get the AAD source for a given field.
+     *
+     * Returns an AAD object or the column name.
+     *
+     * @param string $fieldName
+     * @return AAD|string
+     *
+     * @throws CipherSweetException
+     */
+    public function getAADSource(string $fieldName): AAD|string
+    {
+        if (!array_key_exists($fieldName, $this->aadSourceField)) {
+            throw new CipherSweetException('Source field not found for field: ' . $fieldName);
+        }
+        return $this->aadSourceField[$fieldName];
+    }
+
+    /**
      * @return BackendInterface
      */
     public function getBackend(): BackendInterface
@@ -966,6 +986,16 @@ class EncryptedRow
     }
 
     /**
+     * @param ?string $columnName
+     * @return self
+     */
+    public function setPrimaryKeyColumnName(?string $columnName = null): self
+    {
+        $this->primaryKeyColumnName = $columnName;
+        return $this;
+    }
+
+    /**
      * @return bool
      */
     public function getTypedIndexes(): bool
@@ -1003,22 +1033,6 @@ class EncryptedRow
             return json_decode($input, true);
         }
         throw new TypeError("Cannot coax to array: " . gettype($input));
-    }
-
-    /**
-     * @param mixed $input
-     * @return string
-     */
-    protected function coaxAadToString(mixed $input): string
-    {
-        if (is_string($input)) {
-            return $input;
-        }
-        if (is_numeric($input)) {
-            return '' . $input;
-        }
-        /** psalm-suppress PossiblyInvalidCast */
-        return (string) $input;
     }
 
     /**
@@ -1064,5 +1078,59 @@ class EncryptedRow
             'Received a NULL value for ' . $field . ', which has a non-optional type. ' .
             'To fix this, try changing the type declaration from ' . $oldConst . ' to ' . $newConst . '.'
         );
+    }
+
+    /**
+     * Canonicalize the AAD as a string OR return an empty string.
+     *
+     * @param string $field
+     * @param array $row
+     * @return string
+     * @throws InvalidAADException
+     */
+    protected function canonicalizeAADForField(string $field, array $row): string
+    {
+        if (empty($this->aadSourceField[$field])) {
+            return '';
+        }
+        if (is_string($this->aadSourceField[$field])) {
+            return $this->aadSourceField[$field];;
+        }
+        if (array_intersect(
+            array_keys($this->fieldsToEncrypt),
+            $this->aadSourceField[$field]->getFieldNames()
+        )) {
+            throw new InvalidAADException('Cannot use encrypted field as AAD - field: ' . $field);
+        }
+        return $this->aadSourceField[$field]->canonicalize($row);
+    }
+
+    /**
+     * This method throws an exception if the object is misconfigured in a way that would
+     * allow accidental loss of data.
+     *
+     * i.e. You cannot encrypt the primary key and still bind other fields to it
+     * Additionally, you cannot bind other fields to it, if you didn't set it.
+     *
+     * @throws CipherSweetException
+     */
+    protected function throwIfPrimaryKeyMisconfigured(
+        #[\SensitiveParameter]
+        array $row
+    ): void {
+        if (is_null($this->primaryKeyColumnName)) {
+            // Nothing to do here!
+            return;
+        }
+        if (!array_key_exists($this->primaryKeyColumnName, $row)) {
+            throw new CipherSweetException(
+                'EncryptedRow is configured with a primary key name, so it must be pre-populated on inserts'
+            );
+        }
+        if (in_array($this->primaryKeyColumnName, $this->fieldsToEncrypt, true)) {
+            throw new CipherSweetException(
+                'Primary key must bot be encrypted'
+            );
+        }
     }
 }

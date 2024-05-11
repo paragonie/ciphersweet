@@ -2,6 +2,7 @@
 declare(strict_types=1);
 namespace ParagonIE\CipherSweet\Backend;
 
+use ParagonIE\CipherSweet\AAD;
 use ParagonIE\CipherSweet\Constants;
 use ParagonIE\CipherSweet\Backend\Key\SymmetricKey;
 use ParagonIE\CipherSweet\Contract\{
@@ -22,10 +23,13 @@ use ParagonIE\ConstantTime\{
 /**
  * Class FIPSCrypto
  *
- * This only uses algorithms supported by FIPS-140-2.
+ * This only uses algorithms supported by FIPS 140-3.
+ *
+ * If you use a FIPS module with OpenSSL, we expect this backend to work.
+ * If it doesn't, that is a bug.
  *
  * Please consult your FIPS compliance auditor before you claim that your use
- * of this library is FIPS 140-2 compliant.
+ * of this library is FIPS 140-3 compliant.
  *
  * @ref https://csrc.nist.gov/CSRC/media//Publications/fips/140/2/final/documents/fips1402annexa.pdf
  * @ref https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-38a.pdf
@@ -315,6 +319,7 @@ class FIPSCrypto implements BackendInterface, MultiTenantSafeBackendInterface
      * @param resource $outputFP
      * @param SymmetricKey $key
      * @param int $chunkSize
+     * @param ?AAD $aad
      * @return bool
      *
      * @throws CryptoOperationException
@@ -324,7 +329,8 @@ class FIPSCrypto implements BackendInterface, MultiTenantSafeBackendInterface
         $inputFP,
         $outputFP,
         SymmetricKey $key,
-        int $chunkSize = 8192
+        int $chunkSize = 8192,
+        ?AAD $aad = null
     ): bool {
         \fseek($inputFP, 0, SEEK_SET);
         \fseek($outputFP, 0, SEEK_SET);
@@ -349,6 +355,12 @@ class FIPSCrypto implements BackendInterface, MultiTenantSafeBackendInterface
         \hash_update($hmac, $salt);
         \hash_update($hmac, $hkdfSalt);
         \hash_update($hmac, $ctrNonce);
+        // Include optional AAD
+        if ($aad) {
+            $aadCanon = $aad->canonicalize();
+            \hash_update($hmac, $aadCanon);
+            unset($aadCanon);
+        }
 
         $pos = \ftell($inputFP);
         // MAC each chunk in memory to defend against race conditions
@@ -404,6 +416,7 @@ class FIPSCrypto implements BackendInterface, MultiTenantSafeBackendInterface
      * @param SymmetricKey $key
      * @param int $chunkSize
      * @param string $salt
+     * @param ?AAD $aad
      * @return bool
      *
      * @throws CryptoOperationException
@@ -413,7 +426,8 @@ class FIPSCrypto implements BackendInterface, MultiTenantSafeBackendInterface
         $outputFP,
         SymmetricKey $key,
         int $chunkSize = 8192,
-        string $salt = Constants::DUMMY_SALT
+        string $salt = Constants::DUMMY_SALT,
+        ?AAD $aad = null
     ): bool {
         \fseek($inputFP, 0, SEEK_SET);
         \fseek($outputFP, 0, SEEK_SET);
@@ -439,6 +453,13 @@ class FIPSCrypto implements BackendInterface, MultiTenantSafeBackendInterface
         \hash_update($hmac, $salt);
         \hash_update($hmac, $hkdfSalt);
         \hash_update($hmac, $ctrNonce);
+
+        // Include optional AAD
+        if ($aad) {
+            $aadCanon = $aad->canonicalize();
+            \hash_update($hmac, $aadCanon);
+            unset($aadCanon);
+        }
 
         // We want to increase our CTR value by the number of blocks we used previously
         $ctrIncrease = ($chunkSize + 15) >> 4;

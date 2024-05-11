@@ -2,6 +2,7 @@
 declare(strict_types=1);
 namespace ParagonIE\CipherSweet\Backend;
 
+use ParagonIE\CipherSweet\AAD;
 use ParagonIE\CipherSweet\Backend\Key\SymmetricKey;
 use ParagonIE\CipherSweet\Constants;
 use ParagonIE\CipherSweet\Contract\BackendInterface;
@@ -256,6 +257,7 @@ class ModernCrypto implements BackendInterface
      * @param resource $outputFP
      * @param SymmetricKey $key
      * @param int $chunkSize
+     * @param ?AAD $aad
      * @return bool
      *
      * @throws CryptoOperationException
@@ -265,7 +267,8 @@ class ModernCrypto implements BackendInterface
         $inputFP,
         $outputFP,
         SymmetricKey $key,
-        int $chunkSize = 8192
+        int $chunkSize = 8192,
+        ?AAD $aad = null
     ): bool {
         \fseek($inputFP, 0, SEEK_SET);
         \fseek($outputFP, 0, SEEK_SET);
@@ -298,6 +301,13 @@ class ModernCrypto implements BackendInterface
 
         // Update the Poly1305 authenticator with our metadata
         $poly1305->update((string) (static::MAGIC_HEADER) . $salt . $nonce);
+        // Include optional AAD
+        if ($aad) {
+            $aadCanon = $aad->canonicalize();
+            $adlen += Binary::safeStrlen($aadCanon);
+            $poly1305->update($aadCanon);
+            unset($aadCanon);
+        }
         $poly1305->update(str_repeat("\x00", ((0x10 - $adlen) & 0xf)));
 
         $pos = \ftell($inputFP);
@@ -363,6 +373,7 @@ class ModernCrypto implements BackendInterface
      * @param SymmetricKey $key
      * @param int $chunkSize
      * @param string $salt
+     * @param ?AAD $aad
      * @return bool
      *
      * @throws CryptoOperationException
@@ -373,7 +384,8 @@ class ModernCrypto implements BackendInterface
         $outputFP,
         SymmetricKey $key,
         int $chunkSize = 8192,
-        string $salt = Constants::DUMMY_SALT
+        string $salt = Constants::DUMMY_SALT,
+        ?AAD $aad = null
     ): bool {
         \fseek($inputFP, 0, SEEK_SET);
         \fseek($outputFP, 0, SEEK_SET);
@@ -402,6 +414,13 @@ class ModernCrypto implements BackendInterface
 
         // Update the Poly1305 authenticator with our metadata
         $poly1305->update((string) (static::MAGIC_HEADER) . $salt . $nonce);
+        // Include optional AAD
+        if ($aad) {
+            $aadCanon = $aad->canonicalize();
+            $adlen += Binary::safeStrlen($aadCanon);
+            $poly1305->update($aadCanon);
+            unset($aadCanon);
+        }
         $poly1305->update(str_repeat("\x00", ((0x10 - $adlen) & 0xf)));
 
         // XChaCha20-Poly1305

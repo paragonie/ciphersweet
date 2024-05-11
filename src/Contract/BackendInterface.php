@@ -2,6 +2,7 @@
 declare(strict_types=1);
 namespace ParagonIE\CipherSweet\Contract;
 
+use ParagonIE\CipherSweet\AAD;
 use ParagonIE\CipherSweet\Backend\Key\SymmetricKey;
 use ParagonIE\CipherSweet\Constants;
 
@@ -79,7 +80,8 @@ interface BackendInterface
         $inputFP,
         $outputFP,
         SymmetricKey $key,
-        int $chunkSize = 8192
+        int $chunkSize = 8192,
+        ?AAD $aad = null
     ): bool;
 
     /**
@@ -95,7 +97,8 @@ interface BackendInterface
         $outputFP,
         SymmetricKey $key,
         int $chunkSize = 8192,
-        string $salt = Constants::DUMMY_SALT
+        string $salt = Constants::DUMMY_SALT,
+        ?AAD $aad = null
     ): bool;
 
     /**

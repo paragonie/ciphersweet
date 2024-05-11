@@ -1,7 +1,10 @@
 <?php
 namespace ParagonIE\CipherSweet\Tests;
 
+use ParagonIE\CipherSweet\AAD;
+use ParagonIE\CipherSweet\CipherSweet;
 use ParagonIE\CipherSweet\EncryptedFile;
+use ParagonIE\CipherSweet\Exception\CipherSweetException;
 use ParagonIE\CipherSweet\Exception\CryptoOperationException;
 use ParagonIE\CipherSweet\Exception\FilesystemException;
 use ParagonIE\ConstantTime\Binary;
@@ -305,6 +308,47 @@ class EncryptedFileTest extends TestCase
             Hex::encode(\stream_get_contents($input)),
             Hex::encode(\stream_get_contents($decrypted))
         );
+    }
+
+    public function encryptedFileProvider(): array
+    {
+        if (!$this->brng) {
+            $this->before();
+        }
+        return [
+            [$this->brng],
+            [$this->fips],
+            [$this->nacl],
+        ];
+    }
+
+    /**
+     * @dataProvider encryptedFileProvider
+     */
+    public function testEncryptedFileWithAAD(EncryptedFile $encFile): void
+    {
+        $message = "Paragon Initiative Enterprises\n" . \random_bytes(256);
+
+        $input = $encFile->getStreamForFile('php://temp');
+        \fwrite($input, $message);
+        $this->assertFalse($encFile->isStreamEncrypted($input));
+        $aad = AAD::literal('unit testing');
+
+        $output = $encFile->getStreamForFile('php://temp');
+        $encFile->encryptStream($input, $output, $aad);
+        $this->assertTrue($encFile->isStreamEncrypted($output));
+
+        $dummy1 = $encFile->getStreamForFile('php://temp');
+        $encFile->decryptStream($output, $dummy1, $aad);
+        $contents = stream_get_contents($dummy1);
+        $this->assertSame($message, $contents, 'Sanity check on encryption');
+
+        try {
+            $dummy2 = $encFile->getStreamForFile('php://temp');
+            $encFile->decryptStream($output, $dummy2);
+            $this->fail('Decryption with wrong AAD should fail!');
+        } catch (CipherSweetException|\SodiumException) {
+        }
     }
 
     /**
