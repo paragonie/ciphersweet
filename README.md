@@ -84,6 +84,8 @@ Security experts may be interested in [the security properties of our design](ht
 Please feel free to [create an issue](https://github.com/paragonie/ciphersweet/issues/new)
 if you'd like to integrate CipherSweet with your software.
 
+* [AWS KMS provider for CipherSweet](https://github.com/paragonie/ciphersweet-provider-aws-kms)
+
 ## CipherSweet in Other Languages
 
 * [JavaScript (Node.js)](https://github.com/paragonie/ciphersweet-js)
