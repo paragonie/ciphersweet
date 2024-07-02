@@ -75,6 +75,15 @@ class FieldIndexPlanner
         if ($this->population < 1) {
             throw new PlannerException('An empty population is not useful for estimates');
         }
+        /*
+         * It turns out, there's an interesting inflection point at P = 16, where log_2(P) = sqrt(P).
+         * Below this value, the max/min values you calculate are reversed. Rejecting any population
+         * below this point is the simplest fix, since small populations have smaller anonymity sets
+         * and are therefore less safe than larger populations. It's a win-win to do this.
+         */
+        if ($this->population < 16) {
+            throw new PlannerException('Populations less than 16 are too small to make recommendations on');
+        }
         $existing = \array_values($this->indexes);
         $recommend = ['min' => null, 'max' => null];
         $sqrtR = \sqrt($this->population);
