@@ -78,6 +78,15 @@ class FieldIndexPlannerTest extends TestCase
                 'Planner should throw an exception if it cannot offer safe recommendations.'
             );
         } catch (PlannerException $ex) {
+            $this->assertSame('Populations less than 16 are too small to make recommendations on', $ex->getMessage());
+        }
+        $planner->setEstimatedPopulation(16);
+        try {
+            $planner->recommend();
+            $this->fail(
+                'Planner should throw an exception if it cannot offer safe recommendations.'
+            );
+        } catch (PlannerException $ex) {
             $this->assertSame('There is no safe upper bound', $ex->getMessage());
         }
 
