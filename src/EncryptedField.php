@@ -266,7 +266,7 @@ class EncryptedField
         #[\SensitiveParameter]
         string $name,
         #[\SensitiveParameter]
-        SymmetricKey $key = null
+        ?SymmetricKey $key = null
     ): string {
         if (!isset($this->blindIndexes[$name])) {
             throw new BlindIndexNotFoundException(

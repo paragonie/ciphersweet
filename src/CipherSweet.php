@@ -36,7 +36,7 @@ final class CipherSweet
      */
     public function __construct(
         KeyProviderInterface $keyProvider,
-        BackendInterface $backend = null
+        ?BackendInterface $backend = null
     ) {
         $this->keyProvider = $keyProvider;
         $this->backend = $backend ?: new BoringCrypto();

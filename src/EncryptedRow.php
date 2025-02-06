@@ -814,7 +814,7 @@ class EncryptedRow
         array $row,
         string $column,
         BlindIndex $index,
-        SymmetricKey $key = null
+        ?SymmetricKey $key = null
     ): string {
         if (!$key) {
             $key = $this->engine->getBlindIndexRootKey(
@@ -879,7 +879,7 @@ class EncryptedRow
         #[\SensitiveParameter]
         array $row,
         CompoundIndex $index,
-        SymmetricKey $key = null
+        ?SymmetricKey $key = null
     ): string {
         if (!$key) {
             $key = $this->engine->getBlindIndexRootKey(

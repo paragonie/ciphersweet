@@ -236,7 +236,7 @@ class EncryptedMultiRowsTest extends TestCase
      * @throws CipherSweetException
      * @throws SodiumException
      */
-    public function testXAllEngines(CipherSweet $engine = null): void
+    public function testXAllEngines(?CipherSweet $engine = null): void
     {
         $mr = $this->getMultiRows($engine);
         $rows = $this->getDummyPlaintext();
