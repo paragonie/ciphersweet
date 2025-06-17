@@ -10,7 +10,8 @@ use ParagonIE\CipherSweet\Contract\{
     BackendInterface,
     KeyProviderInterface,
     MultiTenantAwareProviderInterface,
-    MultiTenantSafeBackendInterface
+    MultiTenantSafeBackendInterface,
+    StaticBlindIndexKeyProviderInterface
 };
 use ParagonIE\CipherSweet\Exception\{
     CipherSweetException,
@@ -81,12 +82,21 @@ final class CipherSweet
      *
      * Uses a 32 byte prefix for the HKDF "info" parameter, for domain
      * separation.
+     *
+     * @throws CipherSweetException
      */
     public function getBlindIndexRootKey(string $tableName, string $fieldName): SymmetricKey
     {
+        $key = $this->keyProvider->getSymmetricKey();
+        if ($this->keyProvider instanceof StaticBlindIndexKeyProviderInterface) {
+            $tenant = $this->keyProvider->getStaticBlindIndexTenant();
+            if (!is_null($tenant)) {
+                $key = $this->keyProvider->getTenant($tenant)->getSymmetricKey();
+            }
+        }
         return new SymmetricKey(
             Util::HKDF(
-                $this->keyProvider->getSymmetricKey(),
+                $key,
                 $tableName,
                 Constants::DS_BIDX . $fieldName
             )

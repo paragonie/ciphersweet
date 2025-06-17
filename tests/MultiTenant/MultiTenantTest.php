@@ -27,22 +27,37 @@ class MultiTenantTest extends TestCase
 {
     /** @var CipherSweet $csBoring */
     private $csBoring;
+    /** @var CipherSweet $csBoring2 */
+    private $csBoring2;
     /** @var CipherSweet $csFips */
     private $csFips;
+    /** @var CipherSweet $csFips2 */
+    private $csFips2;
 
     /**
      * @before
      */
     public function before()
     {
+        $foo = new StringProvider(random_bytes(32));
         $provider = new TestMultiTenantKeyProvider([
-            'foo' => new StringProvider(random_bytes(32)),
+            'foo' => $foo,
             'bar' => new StringProvider(random_bytes(32)),
             'baz' => new StringProvider(random_bytes(32)),
         ]);
         $provider->setActiveTenant('foo');
         $this->csBoring = new CipherSweet($provider, new BoringCrypto());
         $this->csFips = new CipherSweet($provider, new FIPSCrypto());
+
+        $provider2 = new SBKP([
+            'foo' => $foo,
+            'bar' => new StringProvider(random_bytes(32)),
+            'baz' => new StringProvider(random_bytes(32)),
+        ]);
+        $provider2->setStaticBlindIndexTenant('foo');
+
+        $this->csBoring2 = new CipherSweet($provider2, new BoringCrypto());
+        $this->csFips2 = new CipherSweet($provider2, new FIPSCrypto());
     }
 
     /**
@@ -286,6 +301,39 @@ class MultiTenantTest extends TestCase
                 $decryptFailed = true;
             }
             $this->assertTrue($decryptFailed, 'Swapping out tenant identifiers should fail decryption');
+        }
+    }
+
+    public function testStaticBlindIndexKey(): void
+    {
+        // These keys should differ
+        /** @var CipherSweet $cs */
+        foreach ([$this->csBoring, $this->csFips] as $cs) {
+            $cs->setActiveTenant('bar');
+            $k1 = $cs->getBlindIndexRootKey('a', 'b')->getRawKey();
+            $cs->setActiveTenant('baz');
+            $k2 = $cs->getBlindIndexRootKey('a', 'b')->getRawKey();
+            $this->assertNotSame($k1, $k2);
+        }
+
+        // These keys should be the same:
+        /** @var CipherSweet $cs */
+        foreach ([$this->csBoring2, $this->csFips2] as $cs) {
+            $cs->setActiveTenant('bar');
+            $k1 = $cs->getBlindIndexRootKey('a', 'b')->getRawKey();
+            $cs->setActiveTenant('baz');
+            $k2 = $cs->getBlindIndexRootKey('a', 'b')->getRawKey();
+            $this->assertSame($k1, $k2);
+        }
+
+        // These should all differ:
+
+        foreach ([$this->csBoring, $this->csFips, $this->csBoring2, $this->csFips2] as $cs) {
+            $cs->setActiveTenant('bar');
+            $k1 = $cs->getFieldSymmetricKey('a', 'b')->getRawKey();
+            $cs->setActiveTenant('baz');
+            $k2 = $cs->getFieldSymmetricKey('a', 'b')->getRawKey();
+            $this->assertNotSame($k1, $k2);
         }
     }
 }
