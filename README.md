@@ -91,10 +91,6 @@ if you'd like to integrate CipherSweet with your software.
 * [Eloquent ORM Adapter](https://github.com/paragonie/eloquent-ciphersweet) for **Laravel** developers
 * [Doctrine ORM Adapter](https://github.com/paragonie/doctrine-ciphersweet) for **Symfony** developers
 
-### Vendor-Specific Key Providers for CipherSweet
-
-* [AWS KMS Key Provider](https://github.com/paragonie/ciphersweet-provider-aws-kms)
-
 ## CipherSweet in Other Languages
 
 * [JavaScript (Node.js)](https://github.com/paragonie/ciphersweet-js)
