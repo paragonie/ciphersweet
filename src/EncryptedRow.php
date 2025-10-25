@@ -498,6 +498,26 @@ class EncryptedRow
     }
 
     /**
+     * Override this in inherited classes.
+     *
+     * @param array $row
+     * @param string $field
+     * @return SymmetricKey|null
+     * @throws CipherSweetException
+     * @throws CryptoOperationException
+     */
+    protected function getFieldSymmetricKey(array $row, string $field): ?SymmetricKey
+    {
+        if (!array_key_exists($field, $row)) {
+            return null;
+        }
+        return $this->engine->getFieldSymmetricKey(
+            $this->tableName,
+            $field
+        );
+    }
+
+    /**
      * Decrypt any of the appropriate fields in the given array.
      *
      * If any columns are defined in this object to be decrypted, the value
@@ -526,11 +546,8 @@ class EncryptedRow
             $this->engine->setActiveTenant($tenant);
         }
         foreach ($this->fieldsToEncrypt as $field => $type) {
-            $key = $this->engine->getFieldSymmetricKey(
-                $this->tableName,
-                $field
-            );
-            if (!array_key_exists($field, $row)) {
+            $key = $this->getFieldSymmetricKey($row, $field);
+            if (is_null($key)) {
                 if (!$this->permitEmpty) {
                     throw new EmptyFieldException('Field is not defined in row: ' . $field);
                 }
@@ -598,10 +615,10 @@ class EncryptedRow
                     ' on array, nothing given.'
                 );
             }
-            $key = $this->engine->getFieldSymmetricKey(
-                $this->tableName,
-                $field
-            );
+            $key = $this->getFieldSymmetricKey($row, $field);
+            if (is_null($key)) {
+                continue;
+            }
             $aad = $this->canonicalizeAADForField($field, $row);
             if (in_array($type, Constants::TYPES_JSON, true) && !empty($this->jsonMaps[$field])) {
                 // JSON is a special case
