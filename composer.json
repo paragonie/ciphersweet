@@ -47,5 +47,5 @@
   "scripts": {
     "static-analysis": "psalm --no-cache --no-suggestions",
     "test": "phpunit"
-  },
+  }
 }
