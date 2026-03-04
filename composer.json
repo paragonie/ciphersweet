@@ -41,7 +41,6 @@
     "paragonie/sodium_compat": "^1|^2"
   },
   "require-dev": {
-    "infection/infection": "^0",
     "phpunit/phpunit": "^9",
     "vimeo/psalm": "^6"
   },
@@ -49,9 +48,4 @@
     "static-analysis": "psalm --no-cache --no-suggestions",
     "test": "phpunit"
   },
-  "config": {
-    "allow-plugins": {
-      "infection/extension-installer": true
-    }
-  }
 }
