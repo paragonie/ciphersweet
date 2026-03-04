@@ -5,9 +5,6 @@ use ParagonIE\ConstantTime\Hex;
 use PHPUnit\Framework\TestCase;
 use ParagonIE\CipherSweet\AAD;
 
-/**
- * @covers AAD
- */
 class AADTest extends TestCase
 {
     public function testLegacyBehavior(): void

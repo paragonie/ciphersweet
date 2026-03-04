@@ -24,6 +24,8 @@ use ParagonIE\CipherSweet\Exception\{
 };
 use ParagonIE\CipherSweet\Transformation\LastFourDigits;
 use ParagonIE\ConstantTime\Binary;
+use PHPUnit\Framework\Attributes\BeforeClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use ParagonIE\CipherSweet\Tests\Transformation\FirstInitialLastName;
 use SodiumException;
@@ -70,6 +72,7 @@ class EncryptedRowTest extends TestCase
      * @before
      * @throws CryptoOperationException
      */
+    #[BeforeClass]
     public function before(): void
     {
         $this->fipsEngine = $this->createFipsEngine('4e1c44f87b4cdf21808762970b356891db180a9dd9850e7baf2a79ff3ab8a2fc');
@@ -83,6 +86,9 @@ class EncryptedRowTest extends TestCase
 
     public function testConstructor(): void
     {
+        if (empty($this->brngEngine)) {
+            $this->before();
+        }
         $encRow = new EncryptedRow($this->brngEngine, 'test', true);
         $this->assertTrue($encRow->getTypedIndexes(), 'Constructor argument not handled correctly');
         $this->assertFalse($encRow->getFlatIndexes(), 'Constructor argument not handled correctly');
@@ -99,6 +105,9 @@ class EncryptedRowTest extends TestCase
      */
     public function testSimpleEncrypt(): void
     {
+        if (empty($this->fipsRandom)) {
+            $this->before();
+        }
         $eF = (new EncryptedRow($this->fipsRandom, 'contacts'));
         $eM = (new EncryptedRow($this->naclRandom, 'contacts'));
         $eB = (new EncryptedRow($this->brngRandom, 'contacts'));
@@ -140,6 +149,9 @@ class EncryptedRowTest extends TestCase
      */
     public function testEncryptWithAAD(): void
     {
+        if (empty($this->fipsRandom)) {
+            $this->before();
+        }
         $eFwithout = (new EncryptedRow($this->fipsRandom, 'contacts'));
         $eMwithout = (new EncryptedRow($this->naclRandom, 'contacts'));
         $eFwithout->addTextField('message');
@@ -241,6 +253,9 @@ class EncryptedRowTest extends TestCase
      */
     public function testGetIndexFromPartialInfo(): void
     {
+        if (empty($this->fipsEngine)) {
+            $this->before();
+        }
         $row = [
             'ssn' => '123-45-6789',
             'hivstatus' => true
@@ -278,6 +293,9 @@ class EncryptedRowTest extends TestCase
      */
     public function testGetAllIndexes(): void
     {
+        if (empty($this->fipsEngine)) {
+            $this->before();
+        }
         $row = [
             'extraneous' => 'this is unecnrypted',
             'ssn' => '123-45-6789',
@@ -306,6 +324,9 @@ class EncryptedRowTest extends TestCase
      */
     public function testGetAllIndexesFlat(): void
     {
+        if (empty($this->fipsEngine)) {
+            $this->before();
+        }
         $row = [
             'extraneous' => 'this is unecnrypted',
             'ssn' => '123-45-6789',
@@ -336,6 +357,9 @@ class EncryptedRowTest extends TestCase
      */
     public function testEncrypt(): void
     {
+        if (empty($this->fipsRandom)) {
+            $this->before();
+        }
         $row = [
             'extraneous' => 'this is unecnrypted',
             'ssn' => '123-45-6789',
@@ -364,6 +388,7 @@ class EncryptedRowTest extends TestCase
      * @throws CipherSweetException
      * @throws SodiumException
      */
+    #[DataProvider("engineProvider")]
     public function testPrepareForStorage(CipherSweet $engine): void
     {
         $typed = $this->getExampleRow($engine, true);
@@ -464,6 +489,7 @@ class EncryptedRowTest extends TestCase
      * @throws BlindIndexNotFoundException
      * @throws SodiumException
      */
+    #[DataProvider("engineProvider")]
     public function testRowTransform(CipherSweet $engine): void
     {
         $row = (new EncryptedRow($engine, 'users'))
@@ -505,24 +531,30 @@ class EncryptedRowTest extends TestCase
         );
     }
 
-    public function engineProvider(): array
+    public static function engineProvider(): array
     {
-        if (!isset($this->fipsEngine)) {
-            $this->before();
-        }
+
+        $fipsEngine = self::createFipsEngine('4e1c44f87b4cdf21808762970b356891db180a9dd9850e7baf2a79ff3ab8a2fc');
+        $naclEngine = self::createBoringEngine('4e1c44f87b4cdf21808762970b356891db180a9dd9850e7baf2a79ff3ab8a2fc');
+        $boringEngine = self::createBoringEngine('4e1c44f87b4cdf21808762970b356891db180a9dd9850e7baf2a79ff3ab8a2fc');
+
+        $fipsRandom = self::createFipsEngine();
+        $naclRandom = self::createBoringEngine();
+        $boringRandom = self::createBoringEngine();
         return [
-            [$this->fipsEngine],
-            [$this->fipsRandom],
-            [$this->naclEngine],
-            [$this->naclRandom],
-            [$this->brngEngine],
-            [$this->brngRandom]
+            [$fipsEngine],
+            [$fipsRandom],
+            [$naclEngine],
+            [$naclRandom],
+            [$boringEngine],
+            [$boringRandom]
         ];
     }
 
     /**
      * @dataProvider engineProvider
      */
+    #[DataProvider("engineProvider")]
     public function testJsonField(CipherSweet $engine): void
     {
         $eR = new EncryptedRow($engine, 'foo');
@@ -549,6 +581,7 @@ class EncryptedRowTest extends TestCase
     /**
      * @dataProvider engineProvider
      */
+    #[DataProvider("engineProvider")]
     public function testFieldsAreNotSwappable(CipherSweet $engine): void
     {
         $eR = new EncryptedRow($engine, 'foo');
@@ -580,6 +613,7 @@ class EncryptedRowTest extends TestCase
     /**
      * @dataProvider engineProvider
      */
+    #[DataProvider("engineProvider")]
     public function tesOptionalFields(CipherSweet $engine): void
     {
         $eR = new EncryptedRow($engine, 'foo');
@@ -603,6 +637,7 @@ class EncryptedRowTest extends TestCase
     /**
      * @dataProvider engineProvider
      */
+    #[DataProvider("engineProvider")]
     public function testGuardrailAgainstUnrecoverableData(CipherSweet $engine): void
     {
         $row = (new EncryptedRow($engine, 'users'))
@@ -616,6 +651,7 @@ class EncryptedRowTest extends TestCase
     /**
      * @dataProvider engineProvider
      */
+    #[DataProvider("engineProvider")]
     public function testThrowsIfPrimaryKeyMisconfigured(CipherSweet $engine): void
     {
         $row = (new EncryptedRow($engine, 'users'))
@@ -631,6 +667,7 @@ class EncryptedRowTest extends TestCase
     /**
      * @dataProvider engineProvider
      */
+    #[DataProvider("engineProvider")]
     public function testAadIsPopulated(CipherSweet $engine): void
     {
         $eR = new EncryptedRow($engine, 'inventory');
@@ -645,6 +682,7 @@ class EncryptedRowTest extends TestCase
     /**
      * @dataProvider engineProvider
      */
+    #[DataProvider("engineProvider")]
     public function testOptionalFieldsMisconfigured(CipherSweet $engine): void
     {
         $eR = new EncryptedRow($engine, 'foo');
@@ -676,6 +714,7 @@ class EncryptedRowTest extends TestCase
     /**
      * @dataProvider engineProvider
      */
+    #[DataProvider("engineProvider")]
     public function testEncryptedRowWithEnums(CipherSweet $engine): void
     {
         $eR = new EncryptedRow($engine, 'foo');

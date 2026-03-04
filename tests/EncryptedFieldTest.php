@@ -13,6 +13,7 @@ use ParagonIE\CipherSweet\Exception\CryptoOperationException;
 use ParagonIE\CipherSweet\Exception\InvalidCiphertextException;
 use ParagonIE\CipherSweet\Transformation\LastFourDigits;
 use ParagonIE\ConstantTime\Binary;
+use PHPUnit\Framework\Attributes\BeforeClass;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -48,6 +49,7 @@ class EncryptedFieldTest extends TestCase
      * @throws ArrayKeyException
      * @throws CryptoOperationException
      */
+    #[BeforeClass]
     public function before()
     {
         $this->fipsEngine = $this->createFipsEngine('4e1c44f87b4cdf21808762970b356891db180a9dd9850e7baf2a79ff3ab8a2fc');
@@ -59,6 +61,9 @@ class EncryptedFieldTest extends TestCase
 
     public function testConstructor()
     {
+        if (empty($this->naclEngine)) {
+            $this->before();
+        }
         $encField = new EncryptedField($this->naclEngine, 'test',  'field', true);
         $this->assertTrue($encField->getTypedIndexes(), 'Constructor argument not handled correctly');
     }
@@ -69,6 +74,9 @@ class EncryptedFieldTest extends TestCase
      */
     public function testEncrypt()
     {
+        if (empty($this->fipsRandom)) {
+            $this->before();
+        }
         $eF = $this->getExampleField($this->fipsRandom);
         $eM = $this->getExampleField($this->naclRandom);
 
@@ -132,6 +140,9 @@ class EncryptedFieldTest extends TestCase
      */
     public function testFIPSBlindIndex()
     {
+        if (empty($this->fipsEngine)) {
+            $this->before();
+        }
         $ssn = $this->getExampleField($this->fipsEngine);
         $ssn->setTypedIndexes(true);
 
@@ -174,6 +185,9 @@ class EncryptedFieldTest extends TestCase
      */
     public function testFIPSBlindIndexFast()
     {
+        if (empty($this->fipsEngine)) {
+            $this->before();
+        }
         $ssn = $this->getExampleField($this->fipsEngine, false, true);
         $ssn->setTypedIndexes(true);
 
@@ -216,6 +230,9 @@ class EncryptedFieldTest extends TestCase
      */
     public function testFIPSBlindIndexFlatAndFast()
     {
+        if (empty($this->fipsEngine)) {
+            $this->before();
+        }
         $ssn = $this->getExampleField($this->fipsEngine, false, true);
 
         $this->assertEquals(
@@ -266,6 +283,9 @@ class EncryptedFieldTest extends TestCase
      */
     public function testModernBlindIndex()
     {
+        if (empty($this->naclEngine)) {
+            $this->before();
+        }
         if (!\ParagonIE_Sodium_Compat::crypto_pwhash_is_available()) {
             $this->markTestSkipped('libsodium not installed');
             return;
@@ -311,6 +331,9 @@ class EncryptedFieldTest extends TestCase
      */
     public function testModernBlindIndexFast()
     {
+        if (empty($this->naclEngine)) {
+            $this->before();
+        }
         $ssn = $this->getExampleField($this->naclEngine, false, true);
         $ssn->setTypedIndexes(true);
         $this->assertEquals(
@@ -352,6 +375,9 @@ class EncryptedFieldTest extends TestCase
      */
     public function testModernBlindIndexFlatAndFast()
     {
+        if (empty($this->naclEngine)) {
+            $this->before();
+        }
         $ssn = $this->getExampleField($this->naclEngine, false, true);
         $this->assertEquals(
             '7843',

@@ -4,6 +4,7 @@ namespace ParagonIE\CipherSweet\Tests\KeyProvider;
 use ParagonIE\CipherSweet\Backend\Key\SymmetricKey;
 use ParagonIE\CipherSweet\KeyProvider\FileProvider;
 use ParagonIE\ConstantTime\Base32;
+use PHPUnit\Framework\Attributes\BeforeClass;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -21,6 +22,7 @@ class FileProviderTest extends TestCase
      * @before
      * @throws \SodiumException
      */
+    #[BeforeClass]
     public function before()
     {
         $this->prefix = Base32::encodeUnpadded(random_bytes(16));
@@ -45,6 +47,9 @@ class FileProviderTest extends TestCase
      */
     public function testHappyPath()
     {
+        if (empty($this->prefix)) {
+            $this->before();
+        }
         $provider = new FileProvider(
             __DIR__ . '/files/' . $this->prefix . '.symmetric'
         );

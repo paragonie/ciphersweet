@@ -11,6 +11,7 @@ use ParagonIE\CipherSweet\Exception\InvalidCiphertextException;
 use ParagonIE\CipherSweet\KeyRotation\MultiRowsRotator;
 use ParagonIE\CipherSweet\Tests\CreatesEngines;
 use ParagonIE\CipherSweet\Transformation\Lowercase;
+use PHPUnit\Framework\Attributes\BeforeClass;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -46,6 +47,7 @@ class MultiRowsRotatorTest extends TestCase
      * @throws ArrayKeyException
      * @throws CryptoOperationException
      */
+    #[BeforeClass]
     public function before()
     {
         $this->fipsRandom = $this->createFipsEngine();
@@ -61,6 +63,9 @@ class MultiRowsRotatorTest extends TestCase
      */
     public function testFipsToNacl()
     {
+        if (empty($this->fipsEngine)) {
+            $this->before();
+        }
         $eF = $this->getExampleMultiRows($this->fipsRandom);
         $eM = $this->getExampleMultiRows($this->naclRandom);
 
