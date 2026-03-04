@@ -59,6 +59,7 @@ class StringProvider implements KeyProviderInterface
     /**
      * @return SymmetricKey
      */
+    #[\Override]
     public function getSymmetricKey(): SymmetricKey
     {
         return new SymmetricKey($this->rootSymmetricKey);

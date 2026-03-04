@@ -50,6 +50,7 @@ class MultiTenantProvider implements KeyProviderInterface, MultiTenantAwareProvi
      * @param array-key $index
      * @return static
      */
+    #[\Override]
     public function setActiveTenant(string|int $index): static
     {
         $this->active = $index;
@@ -62,6 +63,7 @@ class MultiTenantProvider implements KeyProviderInterface, MultiTenantAwareProvi
      * @throws CipherSweetException
      * @psalm-suppress PossiblyNullArrayOffset
      */
+    #[\Override]
     public function getTenant(string|int $name): KeyProviderInterface
     {
         if (!\array_key_exists($name, $this->tenants)) {
@@ -74,6 +76,7 @@ class MultiTenantProvider implements KeyProviderInterface, MultiTenantAwareProvi
      * @return KeyProviderInterface
      * @throws CipherSweetException
      */
+    #[\Override]
     public function getActiveTenant(): KeyProviderInterface
     {
         if (\is_null($this->active)) {
@@ -89,6 +92,7 @@ class MultiTenantProvider implements KeyProviderInterface, MultiTenantAwareProvi
      * @return SymmetricKey
      * @throws CipherSweetException
      */
+    #[\Override]
     public function getSymmetricKey(): SymmetricKey
     {
         if (\is_null($this->active)) {
@@ -108,9 +112,13 @@ class MultiTenantProvider implements KeyProviderInterface, MultiTenantAwareProvi
      *
      * @throws CipherSweetException
      */
+    #[\Override]
     public function getTenantFromRow(array $row, string $tableName): string|int
     {
-        if (!$this->active) {
+        if (!property_exists($this, 'active')) {
+            throw new CipherSweetException('This is not implemented. Please override in a child class.');
+        }
+        if (is_null($this->active)) {
             throw new CipherSweetException('This is not implemented. Please override in a child class.');
         }
         return $this->active;
@@ -123,6 +131,7 @@ class MultiTenantProvider implements KeyProviderInterface, MultiTenantAwareProvi
      * @param string $tableName
      * @return array
      */
+    #[\Override]
     public function injectTenantMetadata(array $row, string $tableName): array
     {
         return $row;

@@ -39,6 +39,7 @@ class RandomProvider implements KeyProviderInterface
      * @return SymmetricKey
      * @throws \Exception
      */
+    #[\Override]
     public function getSymmetricKey(): SymmetricKey
     {
         if ($this->backend instanceof FIPSCrypto) {

@@ -292,6 +292,7 @@ class EncryptedFile
         string $password,
         ?AAD $aad = null
     ): bool {
+        $salt = '';
         try {
             // Do not generate a dummy salt!
             do {
@@ -348,8 +349,14 @@ class EncryptedFile
     public function isStreamEncrypted($inputFile): bool
     {
         $pos = \ftell($inputFile);
+        if (!\is_int($pos)) {
+            throw new \TypeError('ftell() returned a non-integer value');
+        }
         \fseek($inputFile, 0, SEEK_SET);
         $header = \fread($inputFile, 5);
+        if (!\is_string($header)) {
+            throw new \TypeError('fread() returned a non-integer value');
+        }
 
         // Can we get a valid header?
         if (Binary::safeStrlen($header) < 5) {

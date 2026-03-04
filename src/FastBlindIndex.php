@@ -28,6 +28,6 @@ class FastBlindIndex extends BlindIndex
         if (!$fastHash) {
             throw new CipherSweetException("FastBlindIndex cannot be turned slow");
         }
-        return parent::__construct($name, $transformations, $filterBits, $fastHash, $hashConfig);
+        parent::__construct($name, $transformations, $filterBits, $fastHash, $hashConfig);
     }
 }

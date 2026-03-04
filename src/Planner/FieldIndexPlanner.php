@@ -180,14 +180,15 @@ class FieldIndexPlanner
      */
     protected function coincidenceCounter(array $indexes, int $R): float
     {
-        /** @var int|float $exponent */
-        $exponent = 0;
+        $exponent = 0.0;
         $count = count($indexes);
         for ($i = 0; $i < $count; ++$i) {
             /** @var array<string, int|float> $index */
             $index = $indexes[$i];
-            $exponent += min($index['L'], $index['K']);
+            $exponent += min((float) $index['L'], (float) $index['K']);
         }
-        return (float) max(1, $R) / pow(2, $exponent);
+        $max = (float) max(1, $R);
+        $div = (float) pow(2, $exponent);
+        return ($max / $div);
     }
 }

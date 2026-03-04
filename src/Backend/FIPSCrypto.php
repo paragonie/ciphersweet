@@ -60,6 +60,7 @@ class FIPSCrypto implements BackendInterface, MultiTenantSafeBackendInterface
      * @throws CryptoOperationException
      * @throws \SodiumException
      */
+    #[\Override]
     public function encrypt(
         #[\SensitiveParameter]
         string $plaintext,
@@ -106,6 +107,7 @@ class FIPSCrypto implements BackendInterface, MultiTenantSafeBackendInterface
      * @throws InvalidCiphertextException
      * @throws \SodiumException
      */
+    #[\Override]
     public function decrypt(
         #[\SensitiveParameter]
         string $ciphertext,
@@ -165,6 +167,7 @@ class FIPSCrypto implements BackendInterface, MultiTenantSafeBackendInterface
      * @return string
      * @throws \SodiumException
      */
+    #[\Override]
     public function blindIndexFast(
         #[\SensitiveParameter]
         string $plaintext,
@@ -198,6 +201,7 @@ class FIPSCrypto implements BackendInterface, MultiTenantSafeBackendInterface
      * @return string
      * @throws \SodiumException
      */
+    #[\Override]
     public function blindIndexSlow(
         #[\SensitiveParameter]
         string $plaintext,
@@ -234,6 +238,7 @@ class FIPSCrypto implements BackendInterface, MultiTenantSafeBackendInterface
      * @param string $indexName
      * @return string
      */
+    #[\Override]
     public function getIndexTypeColumn(
         #[\SensitiveParameter]
         string $tableName,
@@ -296,6 +301,7 @@ class FIPSCrypto implements BackendInterface, MultiTenantSafeBackendInterface
      * @param string $salt
      * @return SymmetricKey
      */
+    #[\Override]
     public function deriveKeyFromPassword(
         #[\SensitiveParameter]
         string $password,
@@ -324,7 +330,11 @@ class FIPSCrypto implements BackendInterface, MultiTenantSafeBackendInterface
      *
      * @throws CryptoOperationException
      * @throws \SodiumException
+     * @psalm-suppress PossiblyFalseArgument
+     * @psalm-suppress PossiblyFalseOperand
+     * @psalm-suppress PossiblyNullArgument
      */
+    #[\Override]
     public function doStreamDecrypt(
         $inputFP,
         $outputFP,
@@ -420,7 +430,11 @@ class FIPSCrypto implements BackendInterface, MultiTenantSafeBackendInterface
      * @return bool
      *
      * @throws CryptoOperationException
+     * @psalm-suppress PossiblyFalseArgument
+     * @psalm-suppress PossiblyFalseOperand
+     * @psalm-suppress PossiblyNullArgument
      */
+    #[\Override]
     public function doStreamEncrypt(
         $inputFP,
         $outputFP,
@@ -485,6 +499,7 @@ class FIPSCrypto implements BackendInterface, MultiTenantSafeBackendInterface
     /**
      * @return int
      */
+    #[\Override]
     public function getFileEncryptionSaltOffset(): int
     {
         return 53;
@@ -493,6 +508,7 @@ class FIPSCrypto implements BackendInterface, MultiTenantSafeBackendInterface
     /**
      * @return string
      */
+    #[\Override]
     public function getPrefix(): string
     {
         return (string) static::MAGIC_HEADER;

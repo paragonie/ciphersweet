@@ -42,10 +42,10 @@
   },
   "require-dev": {
     "phpunit/phpunit": "^9",
-    "vimeo/psalm": "^4"
+    "vimeo/psalm": "^6"
   },
   "scripts": {
     "static-analysis": "psalm --no-cache --no-suggestions",
     "test": "phpunit"
-  }
+  },
 }

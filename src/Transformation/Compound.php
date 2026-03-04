@@ -22,6 +22,7 @@ class Compound implements RowTransformationInterface
      * @return string
      * @throws \Exception
      */
+    #[\Override]
     public function __invoke(
         #[\SensitiveParameter]
         mixed $input
@@ -52,6 +53,7 @@ class Compound implements RowTransformationInterface
      * @return array|string
      * @throws \Exception
      */
+    #[\Override]
     public function processArray(array $input, int $layer = 0): array|string
     {
         if ($layer > 255) {

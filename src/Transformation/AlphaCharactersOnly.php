@@ -16,10 +16,11 @@ class AlphaCharactersOnly implements TransformationInterface
      * @param string $input
      * @return string
      */
+    #[\Override]
     public function __invoke(
         #[\SensitiveParameter]
         mixed $input
     ): string {
-        return \preg_replace('/[^A-Za-z]/', '', $input);
+        return (string) \preg_replace('/[^A-Za-z]/', '', $input);
     }
 }
