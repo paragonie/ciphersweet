@@ -647,6 +647,10 @@ class EncryptedRow
                 continue;
             }
 
+            if ($row[$field] instanceof \UnitEnum) {
+                $row[$field] = self::enumToScalar($row[$field]);
+            }
+
             // All others must be scalar
             if (!is_scalar($row[$field])) {
                 // NULL is not permitted.
@@ -861,6 +865,9 @@ class EncryptedRow
 
         /** @var string|bool|int|float|null $unconverted */
         $unconverted = $row[$column];
+        if ($unconverted instanceof \UnitEnum) {
+            $unconverted = self::enumToScalar($unconverted);
+        }
 
         $plaintext = $index->getTransformed(
             $this->convertToString($unconverted, $fieldType)
@@ -1147,5 +1154,17 @@ class EncryptedRow
                 'Primary key must bot be encrypted'
             );
         }
+    }
+
+    /**
+     * @param \UnitEnum $enum
+     * @return string|int
+     */
+    public static function enumToScalar(\UnitEnum $enum): string|int
+    {
+        return match(true) {
+            $enum instanceof \BackedEnum => $enum->value,
+            default => $enum->name,
+        };
     }
 }
