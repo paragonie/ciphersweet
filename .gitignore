@@ -3,4 +3,6 @@
 /.phpunit.result.cache
 /composer.lock
 /composer.phar
+/tests/KeyProvider/files/
+!/tests/KeyProvider/files/.gitkeep
 /vendor
