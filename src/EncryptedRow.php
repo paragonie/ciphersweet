@@ -646,6 +646,10 @@ class EncryptedRow
                 continue;
             }
 
+            // check enum values
+            if ($row[$field] instanceof \UnitEnum) {
+                $row[$field] = self::enumToScalar($row[$field]);
+            }
             // All others must be scalar
             if (!is_scalar($row[$field])) {
                 // NULL is not permitted.
@@ -714,6 +718,27 @@ class EncryptedRow
     {
         $this->aadSourceField[$fieldName] = AAD::field($aadSource);
         return $this;
+    }
+
+    /**
+     * Return a scalar value for the given value that might be an enum.
+     * 
+     * @internal
+     *
+     * @param mixed $value
+     * @param mixed $default
+     * @return mixed
+     */
+    private static function enumToScalar(mixed $value, mixed $default = null): mixed
+    {
+        if (\function_exists('enum_value')) {
+            return enum_value($value, $default);
+        }
+        return match (true) {
+            $value instanceof \BackedEnum => $value->value,
+            $value instanceof \UnitEnum => $value->name,
+            default => $value ?? (\is_callable($default) ? $default($value) : $default),
+        };
     }
 
     /**
@@ -860,6 +885,9 @@ class EncryptedRow
 
         /** @var string|bool|int|float|null $unconverted */
         $unconverted = $row[$column];
+        if ($unconverted instanceof \UnitEnum) {
+            $unconverted = self::enumToScalar($unconverted);
+        }
 
         $plaintext = $index->getTransformed(
             $this->convertToString($unconverted, $fieldType)

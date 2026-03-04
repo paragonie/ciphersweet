@@ -27,6 +27,18 @@ use PHPUnit\Framework\TestCase;
 use ParagonIE\CipherSweet\Tests\Transformation\FirstInitialLastName;
 use SodiumException;
 
+enum TestBackedEnum: string
+{
+    case Active = 'active';
+    case Inactive = 'inactive';
+}
+
+enum TestUnitEnum
+{
+    case Pending;
+    case Approved;
+}
+
 /**
  * Class EncryptedRowTest
  * @package ParagonIE\CipherSweet\Tests
@@ -658,5 +670,60 @@ class EncryptedRowTest extends TestCase
             ' declaration from Constants::TYPE_TEXT to Constants::TYPE_OPTIONAL_TEXT.'
         );
         $eR->encryptRow($null);
+    }
+
+    /**
+     * @throws ArrayKeyException
+     * @throws CryptoOperationException
+     * @throws InvalidCiphertextException
+     * @throws SodiumException
+     */
+    public function testEncryptRowWithEnumValues(): void
+    {
+        $eR = (new EncryptedRow($this->brngRandom, 'contacts'));
+        $eR->addTextField('status');
+        $eR->addTextField('state');
+
+        // Test BackedEnum - should use ->value ('active')
+        $rowWithBackedEnum = [
+            'status' => TestBackedEnum::Active,
+            'state' => 'normal',
+        ];
+        $encrypted = $eR->encryptRow($rowWithBackedEnum);
+        $this->assertArrayHasKey('status', $encrypted);
+        $this->assertIsString($encrypted['status']);
+        $decrypted = $eR->decryptRow($encrypted);
+        $this->assertSame('active', $decrypted['status']);
+        $this->assertSame('normal', $decrypted['state']);
+
+        // Test UnitEnum - should use ->name ('Pending')
+        $rowWithUnitEnum = [
+            'status' => TestUnitEnum::Pending,
+            'state' => 'normal',
+        ];
+        $encrypted = $eR->encryptRow($rowWithUnitEnum);
+        $decrypted = $eR->decryptRow($encrypted);
+        $this->assertSame('Pending', $decrypted['status']);
+        $this->assertSame('normal', $decrypted['state']);
+    }
+
+    /**
+     * @throws ArrayKeyException
+     * @throws CryptoOperationException
+     * @throws SodiumException
+     */
+    public function testGetAllBlindIndexesWithEnumValues(): void
+    {
+        $eR = (new EncryptedRow($this->brngRandom, 'contacts'));
+        $eR->addTextField('status');
+        $eR->addBlindIndex('status', new BlindIndex('status_idx'));
+
+        $rowWithBackedEnum = ['status' => TestBackedEnum::Active];
+        $indexes = $eR->getAllBlindIndexes($rowWithBackedEnum);
+        $this->assertArrayHasKey('status_idx', $indexes);
+
+        $rowWithUnitEnum = ['status' => TestUnitEnum::Approved];
+        $indexes = $eR->getAllBlindIndexes($rowWithUnitEnum);
+        $this->assertArrayHasKey('status_idx', $indexes);
     }
 }
