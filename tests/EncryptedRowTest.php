@@ -11,8 +11,9 @@ use ParagonIE\CipherSweet\{
     BlindIndex,
     CipherSweet,
     EncryptedRow,
-    JsonFieldMap
-};
+    JsonFieldMap,
+    Tests\TestEnums\TestBackedEnum,
+    Tests\TestEnums\TestUnitEnum};
 use ParagonIE\CipherSweet\Exception\{
     ArrayKeyException,
     BlindIndexNotFoundException,
@@ -658,5 +659,62 @@ class EncryptedRowTest extends TestCase
             ' declaration from Constants::TYPE_TEXT to Constants::TYPE_OPTIONAL_TEXT.'
         );
         $eR->encryptRow($null);
+    }
+
+    public function testEnumToScalar(): void
+    {
+        $this->assertSame('Invalid', EncryptedRow::enumToScalar(TestUnitEnum::Invalid));
+        $this->assertSame('Open', EncryptedRow::enumToScalar(TestUnitEnum::Open));
+        $this->assertSame('Pending', EncryptedRow::enumToScalar(TestUnitEnum::Pending));
+        $this->assertSame('Resolved', EncryptedRow::enumToScalar(TestUnitEnum::Resolved));
+
+        $this->assertSame('red', EncryptedRow::enumToScalar(TestBackedEnum::Red));
+        $this->assertSame('green', EncryptedRow::enumToScalar(TestBackedEnum::Green));
+        $this->assertSame('blue', EncryptedRow::enumToScalar(TestBackedEnum::Blue));
+    }
+
+    /**
+     * @dataProvider engineProvider
+     */
+    public function testEncryptedRowWithEnums(CipherSweet $engine): void
+    {
+        $eR = new EncryptedRow($engine, 'foo');
+        $eR->addTextField('color');
+        $eR->addTextField('status');
+        $eR->addBlindIndex('status', new BlinDIndex('status_idx', [], 64, true));
+        $eR->addBlindIndex('color', new BlinDIndex('color_idx', [], 64, true));
+
+        $encrypted = $eR->encryptRow([
+            'color' => TestBackedEnum::Blue,
+            'status' => TestUnitEnum::Open,
+        ]);
+        $this->assertArrayHasKey('color', $encrypted);
+        $this->assertArrayHasKey('status', $encrypted);
+        $this->assertIsString($encrypted['color']);
+        $this->assertIsString($encrypted['status']);
+        // Verify not plaintext:
+        $this->assertNotSame('blue', $encrypted['color']);
+        $this->assertNotSame('Open', $encrypted['status']);
+        $decrypted = $eR->decryptRow($encrypted);
+
+        // Now let's verify we decrypted successfully
+        $this->assertSame('blue', $decrypted['color']);
+        $this->assertSame('Open', $decrypted['status']);
+
+        $indexes = $eR->getAllBlindIndexes([
+            'color' => TestBackedEnum::Blue,
+            'status' => TestUnitEnum::Open,
+        ]);
+        $this->assertArrayHasKey('color_idx', $indexes);
+        $this->assertArrayHasKey('status_idx', $indexes);
+        $this->assertNotSame('blue', $indexes['color_idx']);
+        $this->assertNotSame('Open', $indexes['status_idx']);
+
+        $indexes2 = $eR->getAllBlindIndexes([
+            'color' => 'blue',
+            'status' => 'Open',
+        ]);
+        $this->assertSame($indexes2['color_idx'], $indexes['color_idx']);
+        $this->assertSame($indexes2['status_idx'], $indexes['status_idx']);
     }
 }
