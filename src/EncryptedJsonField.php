@@ -185,7 +185,11 @@ class EncryptedJsonField
             $derivedKey = $this->deriveKey($mapped['flat']);
             $this->encryptInPlace($derivedKey, $field, $path, $type, $aad);
         }
-        return json_encode($field);
+        $encoded = \json_encode($field);
+        if (!\is_string($encoded)) {
+            throw new CipherSweetException("Could not encode JSON");
+        }
+        return $encoded;
     }
 
     public function deriveKey(string $flatPath): SymmetricKey
@@ -219,6 +223,8 @@ class EncryptedJsonField
      *
      * @throws CipherSweetException
      * @throws SodiumException
+     *
+     * @psalm-suppress ReferenceConstraintViolation
      * @psalm-suppress InvalidArgument
      */
     protected function decryptInPlace(
@@ -257,6 +263,8 @@ class EncryptedJsonField
      *
      * @throws CipherSweetException
      * @throws SodiumException
+     *
+     * @psalm-suppress ReferenceConstraintViolation
      * @psalm-suppress InvalidArgument
      */
     protected function encryptInPlace(

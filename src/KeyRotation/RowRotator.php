@@ -40,6 +40,7 @@ class RowRotator implements KeyRotationInterface
      * @return bool
      * @throws InvalidCiphertextException
      */
+    #[\Override]
     public function needsReEncrypt(array|string $ciphertext = ''): bool
     {
         if (!\is_array($ciphertext)) {
@@ -63,6 +64,7 @@ class RowRotator implements KeyRotationInterface
      * @throws InvalidCiphertextException
      * @throws SodiumException
      */
+    #[\Override]
     public function prepareForUpdate(array|string $values): array
     {
         if (!\is_array($values)) {

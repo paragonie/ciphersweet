@@ -27,7 +27,7 @@ class FastCompoundIndex extends CompoundIndex
         if (!$fastHash) {
             throw new CipherSweetException("FastCompoundIndex cannot be turned slow");
         }
-        return parent::__construct(
+        parent::__construct(
             $name,
             $columns,
             $filterBits,

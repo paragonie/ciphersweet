@@ -531,6 +531,7 @@ class EncryptedRow
      * @throws InvalidCiphertextException
      * @throws SodiumException
      *
+     * @psalm-suppress DocblockTypeContradiction
      * @psalm-suppress InvalidReturnStatement
      */
     public function decryptRow(
@@ -1107,11 +1108,8 @@ class EncryptedRow
      */
     protected function canonicalizeAADForField(string $field, array $row): string
     {
-        if (empty($this->aadSourceField[$field])) {
+        if (!array_key_exists($field, $this->aadSourceField)) {
             return '';
-        }
-        if (is_string($this->aadSourceField[$field])) {
-            return $this->aadSourceField[$field];;
         }
         if (array_intersect(
             array_keys($this->fieldsToEncrypt),

@@ -22,11 +22,15 @@ class LastFourDigits implements TransformationInterface
      * @param string $input
      * @return string
      */
+    #[\Override]
     public function __invoke(
         #[\SensitiveParameter]
         mixed $input
     ): string {
         $input = \preg_replace('/[^0-9]/', '', $input);
+        if (is_null($input)) {
+            return '0000';
+        }
         $input = \str_pad($input, 4, '0', STR_PAD_LEFT);
         return Binary::safeSubstr($input, -4, 4);
     }

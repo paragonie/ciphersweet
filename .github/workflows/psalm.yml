@@ -4,7 +4,9 @@ on:
   push:
     branches: [ master ]
   pull_request:
-    branches: [ master ]
+
+permissions:
+  contents: read
 
 jobs:
   psalm:
@@ -13,22 +15,21 @@ jobs:
     strategy:
       matrix:
         operating-system: ['ubuntu-latest']
-        php-versions: ['8.3']
+        php-versions: ['8.4']
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8  # v6.0.1
+        with:
+          persist-credentials: false
 
       - name: Setup PHP
-        uses: shivammathur/setup-php@v2
+        uses: shivammathur/setup-php@44454db4f0199b8b9685a5d763dc37cbf79108e1  # 2.36.0
         with:
           php-version: ${{ matrix.php-versions }}
-          tools: psalm:4
           coverage: none
 
       - name: Install Composer dependencies
-        uses: "ramsey/composer-install@v1"
-        with:
-          composer-options: --no-dev
+        uses: ramsey/composer-install@3cf229dc2919194e9e36783941438d17239e8520  # v3.1.1
 
       - name: Static Analysis
-        run: psalm
+        run: vendor/bin/psalm

@@ -32,6 +32,7 @@ class FileProvider implements KeyProviderInterface
      * @return SymmetricKey
      * @throws KeyProviderException
      */
+    #[\Override]
     public function getSymmetricKey(): SymmetricKey
     {
         if (\is_null($this->symmetricKeyPath)) {

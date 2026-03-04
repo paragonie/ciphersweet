@@ -7,9 +7,9 @@ use ParagonIE\CipherSweet\Backend\Key\SymmetricKey;
 use ParagonIE\CipherSweet\Constants;
 use ParagonIE\CipherSweet\Contract\BackendInterface;
 use ParagonIE\CipherSweet\Exception\{
+    CipherSweetException,
     CryptoOperationException,
-    InvalidCiphertextException
-};
+    InvalidCiphertextException};
 use ParagonIE\CipherSweet\Util;
 use ParagonIE\ConstantTime\{
     Base32,
@@ -46,6 +46,7 @@ class ModernCrypto implements BackendInterface
      * @throws CryptoOperationException
      * @throws \SodiumException
      */
+    #[\Override]
     public function encrypt(
         #[\SensitiveParameter]
         string $plaintext,
@@ -79,6 +80,7 @@ class ModernCrypto implements BackendInterface
      * @throws InvalidCiphertextException
      * @throws \SodiumException
      */
+    #[\Override]
     public function decrypt(
         #[\SensitiveParameter]
         string $ciphertext,
@@ -121,6 +123,7 @@ class ModernCrypto implements BackendInterface
      * @return string
      * @throws \SodiumException
      */
+    #[\Override]
     public function blindIndexFast(
         #[\SensitiveParameter]
         string $plaintext,
@@ -157,6 +160,7 @@ class ModernCrypto implements BackendInterface
      * @return string
      * @throws \SodiumException
      */
+    #[\Override]
     public function blindIndexSlow(
         #[\SensitiveParameter]
         string $plaintext,
@@ -213,6 +217,7 @@ class ModernCrypto implements BackendInterface
      * @return string
      * @throws \SodiumException
      */
+    #[\Override]
     public function getIndexTypeColumn(
         #[\SensitiveParameter]
         string $tableName,
@@ -235,6 +240,7 @@ class ModernCrypto implements BackendInterface
      *
      * @throws \SodiumException
      */
+    #[\Override]
     public function deriveKeyFromPassword(
         #[\SensitiveParameter]
         string $password,
@@ -262,7 +268,11 @@ class ModernCrypto implements BackendInterface
      *
      * @throws CryptoOperationException
      * @throws \SodiumException
+     * @psalm-suppress PossiblyFalseArgument
+     * @psalm-suppress PossiblyFalseOperand
+     * @psalm-suppress PossiblyNullArgument
      */
+    #[\Override]
     public function doStreamDecrypt(
         $inputFP,
         $outputFP,
@@ -378,7 +388,10 @@ class ModernCrypto implements BackendInterface
      *
      * @throws CryptoOperationException
      * @throws \SodiumException
+     * @psalm-suppress PossiblyFalseArgument
+     * @psalm-suppress PossiblyNullArgument
      */
+    #[\Override]
     public function doStreamEncrypt(
         $inputFP,
         $outputFP,
@@ -459,6 +472,7 @@ class ModernCrypto implements BackendInterface
     /**
      * @return int
      */
+    #[\Override]
     public function getFileEncryptionSaltOffset(): int
     {
         return 21;
@@ -467,6 +481,7 @@ class ModernCrypto implements BackendInterface
     /**
      * @return string
      */
+    #[\Override]
     public function getPrefix(): string
     {
         return (string) static::MAGIC_HEADER;

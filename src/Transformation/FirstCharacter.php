@@ -17,6 +17,7 @@ class FirstCharacter implements TransformationInterface
      * @param string $input
      * @return string
      */
+    #[\Override]
     public function __invoke(
         #[\SensitiveParameter]
         mixed $input

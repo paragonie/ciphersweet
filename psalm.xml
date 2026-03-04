@@ -11,16 +11,20 @@
     </projectFiles>
 
     <issueHandlers>
+        <ClassMustBeFinal errorLevel="suppress" /><!-- conflicts with how this library is actually used -->
         <MoreSpecificImplementedParamType errorLevel="suppress" /><!-- this is fine -->
         <RedundantConditionGivenDocblockType errorLevel="suppress" /><!-- we're being explicit -->
         <RedundantCastGivenDocblockType errorLevel="suppress" /><!-- we're being explicit -->
         <InternalMethod errorLevel="suppress" /><!-- it's internal to sodium_compat but we still need to use it -->
-        <DocblockTypeContradiction errorLevel="info" /><!-- We're still supporting PHP 5 -->
         <UnnecessaryVarAnnotation errorLevel="suppress" />
+        <UnusedClass errorLevel="info" />
         <UnusedFunctionCall errorLevel="info" />
         <UnusedVariable errorLevel="info" />
 	    <RedundantCast errorLevel="suppress" />
         <MixedReturnTypeCoercion errorLevel="info" />
         <UnresolvableInclude errorLevel="info" />
+        <RiskyTruthyFalsyComparison errorLevel="info" />
+        <PossiblyUnusedReturnValue errorLevel="info" />
+        <PossiblyUnusedMethod errorLevel="info" /> <!-- this is part of the public API -->
     </issueHandlers>
 </psalm>

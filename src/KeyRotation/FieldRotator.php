@@ -42,6 +42,7 @@ class FieldRotator implements KeyRotationInterface
      *
      * @throws InvalidCiphertextException
      */
+    #[\Override]
     public function needsReEncrypt(string|array $ciphertext = '', string $aad = ''): bool
     {
         if (!\is_string($ciphertext)) {
@@ -72,6 +73,7 @@ class FieldRotator implements KeyRotationInterface
      * @throws BlindIndexNotFoundException
      * @throws SodiumException
      */
+    #[\Override]
     public function prepareForUpdate(
         array|string $values,
         string $oldAad = '',

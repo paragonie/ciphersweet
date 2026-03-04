@@ -183,6 +183,9 @@ class JsonFieldMap
             $decoded = Hex::decode(Binary::safeSubstr($piece, 1));
             if ($piece[0] === '#') {
                 $unpack = \unpack('J', $decoded);
+                if (!\is_array($unpack)) {
+                    throw new CipherSweetException("Invalid integer encoding");
+                }
                 $path[] = (int) $unpack[1];
             } elseif ($piece[0] === '$') {
                 $path[] = $decoded;
@@ -217,6 +220,9 @@ class JsonFieldMap
     public function toString(): string
     {
         $json = \json_encode(['fields' => $this->fields]);
+        if (!\is_string($json)) {
+            throw new \TypeError('Failed to encode to JSON');
+        }
         $crc = \hash('crc32c', $json);
         return $crc . $json;
     }
