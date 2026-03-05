@@ -12,6 +12,9 @@ class AADTest extends TestCase
         $aad1 = AAD::literal('foo');
         $aad2 = AAD::field('bar');
 
+        $this->assertTrue($aad1->getLegacy());
+        $this->assertTrue($aad2->getLegacy());
+
         $this->assertSame('foo', $aad1->canonicalize());
         $this->assertSame('baz', $aad2->canonicalize(['bar' => 'baz']));
     }
@@ -27,6 +30,11 @@ class AADTest extends TestCase
             Hex::encode($aad3->canonicalize(['bar' => 'baz'])),
             'Canonical encoding'
         );
+
+        $aad4 = AAD::literal('baz');
+        $aad5 = $aad3->addLiteral('baz');
+        $aad6 = $aad5->merge($aad4);
+        $this->assertSame($aad5->canonicalize(), $aad6->canonicalize());
     }
 
     public function testCollapse(): void

@@ -117,6 +117,11 @@ class AAD
         return $this->fieldNames;
     }
 
+    public function getLegacy(): bool
+    {
+        return $this->legacy;
+    }
+
     public function getLiterals(): array
     {
         return $this->literals;
