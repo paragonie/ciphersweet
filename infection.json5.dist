@@ -12,7 +12,7 @@
     "@default": true
   },
   "timeout": 600,
-  "minCoveredMsi": 50,
+  "minCoveredMsi": 75,
   "logs": {
     "text": "infection.log"
   }

@@ -1,0 +1,64 @@
+{
+    "name": "BoringCrypto",
+    "version": "4.10.0",
+    "testCases": {
+        "simple": {
+            "tableName": "example",
+            "fields": {
+                "name": "string",
+                "age": "int",
+                "grade": "float",
+                "pass": "bool"
+            },
+            "indexes": {
+                "name_idx": {
+                    "field": "name",
+                    "transforms": [],
+                    "filter-bits": 32,
+                    "fast": true
+                }
+            },
+            "plaintext": [
+                {
+                    "name": "alice",
+                    "age": 1337,
+                    "grade": 99.1,
+                    "pass": true,
+                    "extraneous": "plaintext"
+                },
+                {
+                    "name": "Bob",
+                    "age": -1,
+                    "grade": 3.1415,
+                    "pass": false,
+                    "extra": "neous"
+                }
+            ],
+            "ciphertext": [
+                {
+                    "name": "brng:Cxj4xLq-zuLG9AxVmLoZ4ZXTp8PN8XTSrdmY-hHCBSRf76jJhOwutEFytnveEIQLVh7e7B3XBwTl9wuahQ==",
+                    "age": "brng:mDMdMKpeTAdbjbw-ka9vicIPL6tP-RfP2O-tOoF3-KH_Bjvg5Pcd3wZwRKMKFloTC4H21yfs5oaPhqUfZAXr9Q==",
+                    "grade": "brng:hjWQ-BQKMSoMDPup1U4HLKAP6wHJKtMbYhXAPraCycOh_rJl46YGEwwgrejWqBlcsuZqUJeVgtlfg136au-msg==",
+                    "pass": "brng:dd-aUOdlMwI1jwm1q-L54ullcVBCJQm9uqt-RDcceegYyFV6P5D_G7NposhP2GmXYL48WFAKffYK",
+                    "extraneous": "plaintext"
+                },
+                {
+                    "name": "brng:KSGX8kUjNdujmm_oo2DYEidUzsm2mPyn7qRszyD92noEQE3YuIupmMLRXEos4n4pgXDhlDOqoPRpzAc=",
+                    "age": "brng:RIcODzElMJY3bd690ecYq_7-xC6CFyapcht8YemzKsOB8KUcb0L-10f-1SPNokfCq_iZLx7brxbnIfjeThhIiw==",
+                    "grade": "brng:MbdlBW-RS1H1di9ziDg9E-YFmzI5G9ONcCqi4rQFk6b5UsyG6pAuzqxAXMFZdJud8Bfz1DixuaKYbYZVws-7oA==",
+                    "pass": "brng:x4HaKgR7lrt4WsebvCWoayLMxRVfDQPCUI0q3eonL4dTyn3rKqtAw56BoOCly8IloxCpigE1SHkf",
+                    "extra": "neous"
+                }
+            ],
+            "blind": [
+                {
+                    "name_idx": "6914e7b8"
+                },
+                {
+                    "name_idx": "2d05a7d1"
+                }
+            ]
+        }
+    },
+    "key": "603c15697765d660cef8fb13cc1847882f77cdac13f702c3863d57410b2d1dfa"
+}
