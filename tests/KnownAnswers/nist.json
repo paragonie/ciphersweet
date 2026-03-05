@@ -1,0 +1,64 @@
+{
+    "name": "FIPSCrypto",
+    "version": "4.10.0",
+    "testCases": {
+        "simple": {
+            "tableName": "example",
+            "fields": {
+                "name": "string",
+                "age": "int",
+                "grade": "float",
+                "pass": "bool"
+            },
+            "indexes": {
+                "name_idx": {
+                    "field": "name",
+                    "transforms": [],
+                    "filter-bits": 32,
+                    "fast": true
+                }
+            },
+            "plaintext": [
+                {
+                    "name": "alice",
+                    "age": 1337,
+                    "grade": 99.1,
+                    "pass": true,
+                    "extraneous": "plaintext"
+                },
+                {
+                    "name": "Bob",
+                    "age": -1,
+                    "grade": 3.1415,
+                    "pass": false,
+                    "extra": "neous"
+                }
+            ],
+            "ciphertext": [
+                {
+                    "name": "fips:ZfbphOZ-QWYbuqbxJa8uPRbo9TxwXG4LXuK83NiI4FLZnNIki0DvduVS7FW8spiDM2ABzU0BW37SP81zHpo4DhQGTZ-sa0xnCkWLEyCQjWcdQHE1z8q3gLaI4fpiaaO4AaD2Qr4=",
+                    "age": "fips:DCbR3HLdduLO0VW6sW43JxxEv0PgXOn3ObDXpALoPUrDtKfAl8S8-DzCPLHPBTQdalOdGS3h3OBvgIG4dWydMhUHSJTH8XnfrOxF2WQI8G8LqcylIphzSFc210uC34c3YH96oZAC6Y8=",
+                    "grade": "fips:UwRT4U9-HNcHz0xs-h48umsifWf1Ta9uG7liRiMCId4HJirOL8BMTlqtceaPkiPUuw5cqWxOm3raDPkcgC3ilombk89-Lz36r_GdrpTO_oQnht14P4mu9olN5n3tXT7JIy3Kzh8O3bo=",
+                    "pass": "fips:AdNc1Y5E7FRZOjixpWcgroAZRd96vhUaH2sG3V6uLcO7Y2fJmQ_cKgyQ3fBt_45Z5KtkNUcREWOqqfP_prz8EtLZ4ZunyN1kauU2zuSYKPs0F5jO8__L31ndh-e2nddGaA==",
+                    "extraneous": "plaintext"
+                },
+                {
+                    "name": "fips:4h6t1pqrYZvDiTWYL1rP--BTsx57CCIlxLJDCJs5jBI9wug9wudns63aVUAPOmm6J63T5ZXn-aQmK40QPz9L4-ENYLIVrXaJ0b6yd6q15qJ0rghraO55bxHVZGYgYebqfjQP",
+                    "age": "fips:0dUtrGhtQOoDxrhHkAgIr7wbZMa4i-Aw08_TQprzzWlS-ZLEeNvy8MLFGEh96UBOBAp178KscM0XCCxE0v22oS4iPwl5Bx0sssGNEGOqUkVIrlnfuiS6G_rim5GasQYPUSk1Q-n7RpQ=",
+                    "grade": "fips:eGHINob_7Inb3Xz9sH5efWrx1vsQiSe6eamx1nyJ3F7nzMS-34jpO0HJbqNQTkG67ss85Ax_s5EgJcd_9yIUi3YIMLFnABF43UuSobUeYnXxcOkgAjYeFSuhxllr1Pd7uwmeD_pMN0A=",
+                    "pass": "fips:OoeJ-ORan84h2mNfNNK0YWlsBj9pfZtLw6jPSsz8LKiRXddqm2mZB8_kQJDFa98DIDjWE5qdx4nkjm_IRG_S60TJb-DxWRe8oYQh3Z3CPR20-teebxUmnCIUaC77pzbfyg==",
+                    "extra": "neous"
+                }
+            ],
+            "blind": [
+                {
+                    "name_idx": "a7eae56e"
+                },
+                {
+                    "name_idx": "c0545408"
+                }
+            ]
+        }
+    },
+    "key": "62f9d7e541f216b1de9fc46d2720dfdc3a821a536bc057ca226d8222f191cd90"
+}

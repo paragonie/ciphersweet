@@ -1,0 +1,19 @@
+{
+  "$schema": "vendor/infection/infection/resources/schema.json",
+  "source": {
+    "directories": [
+      "src"
+    ]
+  },
+  "phpUnit": {
+    "configDir": "."
+  },
+  "mutators": {
+    "@default": true
+  },
+  "timeout": 600,
+  "minCoveredMsi": 75,
+  "logs": {
+    "text": "infection.log"
+  }
+}

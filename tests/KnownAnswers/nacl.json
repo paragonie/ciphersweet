@@ -1,0 +1,64 @@
+{
+    "name": "ModernCrypto",
+    "version": "4.10.0",
+    "testCases": {
+        "simple": {
+            "tableName": "example",
+            "fields": {
+                "name": "string",
+                "age": "int",
+                "grade": "float",
+                "pass": "bool"
+            },
+            "indexes": {
+                "name_idx": {
+                    "field": "name",
+                    "transforms": [],
+                    "filter-bits": 32,
+                    "fast": true
+                }
+            },
+            "plaintext": [
+                {
+                    "name": "alice",
+                    "age": 1337,
+                    "grade": 99.1,
+                    "pass": true,
+                    "extraneous": "plaintext"
+                },
+                {
+                    "name": "Bob",
+                    "age": -1,
+                    "grade": 3.1415,
+                    "pass": false,
+                    "extra": "neous"
+                }
+            ],
+            "ciphertext": [
+                {
+                    "name": "nacl:hI6QEAzTevbz9SWzqSZPTFNKWfE7qSswqgCKMt1DY23hr8L6kqf1zJ15SUyI",
+                    "age": "nacl:HWgBJrpUdtXoouOKHCVzHsdB5qS5LX5ParUeSAORqifTTycGvPdNT3f0iKVFOFqA",
+                    "grade": "nacl:3nwLS7ThDwFcGscVjndruPh0NJTGiTAni1qjCk8jJrFagc64R2316o9O9xwCPsLN",
+                    "pass": "nacl:UwGZBGRaPItIy5Gzg5WOm_7mC2JM2SQo-DKuvAd_dvDEc6KKtJNc8k8=",
+                    "extraneous": "plaintext"
+                },
+                {
+                    "name": "nacl:nsHsDWmyMb0j8aydN5yeezHOtNcMRepAGQRmN_WkT5L4YTvucdWpPxQ69w==",
+                    "age": "nacl:lp2zMzTyBsLt2bpKYgJ0ZcF3j_c_P630mjOl91KEVzr5UaLYftzou8sE7rgBJAGB",
+                    "grade": "nacl:uSv4A-KB2OUdTpdLml4fZoMLWFZojoOMlo9Klf9_z80l7BFmHChqDZvTHU8q_BgU",
+                    "pass": "nacl:XCQJTdcJnJJjrGFpeeqkA310tH5fVwoN3jeVuU0CupPSxw3VDam5F9A=",
+                    "extra": "neous"
+                }
+            ],
+            "blind": [
+                {
+                    "name_idx": "f71ed6d5"
+                },
+                {
+                    "name_idx": "804fc1cb"
+                }
+            ]
+        }
+    },
+    "key": "c6c8759cee5084c74f26ce6b634477d3d5514a651bdd041a1b391f23fd9241ec"
+}

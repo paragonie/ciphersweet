@@ -11,6 +11,7 @@ use ParagonIE\CipherSweet\Exception\InvalidCiphertextException;
 use ParagonIE\CipherSweet\KeyRotation\FieldRotator;
 use ParagonIE\CipherSweet\Tests\CreatesEngines;
 use ParagonIE\CipherSweet\Transformation\LastFourDigits;
+use PHPUnit\Framework\Attributes\BeforeClass;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -46,6 +47,7 @@ class FieldRotatorTest extends TestCase
      * @throws ArrayKeyException
      * @throws CryptoOperationException
      */
+    #[BeforeClass]
     public function before()
     {
         $this->fipsRandom = $this->createFipsEngine();
@@ -59,6 +61,9 @@ class FieldRotatorTest extends TestCase
      */
     public function testFipsToNacl()
     {
+        if (empty($this->fipsRandom)) {
+            $this->before();
+        }
         $eF = $this->getExampleField($this->fipsRandom);
         $eM = $this->getExampleField($this->naclRandom);
 

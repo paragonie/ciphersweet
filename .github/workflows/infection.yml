@@ -1,0 +1,47 @@
+name: Infection
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+
+permissions:
+  contents: read
+
+jobs:
+  infection:
+    name: Infection on PHP ${{ matrix.php-versions }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php-versions: ['8.5']
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8  # v6.0.1
+        with:
+          persist-credentials: false
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@44454db4f0199b8b9685a5d763dc37cbf79108e1  # 2.36.0
+        with:
+          php-version: ${{ matrix.php-versions }}
+          extensions: mbstring, sodium
+          coverage: pcov
+
+      - name: Install dependencies
+        uses: ramsey/composer-install@3cf229dc2919194e9e36783941438d17239e8520  # v3.1.1
+
+      - name: Add Infection as dependency
+        run: composer require --dev infection/infection
+
+      - name: Update dependencies
+        run: composer update
+
+      - name: Mutation Tests
+        run: vendor/bin/infection --threads=max
+
+      - name: Print mutation log
+        if: always()
+        run: cat infection.log || echo "No infection.log found"

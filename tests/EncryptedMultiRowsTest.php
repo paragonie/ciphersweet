@@ -12,7 +12,10 @@ use ParagonIE\CipherSweet\Exception\InvalidCiphertextException;
 use ParagonIE\CipherSweet\Exception\JsonMapException;
 use ParagonIE\CipherSweet\JsonFieldMap;
 use ParagonIE\CipherSweet\Transformation\Lowercase;
+use PHPUnit\Framework\Attributes\BeforeClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
+use Random\RandomException;
 use SodiumException;
 
 /**
@@ -58,6 +61,7 @@ class EncryptedMultiRowsTest extends TestCase
      * @before
      * @throws Exception
      */
+    #[BeforeClass]
     public function before(): void
     {
         $this->fipsEngine = $this->createFipsEngine('4e1c44f87b4cdf21808762970b356891db180a9dd9850e7baf2a79ff3ab8a2fc');
@@ -71,6 +75,9 @@ class EncryptedMultiRowsTest extends TestCase
 
     public function testFlatInherits(): void
     {
+        if (empty($this->fipsEngine)) {
+            $this->before();
+        }
         $engines = [$this->fipsEngine, $this->fipsRandom, $this->naclEngine, $this->naclRandom];
         foreach ($engines as $engine) {
             $mr = (new EncryptedMultiRows($engine, true))
@@ -88,6 +95,9 @@ class EncryptedMultiRowsTest extends TestCase
 
     public function testEncryptedMultiRowsSetup(): void
     {
+        if (empty($this->fipsEngine)) {
+            $this->before();
+        }
         $engines = [$this->fipsEngine, $this->fipsRandom, $this->naclEngine, $this->naclRandom];
         foreach ($engines as $engine) {
             $mr = (new EncryptedMultiRows($engine))
@@ -121,6 +131,9 @@ class EncryptedMultiRowsTest extends TestCase
      */
     public function getMultiRows(?CipherSweet $engine = null): EncryptedMultiRows
     {
+        if (empty($this->fipsEngine)) {
+            $this->before();
+        }
         if (empty($engine)) {
             $engine = $this->fipsEngine;
         }
@@ -236,6 +249,7 @@ class EncryptedMultiRowsTest extends TestCase
      * @throws CipherSweetException
      * @throws SodiumException
      */
+    #[DataProvider("engineProvider")]
     public function testXAllEngines(?CipherSweet $engine = null): void
     {
         $mr = $this->getMultiRows($engine);
@@ -275,25 +289,30 @@ class EncryptedMultiRowsTest extends TestCase
         }
     }
 
-    public function engineProvider(): array
+    /**
+     * @throws CryptoOperationException
+     * @throws RandomException
+     */
+    public static function engineProvider(): array
     {
-        if (!isset($this->fipsEngine)) {
-            $this->before();
-        }
 
+        $fipsEngine = self::createFipsEngine('4e1c44f87b4cdf21808762970b356891db180a9dd9850e7baf2a79ff3ab8a2fc');
+        $boringEngine = self::createBoringEngine('4e1c44f87b4cdf21808762970b356891db180a9dd9850e7baf2a79ff3ab8a2fc');
+
+        $fipsRandom = self::createFipsEngine();
+        $boringRandom = self::createBoringEngine();
         return [
-            [$this->fipsEngine],
-            [$this->fipsRandom],
-            [$this->naclEngine],
-            [$this->naclRandom],
-            [$this->boringEngine],
-            [$this->boringRandom]
+            [$fipsEngine],
+            [$fipsRandom],
+            [$boringEngine],
+            [$boringRandom]
         ];
     }
 
     /**
      * @dataProvider engineProvider
      */
+    #[DataProvider("engineProvider")]
     public function testFieldsAreNotSwappable(CipherSweet $engine): void
     {
         $eR = new EncryptedMultiRows($engine);
@@ -325,6 +344,7 @@ class EncryptedMultiRowsTest extends TestCase
     /**
      * @dataProvider engineProvider
      */
+    #[DataProvider("engineProvider")]
     public function testOptionalFields(CipherSweet $engine): void
     {
         $eR = new EncryptedMultiRows($engine);
@@ -348,6 +368,7 @@ class EncryptedMultiRowsTest extends TestCase
     /**
      * @dataProvider engineProvider
      */
+    #[DataProvider("engineProvider")]
     public function testAutoBind(CipherSweet $engine): void
     {
         $eR = (new EncryptedMultiRows($engine))

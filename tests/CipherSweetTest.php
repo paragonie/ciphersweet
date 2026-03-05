@@ -1,6 +1,7 @@
 <?php
 namespace ParagonIE\CipherSweet\Tests;
 
+use Exception;
 use ParagonIE\CipherSweet\Backend\BoringCrypto;
 use ParagonIE\CipherSweet\Backend\FIPSCrypto;
 use ParagonIE\CipherSweet\Backend\ModernCrypto;
@@ -9,6 +10,7 @@ use ParagonIE\CipherSweet\Exception\CipherSweetException;
 use ParagonIE\CipherSweet\Exception\CryptoOperationException;
 use ParagonIE\CipherSweet\KeyProvider\StringProvider;
 use ParagonIE\ConstantTime\Hex;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use SodiumException;
 
@@ -19,8 +21,8 @@ use SodiumException;
 class CipherSweetTest extends TestCase
 {
     /**
-     * @throws \ParagonIE\CipherSweet\Exception\ArrayKeyException
      * @throws CryptoOperationException
+     * @throws Exception
      */
     public function testBasicAPI()
     {
@@ -60,7 +62,7 @@ class CipherSweetTest extends TestCase
                     Hex::encode($e->getIndexTypeColumn('foo', 'bar', 'baz')),
                     Hex::encode($e->getIndexTypeColumn('test', '1234', 'quux'))
                 );
-            } catch (\Exception $ex) {
+            } catch (Exception $ex) {
                 \trigger_error(
                     'getIndexTypeColumn collision:' .
                     "\n" . 'Class: ' . \get_class($e) . "\n" . 'Random: ' . Hex::encode($random),
@@ -77,7 +79,7 @@ class CipherSweetTest extends TestCase
         }
     }
 
-    public function engineProvider(): array
+    public static function engineProvider(): array
     {
         $random = \random_bytes(32);
         $provider = new StringProvider($random);
@@ -97,6 +99,7 @@ class CipherSweetTest extends TestCase
      * @throws CryptoOperationException
      * @throws SodiumException
      */
+    #[DataProvider("engineProvider")]
     public function testExtensionKey(CipherSweet $engine): void
     {
         $ext1 = $engine->getExtensionKey('foo', 'bar');

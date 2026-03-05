@@ -17,6 +17,7 @@ use ParagonIE\CipherSweet\KeyProvider\StringProvider;
 use ParagonIE\CipherSweet\Transformation\LastFourDigits;
 use ParagonIE\ConstantTime\Base32;
 use ParagonIE\ConstantTime\Hex;
+use PHPUnit\Framework\Attributes\BeforeClass;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -37,6 +38,7 @@ class MultiTenantTest extends TestCase
     /**
      * @before
      */
+    #[BeforeClass]
     public function before()
     {
         $foo = new StringProvider(random_bytes(32));
@@ -110,6 +112,9 @@ class MultiTenantTest extends TestCase
      */
     public function testEncryptField()
     {
+        if (empty($this->csBoring)) {
+            $this->before();
+        }
         foreach ([$this->csBoring, $this->csFips] as $cs) {
             $EF = new EncryptedField($cs, 'table', 'column');
             $EF->setActiveTenant('foo');
@@ -132,6 +137,9 @@ class MultiTenantTest extends TestCase
 
     public function testEncryptedFile()
     {
+        if (empty($this->csBoring)) {
+            $this->before();
+        }
         $message = "Paragon Initiative Enterprises\n" . \random_bytes(256);
 
         foreach ([$this->csBoring, $this->csFips] as $cs) {
@@ -186,6 +194,9 @@ class MultiTenantTest extends TestCase
      */
     public function testEncryptRow()
     {
+        if (empty($this->csBoring)) {
+            $this->before();
+        }
         foreach ([$this->csBoring, $this->csFips] as $cs) {
             $ER = $this->getERClass($cs);
 
@@ -238,6 +249,9 @@ class MultiTenantTest extends TestCase
      */
     public function testEncryptedMultiRows()
     {
+        if (empty($this->csBoring)) {
+            $this->before();
+        }
         foreach ([$this->csBoring, $this->csFips] as $cs) {
             $EMR = $this->getMultiRows($cs);
             $many1 = $EMR->encryptManyRows(
@@ -306,6 +320,9 @@ class MultiTenantTest extends TestCase
 
     public function testStaticBlindIndexKey(): void
     {
+        if (empty($this->csBoring)) {
+            $this->before();
+        }
         // These keys should differ
         /** @var CipherSweet $cs */
         foreach ([$this->csBoring, $this->csFips] as $cs) {

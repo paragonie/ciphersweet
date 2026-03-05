@@ -9,7 +9,10 @@ use ParagonIE\CipherSweet\Exception\CryptoOperationException;
 use ParagonIE\CipherSweet\Exception\FilesystemException;
 use ParagonIE\ConstantTime\Binary;
 use ParagonIE\ConstantTime\Hex;
+use PHPUnit\Framework\Attributes\BeforeClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
+use Random\RandomException;
 
 /**
  * Class EncryptedFileTest
@@ -32,18 +35,19 @@ class EncryptedFileTest extends TestCase
      * @before
      * @throws CryptoOperationException
      */
-    public function before()
+    #[BeforeClass]
+    public function before(): void
     {
         $this->fips = new EncryptedFile(
-            $this->createFipsEngine('4e1c44f87b4cdf21808762970b356891db180a9dd9850e7baf2a79ff3ab8a2fc')
+            self::createFipsEngine('4e1c44f87b4cdf21808762970b356891db180a9dd9850e7baf2a79ff3ab8a2fc')
         );
 
         $this->nacl = new EncryptedFile(
-            $this->createModernEngine('4e1c44f87b4cdf21808762970b356891db180a9dd9850e7baf2a79ff3ab8a2fc')
+            self::createModernEngine('4e1c44f87b4cdf21808762970b356891db180a9dd9850e7baf2a79ff3ab8a2fc')
         );
 
         $this->brng = new EncryptedFile(
-            $this->createBoringEngine('4e1c44f87b4cdf21808762970b356891db180a9dd9850e7baf2a79ff3ab8a2fc')
+            self::createBoringEngine('4e1c44f87b4cdf21808762970b356891db180a9dd9850e7baf2a79ff3ab8a2fc')
         );
     }
 
@@ -64,6 +68,9 @@ class EncryptedFileTest extends TestCase
      */
     public function testFipsEncryptStream()
     {
+        if (empty($this->fips)) {
+            $this->before();
+        }
         $message = "Paragon Initiative Enterprises\n" . \random_bytes(256);
 
         $input = $this->fips->getStreamForFile('php://temp');
@@ -104,6 +111,9 @@ class EncryptedFileTest extends TestCase
      */
     public function testFipsPasswordEncryptStream()
     {
+        if (empty($this->fips)) {
+            $this->before();
+        }
         $message = "Paragon Initiative Enterprises\n" . \random_bytes(256);
         $password = 'correct horse battery staple';
 
@@ -145,6 +155,9 @@ class EncryptedFileTest extends TestCase
      */
     public function testModernEncryptStream()
     {
+        if (empty($this->nacl)) {
+            $this->before();
+        }
         $message = "Paragon Initiative Enterprises\n" . \random_bytes(256);
 
         $input = $this->nacl->getStreamForFile('php://temp');
@@ -183,12 +196,14 @@ class EncryptedFileTest extends TestCase
      * @throws FilesystemException
      * @throws \SodiumException
      */
-    public function testModernPasswordEncryptStream()
+    public function testModernPasswordEncryptStream(): void
     {
+        if (empty($this->nacl)) {
+            $this->before();
+        }
         if (!\ParagonIE_Sodium_Compat::crypto_pwhash_is_available()) {
             // We cannot
             $this->markTestSkipped('Cannot test this without libsodium');
-            return;
         }
         $message = "Paragon Initiative Enterprises\n" . \random_bytes(256);
         $password = 'correct horse battery staple';
@@ -231,6 +246,9 @@ class EncryptedFileTest extends TestCase
      */
     public function testBoringEncryptStream()
     {
+        if (empty($this->brng)) {
+            $this->before();
+        }
         $message = "Paragon Initiative Enterprises\n" . \random_bytes(256);
 
         $input = $this->brng->getStreamForFile('php://temp');
@@ -271,6 +289,9 @@ class EncryptedFileTest extends TestCase
      */
     public function testBoringPasswordEncryptStream()
     {
+        if (empty($this->brng)) {
+            $this->before();
+        }
         if (!\ParagonIE_Sodium_Compat::crypto_pwhash_is_available()) {
             // We cannot
             $this->markTestSkipped('Cannot test this without libsodium');
@@ -310,21 +331,35 @@ class EncryptedFileTest extends TestCase
         );
     }
 
-    public function encryptedFileProvider(): array
+    /**
+     * @throws CryptoOperationException
+     * @throws RandomException
+     */
+    public static function encryptedFileProvider(): array
     {
-        if (!$this->brng) {
-            $this->before();
-        }
+
+        $fips = new EncryptedFile(
+            self::createFipsEngine('4e1c44f87b4cdf21808762970b356891db180a9dd9850e7baf2a79ff3ab8a2fc')
+        );
+
+        $nacl = new EncryptedFile(
+            self::createModernEngine('4e1c44f87b4cdf21808762970b356891db180a9dd9850e7baf2a79ff3ab8a2fc')
+        );
+
+        $brng = new EncryptedFile(
+            self::createBoringEngine('4e1c44f87b4cdf21808762970b356891db180a9dd9850e7baf2a79ff3ab8a2fc')
+        );
         return [
-            [$this->brng],
-            [$this->fips],
-            [$this->nacl],
+            [$brng],
+            [$fips],
+            [$nacl],
         ];
     }
 
     /**
      * @dataProvider encryptedFileProvider
      */
+    #[DataProvider("encryptedFileProvider")]
     public function testEncryptedFileWithAAD(EncryptedFile $encFile): void
     {
         $message = "Paragon Initiative Enterprises\n" . \random_bytes(256);
@@ -357,6 +392,9 @@ class EncryptedFileTest extends TestCase
      */
     public function testEncryptedSameFile()
     {
+        if (empty($this->fips)) {
+            $this->before();
+        }
         $path = __DIR__ . '/scratch.txt';
         $message = "Paragon Initiative Enterprises\n" . \random_bytes(256);
         \file_put_contents($path, $message);

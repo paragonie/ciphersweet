@@ -10,6 +10,8 @@ use ParagonIE\CipherSweet\Exception\InvalidCiphertextException;
 use ParagonIE\CipherSweet\Exception\JsonMapException;
 use ParagonIE\CipherSweet\JsonFieldMap;
 use ParagonIE\ConstantTime\Hex;
+use PHPUnit\Framework\Attributes\BeforeClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use SodiumException;
 
@@ -46,6 +48,7 @@ class EncryptedJsonFieldTest extends TestCase
      * @throws ArrayKeyException
      * @throws CryptoOperationException
      */
+    #[BeforeClass]
     public function before()
     {
         $this->fipsEngine = $this->createFipsEngine('4e1c44f87b4cdf21808762970b356891db180a9dd9850e7baf2a79ff3ab8a2fc');
@@ -55,22 +58,26 @@ class EncryptedJsonFieldTest extends TestCase
         $this->boringRandom = $this->createBoringEngine();
     }
 
-    public function engineProvider()
+    public static function engineProvider(): array
     {
-        if (!isset($this->fipsEngine)) {
-            $this->before();
-        }
+
+        $fipsEngine = self::createFipsEngine('4e1c44f87b4cdf21808762970b356891db180a9dd9850e7baf2a79ff3ab8a2fc');
+        $boringEngine = self::createBoringEngine('4e1c44f87b4cdf21808762970b356891db180a9dd9850e7baf2a79ff3ab8a2fc');
+
+        $fipsRandom = self::createFipsEngine();
+        $boringRandom = self::createBoringEngine();
         return [
-            [$this->fipsEngine],
-            [$this->fipsRandom],
-            [$this->boringEngine],
-            [$this->boringRandom]
+            [$fipsEngine],
+            [$fipsRandom],
+            [$boringEngine],
+            [$boringRandom]
         ];
     }
 
     /**
      * @dataProvider engineProvider
      */
+    #[DataProvider("engineProvider")]
     public function testDeriveKey(CipherSweet $engine)
     {
         $ejf = new EncryptedJsonField(
@@ -104,6 +111,7 @@ class EncryptedJsonFieldTest extends TestCase
      * @throws JsonMapException
      * @throws SodiumException
      */
+    #[DataProvider("engineProvider")]
     public function testFieldEncryption(CipherSweet $engine)
     {
         $map = (new JsonFieldMap())
@@ -147,6 +155,7 @@ class EncryptedJsonFieldTest extends TestCase
      * @throws CipherSweetException
      * @throws CryptoOperationException
      */
+    #[DataProvider("engineProvider")]
     public function testEncryptWithAAD(CipherSweet $engine)
     {
         $map = (new JsonFieldMap())
@@ -174,6 +183,7 @@ class EncryptedJsonFieldTest extends TestCase
      * @throws CipherSweetException
      * @throws CryptoOperationException
      */
+    #[DataProvider("engineProvider")]
     public function testStrictMode(CipherSweet $engine)
     {
         $map = (new JsonFieldMap())
@@ -219,6 +229,7 @@ class EncryptedJsonFieldTest extends TestCase
      * @throws JsonMapException
      * @throws SodiumException
      */
+    #[DataProvider("engineProvider")]
     public function testUnhappyPath(CipherSweet $engine)
     {
         $map = (new JsonFieldMap())
