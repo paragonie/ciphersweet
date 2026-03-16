@@ -6,11 +6,6 @@ use ParagonIE\CipherSweet\Backend\Key\SymmetricKey;
 use ParagonIE\CipherSweet\Contract\KeyProviderInterface;
 use ParagonIE\CipherSweet\Exception\CryptoOperationException;
 use ParagonIE\CipherSweet\Util;
-use ParagonIE\ConstantTime\{
-    Base64UrlSafe,
-    Binary,
-    Hex
-};
 use SodiumException;
 
 /**
@@ -35,15 +30,7 @@ class StringProvider implements KeyProviderInterface
         #[\SensitiveParameter]
         string $rawKey = ''
     ) {
-        if (Binary::safeStrlen($rawKey) === 64) {
-            $this->rootSymmetricKey = Hex::decode($rawKey);
-        } elseif (Binary::safeStrlen($rawKey) === 44) {
-            $this->rootSymmetricKey = Base64UrlSafe::decode($rawKey);
-        } elseif (Binary::safeStrlen($rawKey) === 32) {
-            $this->rootSymmetricKey = $rawKey;
-        } else {
-            throw new CryptoOperationException('Invalid key size');
-        }
+        $this->rootSymmetricKey = Util::convertSymmetricStringKeyToBinary($rawKey);
     }
 
     /**
