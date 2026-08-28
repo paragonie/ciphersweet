@@ -45,6 +45,12 @@ class FIPSCrypto implements BackendInterface, MultiTenantSafeBackendInterface
     const NONCE_SIZE = 16;
 
     /**
+     * Whether OpenSSL provides aes-256-ctr. Constant for the lifetime of the process, and
+     * openssl_get_cipher_methods() rebuilds the full list of supported ciphers on every call.
+     */
+    private static ?bool $hasAes256Ctr = null;
+
+    /**
      * Encrypt a string using AES-256-CTR and HMAC-SHA-384, encrypt-then-MAC.
      * The AES and MAC keys are split from the provided key using HKDF and a
      * random salt, thereby allowing for keys to live longer before rotation.
@@ -274,7 +280,8 @@ class FIPSCrypto implements BackendInterface, MultiTenantSafeBackendInterface
         #[\SensitiveParameter]
         string $nonce
     ): string {
-        if (!\in_array('aes-256-ctr', \openssl_get_cipher_methods(), true)) {
+        self::$hasAes256Ctr ??= \in_array('aes-256-ctr', \openssl_get_cipher_methods(), true);
+        if (!self::$hasAes256Ctr) {
             if (!\in_array('aes-256-ecb', \openssl_get_cipher_methods(), true)) {
                 throw new CryptoOperationException(
                     'AES-256 not provided by OpenSSL'
