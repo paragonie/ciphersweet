@@ -26,10 +26,13 @@ class EncryptedFile
     /**
      * EncryptedFile constructor.
      * @param CipherSweet $engine
-     * @param int $chunkSize      Affects how much memory is read at once.
+     * @param int $chunkSize      Positive I/O read size; legacy files require the original writer size.
      */
     public function __construct(CipherSweet $engine, int $chunkSize = 8192)
     {
+        if ($chunkSize < 1) {
+            throw new CryptoOperationException('Chunk size must be positive');
+        }
         $this->engine = $engine;
         $this->chunkSize = $chunkSize;
     }
@@ -47,7 +50,12 @@ class EncryptedFile
      */
     public function getBackendPrefix(): string
     {
-        return $this->engine->getBackend()->getPrefix();
+        $backend = $this->engine->getBackend();
+        return $backend instanceof Backend\BoringCrypto
+            || $backend instanceof Backend\ModernCrypto
+            || $backend instanceof Backend\FIPSCrypto
+            ? $backend::STREAM_HEADER
+            : $backend->getPrefix();
     }
 
     /**
@@ -366,7 +374,8 @@ class EncryptedFile
         // Compare the stored header with the backend:
         $expect = $this->getBackendPrefix();
 
-        $return = Util::hashEquals($expect, $header);
+        $return = Util::hashEquals($expect, $header)
+            || Util::hashEquals($this->engine->getBackend()->getPrefix(), $header);
 
         \fseek($inputFile, $pos, SEEK_SET);
         return $return;

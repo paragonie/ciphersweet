@@ -32,10 +32,14 @@ use ParagonIE_Sodium_Core_Util as SodiumUtil;
 class ModernCrypto implements BackendInterface
 {
     const MAGIC_HEADER = "nacl:";
+    const STREAM_HEADER = 'nac2:';
     const NONCE_SIZE = 24;
 
     /**
      * Encrypt a message using XChaCha20-Poly1305
+     *
+     * Note: This method is used by CipherSweet itself and should not be called by end user applications.
+     * See the EncryptedField, EncryptedFile, EncryptedRow, and EncryptedMultiRows classes instead!
      *
      * @param string $plaintext
      * @param SymmetricKey $key
@@ -71,6 +75,9 @@ class ModernCrypto implements BackendInterface
 
     /**
      * Decrypt a message using XChaCha20-Poly1305
+     *
+     * Note: This method is used by CipherSweet itself and should not be called by end user applications.
+     * See the EncryptedField, EncryptedFile, EncryptedRow, and EncryptedMultiRows classes instead!
      *
      * @param string $ciphertext
      * @param SymmetricKey $key
@@ -259,6 +266,9 @@ class ModernCrypto implements BackendInterface
     }
 
     /**
+     * Note: This method is used by CipherSweet itself and should not be called by end user applications.
+     * See the EncryptedField, EncryptedFile, EncryptedRow, and EncryptedMultiRows classes instead!
+     *
      * @param resource $inputFP
      * @param resource $outputFP
      * @param SymmetricKey $key
@@ -280,6 +290,9 @@ class ModernCrypto implements BackendInterface
         int $chunkSize = 8192,
         ?AAD $aad = null
     ): bool {
+        if ($chunkSize < 1) {
+            throw new CryptoOperationException('Chunk size must be positive');
+        }
         \fseek($inputFP, 0, SEEK_SET);
         \fseek($outputFP, 0, SEEK_SET);
         $adlen = 45; // 5 + 24 + 16
@@ -288,7 +301,8 @@ class ModernCrypto implements BackendInterface
         if (Binary::safeStrlen($header) < 5) {
             throw new CryptoOperationException('Input file is empty');
         }
-        if (!Util::hashEquals((string) (static::MAGIC_HEADER), $header)) {
+        if (!Util::hashEquals((string) (static::MAGIC_HEADER), $header)
+            && !Util::hashEquals(static::STREAM_HEADER, $header)) {
             throw new CryptoOperationException('Invalid cipher backend for this file');
         }
         $storedAuthTag = \fread($inputFP, 16);
@@ -310,7 +324,7 @@ class ModernCrypto implements BackendInterface
         );
 
         // Update the Poly1305 authenticator with our metadata
-        $poly1305->update((string) (static::MAGIC_HEADER) . $salt . $nonce);
+        $poly1305->update($header . $salt . $nonce);
         // Include optional AAD
         if ($aad) {
             $aadCanon = $aad->canonicalize();
@@ -328,6 +342,9 @@ class ModernCrypto implements BackendInterface
         $hash = SodiumCompat::crypto_generichash_init($chunkMacKey, 16);
         do {
             $ciphertext = \fread($inputFP, $chunkSize);
+            if ($ciphertext === false || ($ciphertext === '' && !\feof($inputFP))) {
+                throw new CryptoOperationException('Unable to read input stream');
+            }
             $len += Binary::safeStrlen($ciphertext);
             $poly1305->update($ciphertext);
             SodiumCompat::crypto_generichash_update($hash, $ciphertext);
@@ -347,9 +364,15 @@ class ModernCrypto implements BackendInterface
         \fseek($inputFP, $pos, SEEK_SET);
         $ctr = 1;
         $ctrIncrease = ($chunkSize + 63) >> 6;
+        $legacy = Util::hashEquals(static::MAGIC_HEADER, $header);
+        // Regenerate and discard the consumed prefix of a partial cipher block.
+        $offset = 0;
         $hash = SodiumCompat::crypto_generichash_init($chunkMacKey, 16);
         do {
             $ciphertext = \fread($inputFP, $chunkSize);
+            if ($ciphertext === false || ($ciphertext === '' && !\feof($inputFP))) {
+                throw new CryptoOperationException('Unable to read input stream');
+            }
 
             SodiumCompat::crypto_generichash_update($hash, $ciphertext);
             $hashCopy = '' . $hash;
@@ -360,13 +383,20 @@ class ModernCrypto implements BackendInterface
             }
 
             $plaintext = ChaCha20::ietfStreamXorIc(
-                $ciphertext,
+                \str_repeat("\0", $offset) . $ciphertext,
                 $nonceLast,
                 $subkey,
                 SodiumUtil::store64_le($ctr)
             );
+            $plaintext = Binary::safeSubstr($plaintext, $offset);
             \fwrite($outputFP, $plaintext);
-            $ctr += $ctrIncrease;
+            if ($legacy) {
+                $ctr += $ctrIncrease;
+            } else {
+                $consumed = $offset + Binary::safeStrlen($ciphertext);
+                $ctr += \intdiv($consumed, 64);
+                $offset = $consumed % 64;
+            }
         } while (!\feof($inputFP));
 
         if (!empty($chunkMacs)) {
@@ -378,6 +408,9 @@ class ModernCrypto implements BackendInterface
     }
 
     /**
+     * Note: This method is used by CipherSweet itself and should not be called by end user applications.
+     * See the EncryptedField, EncryptedFile, EncryptedRow, and EncryptedMultiRows classes instead!
+     *
      * @param resource $inputFP
      * @param resource $outputFP
      * @param SymmetricKey $key
@@ -400,6 +433,9 @@ class ModernCrypto implements BackendInterface
         string $salt = Constants::DUMMY_SALT,
         ?AAD $aad = null
     ): bool {
+        if ($chunkSize < 1) {
+            throw new CryptoOperationException('Chunk size must be positive');
+        }
         \fseek($inputFP, 0, SEEK_SET);
         \fseek($outputFP, 0, SEEK_SET);
         $adlen = 45; // 5 + 24 + 16
@@ -417,7 +453,7 @@ class ModernCrypto implements BackendInterface
         $nonceLast = "\x00\x00\x00\x00" . SodiumUtil::substr($nonce, 16, 8);
 
         // Write the header, empty space for a MAC, salts, then nonce.
-        \fwrite($outputFP, (string) static::MAGIC_HEADER, 5);
+        \fwrite($outputFP, (string) static::STREAM_HEADER, 5);
         \fwrite($outputFP, str_repeat("\0", 16), 16);
         \fwrite($outputFP, $salt, 16);
         \fwrite($outputFP, $nonce, 24);
@@ -426,7 +462,7 @@ class ModernCrypto implements BackendInterface
         $poly1305 = new Poly1305(ChaCha20::ietfStream(32, $nonceLast, $subkey));
 
         // Update the Poly1305 authenticator with our metadata
-        $poly1305->update((string) (static::MAGIC_HEADER) . $salt . $nonce);
+        $poly1305->update((string) (static::STREAM_HEADER) . $salt . $nonce);
         // Include optional AAD
         if ($aad) {
             $aadCanon = $aad->canonicalize();
@@ -438,20 +474,27 @@ class ModernCrypto implements BackendInterface
 
         // XChaCha20-Poly1305
         $ctr = 1;
-        $ctrIncrease = ($chunkSize + 63) >> 6;
+        // Regenerate and discard the consumed prefix of a partial cipher block.
+        $offset = 0;
         $len = 0;
         do {
             $plaintext = \fread($inputFP, $chunkSize);
+            if ($plaintext === false || ($plaintext === '' && !\feof($inputFP))) {
+                throw new CryptoOperationException('Unable to read input stream');
+            }
             $len += Binary::safeStrlen($plaintext);
             $ciphertext = ChaCha20::ietfStreamXorIc(
-                $plaintext,
+                \str_repeat("\0", $offset) . $plaintext,
                 $nonceLast,
                 $subkey,
                 SodiumUtil::store64_le($ctr)
             );
+            $ciphertext = Binary::safeSubstr($ciphertext, $offset);
             \fwrite($outputFP, $ciphertext);
             $poly1305->update($ciphertext);
-            $ctr += $ctrIncrease;
+            $consumed = $offset + Binary::safeStrlen($plaintext);
+            $ctr += \intdiv($consumed, 64);
+            $offset = $consumed % 64;
         } while (!\feof($inputFP));
         $end = \ftell($outputFP);
 

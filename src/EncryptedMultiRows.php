@@ -164,6 +164,9 @@ class EncryptedMultiRows
     ): static {
         $this->getEncryptedRowObjectForTable($tableName)
             ->addJsonField($fieldName, $fieldMap, $aadSource, $strict);
+        if ($this->autoBindContext) {
+            $this->addField($tableName, $fieldName, Constants::TYPE_JSON, $aadSource);
+        }
         return $this;
     }
 
@@ -254,6 +257,9 @@ class EncryptedMultiRows
     ): static {
         $this->getEncryptedRowObjectForTable($tableName)
             ->addNullableJsonField($fieldName, $fieldMap, $aadSource, $strict);
+        if ($this->autoBindContext) {
+            $this->addField($tableName, $fieldName, Constants::TYPE_JSON, $aadSource);
+        }
         return $this;
     }
 

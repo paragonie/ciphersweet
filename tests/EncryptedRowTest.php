@@ -28,6 +28,7 @@ use PHPUnit\Framework\Attributes\BeforeClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use ParagonIE\CipherSweet\Tests\Transformation\FirstInitialLastName;
+use Random\RandomException;
 use SodiumException;
 
 /**
@@ -82,6 +83,72 @@ class EncryptedRowTest extends TestCase
         $this->fipsRandom = $this->createFipsEngine();
         $this->naclRandom = $this->createModernEngine();
         $this->brngRandom = $this->createBoringEngine();
+    }
+
+    /**
+     * @throws CryptoOperationException
+     * @throws RandomException
+     */
+    public function testConstructorDefaults(): void
+    {
+        $engine = $this->createBoringEngine();
+        $row = new EncryptedRow($engine, 'records');
+        $this->assertSame($engine, $row->getEngine());
+        $this->assertSame($engine->getBackend(), $row->getBackend());
+        $this->assertFalse($row->getTypedIndexes());
+        $this->assertTrue($row->getFlatIndexes());
+        $this->assertFalse($row->getPermitEmpty());
+        $this->assertSame([], $row->listEncryptedFields());
+        $this->assertSame([], $row->getCompoundIndexObjects());
+    }
+
+    /**
+     * @throws CipherSweetException
+     * @throws CryptoOperationException
+     * @throws RandomException
+     */
+    public function testCompoundIndexFactoryDefaults(): void
+    {
+        $row = new EncryptedRow($this->createBoringEngine(), 'records');
+        $slow = $row->createCompoundIndex('slow');
+        $fast = $row->createFastCompoundIndex('fast');
+        $this->assertSame(['slow' => $slow, 'fast' => $fast], $row->getCompoundIndexObjects());
+        foreach ([$slow, $fast] as $index) {
+            $this->assertSame([], $index->getColumns());
+            $this->assertSame(256, $index->getFilterBitLength());
+            $this->assertSame([], $index->getHashConfig());
+        }
+        $this->assertSame('slow', $slow->getName());
+        $this->assertFalse($slow->getFastHash());
+        $this->assertSame('fast', $fast->getName());
+        $this->assertInstanceOf(\ParagonIE\CipherSweet\FastCompoundIndex::class, $fast);
+        $this->assertTrue($fast->getFastHash());
+    }
+
+    /**
+     * @throws CipherSweetException
+     * @throws CryptoOperationException
+     * @throws RandomException
+     */
+    public function testCompoundIndexFactoryConfiguration(): void
+    {
+        $row = new EncryptedRow($this->createBoringEngine(), 'records');
+        $slow = $row->createCompoundIndex(
+            'configured',
+            ['first', 'last'],
+            128,
+            false,
+            ['opslimit' => 5]
+        );
+        $fast = $row->createFastCompoundIndex('fast', ['first', 'last'], 128, ['opslimit' => 5]);
+        foreach ([$slow, $fast] as $index) {
+            $this->assertSame(['first', 'last'], $index->getColumns());
+            $this->assertSame(128, $index->getFilterBitLength());
+            $this->assertSame(['opslimit' => 5], $index->getHashConfig());
+        }
+        $this->assertFalse($slow->getFastHash());
+        $this->assertTrue($fast->getFastHash());
+        $this->assertSame(['configured' => $slow, 'fast' => $fast], $row->getCompoundIndexObjects());
     }
 
     public function testConstructor(): void

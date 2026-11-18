@@ -86,7 +86,7 @@ class EncryptedFileTest extends TestCase
         \fseek($output, 0, SEEK_SET);
 
         $this->assertSame(
-            $this->fips->getEngine()->getBackend()->getPrefix(),
+            $this->fips->getBackendPrefix(),
             $header,
             'Encrypted stream does not have the correct header'
         );
@@ -130,7 +130,7 @@ class EncryptedFileTest extends TestCase
         \fseek($output, 0, SEEK_SET);
 
         $this->assertSame(
-            $this->fips->getEngine()->getBackend()->getPrefix(),
+            $this->fips->getBackendPrefix(),
             $header,
             'Encrypted stream does not have the correct header'
         );
@@ -173,7 +173,7 @@ class EncryptedFileTest extends TestCase
         \fseek($output, 0, SEEK_SET);
 
         $this->assertSame(
-            $this->nacl->getEngine()->getBackend()->getPrefix(),
+            $this->nacl->getBackendPrefix(),
             $header,
             'Encrypted stream does not have the correct header'
         );
@@ -221,7 +221,7 @@ class EncryptedFileTest extends TestCase
         \fseek($output, 0, SEEK_SET);
 
         $this->assertSame(
-            $this->nacl->getEngine()->getBackend()->getPrefix(),
+            $this->nacl->getBackendPrefix(),
             $header,
             'Encrypted stream does not have the correct header'
         );
@@ -264,7 +264,7 @@ class EncryptedFileTest extends TestCase
         \fseek($output, 0, SEEK_SET);
 
         $this->assertSame(
-            $this->brng->getEngine()->getBackend()->getPrefix(),
+            $this->brng->getBackendPrefix(),
             $header,
             'Encrypted stream does not have the correct header'
         );
@@ -313,7 +313,7 @@ class EncryptedFileTest extends TestCase
         \fseek($output, 0, SEEK_SET);
 
         $this->assertSame(
-            $this->brng->getEngine()->getBackend()->getPrefix(),
+            $this->brng->getBackendPrefix(),
             $header,
             'Encrypted stream does not have the correct header'
         );
@@ -403,7 +403,7 @@ class EncryptedFileTest extends TestCase
         $contents = \file_get_contents($path);
         $this->assertSame(
             Binary::safeSubstr($contents, 0, 5),
-            $this->fips->getEngine()->getBackend()->getPrefix()
+            $this->fips->getBackendPrefix()
         );
         $this->fips->decryptFile($path, $path);
         $this->assertSame($message, \file_get_contents($path));
@@ -412,7 +412,7 @@ class EncryptedFileTest extends TestCase
         $contents = \file_get_contents($path);
         $this->assertSame(
             Binary::safeSubstr($contents, 0, 5),
-            $this->nacl->getEngine()->getBackend()->getPrefix()
+            $this->nacl->getBackendPrefix()
         );
         $this->nacl->decryptFile($path, $path);
         $this->assertSame($message, \file_get_contents($path));
@@ -421,7 +421,7 @@ class EncryptedFileTest extends TestCase
         $contents = \file_get_contents($path);
         $this->assertSame(
             Binary::safeSubstr($contents, 0, 5),
-            $this->brng->getEngine()->getBackend()->getPrefix()
+            $this->brng->getBackendPrefix()
         );
         $this->brng->decryptFile($path, $path);
         $this->assertSame($message, \file_get_contents($path));

@@ -26,7 +26,7 @@ abstract class Util
         #[\SensitiveParameter]
         string $nonce
     ): string {
-        if (empty($plaintext)) {
+        if ($plaintext === '') {
             return '';
         }
         $length = Binary::safeStrlen($plaintext);
