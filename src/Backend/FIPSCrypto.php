@@ -40,6 +40,7 @@ use ParagonIE\ConstantTime\{
 class FIPSCrypto implements BackendInterface, MultiTenantSafeBackendInterface
 {
     const MAGIC_HEADER = "fips:";
+    const STREAM_HEADER = 'fip2:';
     const MAC_SIZE = 48;
     const SALT_SIZE = 32;
     const NONCE_SIZE = 16;
@@ -57,6 +58,9 @@ class FIPSCrypto implements BackendInterface, MultiTenantSafeBackendInterface
      *
      * The HMAC-SHA-384 authentication tag covers the header, salt (for HKDF),
      * nonce (for AES-CTR), and ciphertext.
+     *
+     * Note: This method is used by CipherSweet itself and should not be called by end user applications.
+     * See the EncryptedField, EncryptedFile, EncryptedRow, and EncryptedMultiRows classes instead!
      *
      * @param string $plaintext
      * @param SymmetricKey $key
@@ -103,6 +107,9 @@ class FIPSCrypto implements BackendInterface, MultiTenantSafeBackendInterface
     /**
      * Verify the HMAC-SHA-384 authentication tag, then decrypt the ciphertext
      * using AES-256-CTR.
+     *
+     * Note: This method is used by CipherSweet itself and should not be called by end user applications.
+     * See the EncryptedField, EncryptedFile, EncryptedRow, and EncryptedMultiRows classes instead!
      *
      * @param string $ciphertext
      * @param SymmetricKey $key
@@ -328,6 +335,9 @@ class FIPSCrypto implements BackendInterface, MultiTenantSafeBackendInterface
     }
 
     /**
+     * Note: This method is used by CipherSweet itself and should not be called by end user applications.
+     * See the EncryptedField, EncryptedFile, EncryptedRow, and EncryptedMultiRows classes instead!
+     *
      * @param resource $inputFP
      * @param resource $outputFP
      * @param SymmetricKey $key
@@ -349,13 +359,17 @@ class FIPSCrypto implements BackendInterface, MultiTenantSafeBackendInterface
         int $chunkSize = 8192,
         ?AAD $aad = null
     ): bool {
+        if ($chunkSize < 1) {
+            throw new CryptoOperationException('Chunk size must be positive');
+        }
         \fseek($inputFP, 0, SEEK_SET);
         \fseek($outputFP, 0, SEEK_SET);
         $header = \fread($inputFP, 5);
         if (Binary::safeStrlen($header) < 5) {
             throw new CryptoOperationException('Input file is empty');
         }
-        if (!Util::hashEquals((string) (static::MAGIC_HEADER), $header)) {
+        if (!Util::hashEquals((string) (static::MAGIC_HEADER), $header)
+            && !Util::hashEquals(static::STREAM_HEADER, $header)) {
             throw new CryptoOperationException('Invalid cipher backend for this file');
         }
         $storedMAC = \fread($inputFP, 48);
@@ -368,7 +382,7 @@ class FIPSCrypto implements BackendInterface, MultiTenantSafeBackendInterface
 
         // Initialize MAC state
         $hmac = \hash_init('sha384', HASH_HMAC, $macKey);
-        \hash_update($hmac, (string) (static::MAGIC_HEADER));
+        \hash_update($hmac, $header);
         \hash_update($hmac, $salt);
         \hash_update($hmac, $hkdfSalt);
         \hash_update($hmac, $ctrNonce);
@@ -385,6 +399,9 @@ class FIPSCrypto implements BackendInterface, MultiTenantSafeBackendInterface
         $hmacInit = \hash_copy($hmac);
         do {
             $ciphertext = \fread($inputFP, $chunkSize);
+            if ($ciphertext === false || ($ciphertext === '' && !\feof($inputFP))) {
+                throw new CryptoOperationException('Unable to read input stream');
+            }
             \hash_update($hmac, $ciphertext);
             $chunk = \hash_copy($hmac);
             $chunkMacs []= Binary::safeSubstr(\hash_final($chunk, true), 0, 16);
@@ -401,8 +418,14 @@ class FIPSCrypto implements BackendInterface, MultiTenantSafeBackendInterface
 
         // We want to increase our CTR value by the number of blocks we used previously
         $ctrIncrease = ($chunkSize + 15) >> 4;
+        $legacy = Util::hashEquals(static::MAGIC_HEADER, $header);
+        // Regenerate and discard the consumed prefix of a partial cipher block.
+        $offset = 0;
         do {
             $ciphertext = \fread($inputFP, $chunkSize);
+            if ($ciphertext === false || ($ciphertext === '' && !\feof($inputFP))) {
+                throw new CryptoOperationException('Unable to read input stream');
+            }
             \hash_update($hmac, $ciphertext);
 
             // Guard against TOCTOU
@@ -413,10 +436,17 @@ class FIPSCrypto implements BackendInterface, MultiTenantSafeBackendInterface
                 throw new CryptoOperationException('Race condition');
             }
 
-            $plaintext = self::aes256ctr($ciphertext, $encKey, $ctrNonce);
+            $plaintext = self::aes256ctr(\str_repeat("\0", $offset) . $ciphertext, $encKey, $ctrNonce);
+            $plaintext = Binary::safeSubstr($plaintext, $offset);
             \fwrite($outputFP, $plaintext);
 
-            $ctrNonce = Util::ctrNonceIncrease($ctrNonce, $ctrIncrease);
+            if ($legacy) {
+                $ctrNonce = Util::ctrNonceIncrease($ctrNonce, $ctrIncrease);
+            } else {
+                $consumed = $offset + Binary::safeStrlen($ciphertext);
+                $ctrNonce = Util::ctrNonceIncrease($ctrNonce, \intdiv($consumed, 16));
+                $offset = $consumed % 16;
+            }
         } while (!\feof($inputFP));
 
         if (!empty($chunkMacs)) {
@@ -428,6 +458,9 @@ class FIPSCrypto implements BackendInterface, MultiTenantSafeBackendInterface
     }
 
     /**
+     * Note: This method is used by CipherSweet itself and should not be called by end user applications.
+     * See the EncryptedField, EncryptedFile, EncryptedRow, and EncryptedMultiRows classes instead!
+     *
      * @param resource $inputFP
      * @param resource $outputFP
      * @param SymmetricKey $key
@@ -450,6 +483,9 @@ class FIPSCrypto implements BackendInterface, MultiTenantSafeBackendInterface
         string $salt = Constants::DUMMY_SALT,
         ?AAD $aad = null
     ): bool {
+        if ($chunkSize < 1) {
+            throw new CryptoOperationException('Chunk size must be positive');
+        }
         \fseek($inputFP, 0, SEEK_SET);
         \fseek($outputFP, 0, SEEK_SET);
         try {
@@ -462,7 +498,7 @@ class FIPSCrypto implements BackendInterface, MultiTenantSafeBackendInterface
         $macKey = Util::HKDF($key, $hkdfSalt, 'HMAC-SHA-384');
 
         // Write the header, empty space for a MAC, salts, then nonce.
-        \fwrite($outputFP, (string) (static::MAGIC_HEADER), 5);
+        \fwrite($outputFP, (string) (static::STREAM_HEADER), 5);
         \fwrite($outputFP, str_repeat("\0", 48), 48);
         \fwrite($outputFP, $salt, 16);
         \fwrite($outputFP, $hkdfSalt, 32);
@@ -470,7 +506,7 @@ class FIPSCrypto implements BackendInterface, MultiTenantSafeBackendInterface
 
         // Init MAC state
         $hmac = \hash_init('sha384', HASH_HMAC, $macKey);
-        \hash_update($hmac, (string) (static::MAGIC_HEADER));
+        \hash_update($hmac, (string) (static::STREAM_HEADER));
         \hash_update($hmac, $salt);
         \hash_update($hmac, $hkdfSalt);
         \hash_update($hmac, $ctrNonce);
@@ -483,13 +519,20 @@ class FIPSCrypto implements BackendInterface, MultiTenantSafeBackendInterface
         }
 
         // We want to increase our CTR value by the number of blocks we used previously
-        $ctrIncrease = ($chunkSize + 15) >> 4;
+        // Regenerate and discard the consumed prefix of a partial cipher block.
+        $offset = 0;
         do {
             $plaintext = \fread($inputFP, $chunkSize);
-            $ciphertext = self::aes256ctr($plaintext, $encKey, $ctrNonce);
+            if ($plaintext === false || ($plaintext === '' && !\feof($inputFP))) {
+                throw new CryptoOperationException('Unable to read input stream');
+            }
+            $ciphertext = self::aes256ctr(\str_repeat("\0", $offset) . $plaintext, $encKey, $ctrNonce);
+            $ciphertext = Binary::safeSubstr($ciphertext, $offset);
             \hash_update($hmac, $ciphertext);
             \fwrite($outputFP, $ciphertext);
-            $ctrNonce = Util::ctrNonceIncrease($ctrNonce, $ctrIncrease);
+            $consumed = $offset + Binary::safeStrlen($plaintext);
+            $ctrNonce = Util::ctrNonceIncrease($ctrNonce, \intdiv($consumed, 16));
+            $offset = $consumed % 16;
         } while (!\feof($inputFP));
 
         $end = \ftell($outputFP);
