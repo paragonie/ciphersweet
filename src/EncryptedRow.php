@@ -128,7 +128,7 @@ class EncryptedRow
                     ->merge(AAD::field($this->primaryKeyColumnName));
             }
             $this->aadSourceField[$fieldName] = AAD::field($aadSource);
-        } elseif ($aadSource) {
+        } elseif ($aadSource !== '') {
             $this->aadSourceField[$fieldName] = AAD::field($aadSource);
         }
         return $this;

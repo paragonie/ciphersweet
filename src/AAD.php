@@ -161,7 +161,7 @@ class AAD
     {
         if ($input instanceof AAD) {
             return clone $input;
-        } elseif (empty($input)) {
+        } elseif ($input === '') {
             return new AAD([], [], true);
         }
         return new AAD([$input], [], true);
@@ -177,7 +177,7 @@ class AAD
     {
         if ($input instanceof AAD) {
             return clone $input;
-        } elseif (empty($input)) {
+        } elseif ($input === '') {
             return new AAD([], [], true);
         }
         return new AAD([], [$input], true);

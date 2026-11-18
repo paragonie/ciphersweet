@@ -1,6 +1,15 @@
 <?php
 namespace ParagonIE\CipherSweet\Tests;
 
+use ParagonIE\CipherSweet\Backend\BoringCrypto;
+use ParagonIE\CipherSweet\Backend\FIPSCrypto;
+use ParagonIE\CipherSweet\CipherSweet;
+use ParagonIE\CipherSweet\EncryptedField;
+use ParagonIE\CipherSweet\Exception\CipherSweetException;
+use ParagonIE\CipherSweet\Exception\CryptoOperationException;
+use ParagonIE\CipherSweet\Exception\InvalidCiphertextException;
+use ParagonIE\CipherSweet\KeyProvider\StringProvider;
+use PHPUnit\Framework\Attributes\DataProvider;
 use ParagonIE\ConstantTime\Hex;
 use PHPUnit\Framework\TestCase;
 use ParagonIE\CipherSweet\AAD;
@@ -58,5 +67,25 @@ class AADTest extends TestCase
              Hex::encode((new AAD(['zebra', 'apple']))->canonicalize(['zebra' => '122', 'apple' => '123'])),
              'Keys must be sorted'
          );
+    }
+
+    public static function backends(): array
+    {
+        return [[BoringCrypto::class], [FIPSCrypto::class]];
+    }
+
+    /**
+     * @throws CryptoOperationException
+     * @throws CipherSweetException
+     */
+    #[DataProvider('backends')]
+    public function testZeroAadCannotBeStripped(string $backendClass): void
+    {
+        $engine = new CipherSweet(new StringProvider(str_repeat('K', 32)), new $backendClass());
+        $field = new EncryptedField($engine, 'records', 'secret');
+        $ciphertext = $field->encryptValue('private data', '0');
+        self::assertSame('private data', $field->decryptValue($ciphertext, '0'));
+        $this->expectException($backendClass === BoringCrypto::class ? \SodiumException::class : InvalidCiphertextException::class);
+        $field->decryptValue($ciphertext, '');
     }
 }
