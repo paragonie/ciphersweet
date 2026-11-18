@@ -22,6 +22,36 @@ class CipherSweetTest extends TestCase
 {
     /**
      * @throws CryptoOperationException
+     */
+    public function testConstructorDefaults(): void
+    {
+        $provider = new StringProvider(str_repeat('K', 32));
+        $engine = new CipherSweet($provider);
+        $this->assertInstanceOf(BoringCrypto::class, $engine->getBackend());
+        $this->assertSame($provider, $engine->getKeyProvider());
+        $this->assertTrue($engine->getMultiTenantCountCheckEnabled());
+        $this->assertFalse($engine->isMultiTenantSupported());
+        $this->assertSame($engine, $engine->setMultiTenantCountCheckEnabled(false));
+        $this->assertFalse($engine->getMultiTenantCountCheckEnabled());
+        $this->assertSame($engine, $engine->setMultiTenantCountCheckEnabled(true));
+        $this->assertTrue($engine->getMultiTenantCountCheckEnabled());
+    }
+
+    public function testExplicitBackendAndNullDefault(): void
+    {
+        $provider = new StringProvider(str_repeat('K', 32));
+        $backend = new FIPSCrypto();
+        $engine = new CipherSweet($provider, $backend);
+        $this->assertSame($backend, $engine->getBackend());
+        $this->assertSame($provider, $engine->getKeyProvider());
+        $this->assertInstanceOf(
+            BoringCrypto::class,
+            (new CipherSweet($provider, null))->getBackend()
+        );
+    }
+
+    /**
+     * @throws CryptoOperationException
      * @throws Exception
      */
     public function testBasicAPI()

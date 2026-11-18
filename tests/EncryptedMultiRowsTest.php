@@ -5,6 +5,7 @@ use Exception;
 use ParagonIE\CipherSweet\BlindIndex;
 use ParagonIE\CipherSweet\CipherSweet;
 use ParagonIE\CipherSweet\EncryptedMultiRows;
+use ParagonIE\CipherSweet\EncryptedRow;
 use ParagonIE\CipherSweet\Exception\ArrayKeyException;
 use ParagonIE\CipherSweet\Exception\CipherSweetException;
 use ParagonIE\CipherSweet\Exception\CryptoOperationException;
@@ -55,6 +56,115 @@ class EncryptedMultiRowsTest extends TestCase
      * @var CipherSweet $boringRandom
      */
     protected CipherSweet $boringRandom;
+
+    /**
+     * @throws ArrayKeyException
+     * @throws CipherSweetException
+     * @throws CryptoOperationException
+     * @throws InvalidCiphertextException
+     * @throws RandomException
+     * @throws SodiumException
+     */
+    public function testConstructorDefaults(): void
+    {
+        $engine = $this->createBoringEngine();
+        $multi = new EncryptedMultiRows($engine);
+        $this->assertSame($engine, $multi->getEngine());
+        $this->assertSame($engine->getBackend(), $multi->getBackend());
+        $this->assertTrue($multi->getFlatIndexes());
+        $this->assertFalse($multi->getTypedIndexes());
+        $this->assertSame([], $multi->listTables());
+
+        // Default context binding permits interoperability with a standalone row.
+        $multi->addTextField('records', 'secret');
+        $row = $multi->getEncryptedRowObjectForTable('records');
+        $this->assertFalse($row->getTypedIndexes());
+        $this->assertTrue($row->getFlatIndexes());
+        $this->assertSame(['records'], $multi->listTables());
+        $plain = ['secret' => 'value'];
+        $standalone = (new EncryptedRow($engine, 'records'))
+            ->addTextField('secret');
+        $this->assertSame($plain, $standalone->decryptRow($row->encryptRow($plain)));
+    }
+
+    /**
+     * @throws CipherSweetException
+     * @throws CryptoOperationException
+     * @throws RandomException
+     */
+    public function testExplicitContextBindingAndDefaultReset(): void
+    {
+        $multi = new EncryptedMultiRows($this->createBoringEngine(), true, true);
+        $this->assertTrue($multi->getTypedIndexes());
+        $this->assertFalse($multi->getFlatIndexes());
+        $multi->addTextField('records', 'secret');
+        $row = $multi->getEncryptedRowObjectForTable('records');
+        $this->assertTrue($row->getTypedIndexes());
+        $this->assertSame(['table=records;field=secret'], $row->getAADSource('secret')->getLiterals());
+        $this->assertSame($multi, $multi->setAutoBindContext());
+        $multi->addTextField('records', 'unbound', 'id');
+        $this->assertSame([], $row->getAADSource('unbound')->getLiterals());
+        $this->assertSame(['id'], $row->getAADSource('unbound')->getFieldNames());
+    }
+
+    /**
+     * @throws CipherSweetException
+     * @throws CryptoOperationException
+     * @throws RandomException
+     */
+    public function testCompoundIndexFactoryDefaults(): void
+    {
+        $multi = new EncryptedMultiRows($this->createBoringEngine());
+        $slow = $multi->createCompoundIndex('records', 'slow');
+        $fast = $multi->createFastCompoundIndex('records', 'fast');
+        $row = $multi->getEncryptedRowObjectForTable('records');
+        $this->assertSame(['slow' => $slow, 'fast' => $fast], $row->getCompoundIndexObjects());
+        foreach ([$slow, $fast] as $index) {
+            $this->assertSame([], $index->getColumns());
+            $this->assertSame(256, $index->getFilterBitLength());
+            $this->assertSame([], $index->getHashConfig());
+        }
+        $this->assertSame('slow', $slow->getName());
+        $this->assertFalse($slow->getFastHash());
+        $this->assertSame('fast', $fast->getName());
+        $this->assertTrue($fast->getFastHash());
+    }
+
+    /**
+     * @throws CipherSweetException
+     * @throws CryptoOperationException
+     * @throws RandomException
+     */
+    public function testCompoundIndexFactoryConfiguration(): void
+    {
+        $multi = new EncryptedMultiRows($this->createBoringEngine());
+        $slow = $multi->createCompoundIndex(
+            'records',
+            'configured',
+            ['first', 'last'],
+            128,
+            false,
+            ['opslimit' => 5]
+        );
+        $fast = $multi->createFastCompoundIndex(
+            'records',
+            'fast',
+            ['first', 'last'],
+            128,
+            ['opslimit' => 5]
+        );
+        foreach ([$slow, $fast] as $index) {
+            $this->assertSame(['first', 'last'], $index->getColumns());
+            $this->assertSame(128, $index->getFilterBitLength());
+            $this->assertSame(['opslimit' => 5], $index->getHashConfig());
+        }
+        $this->assertFalse($slow->getFastHash());
+        $this->assertTrue($fast->getFastHash());
+        $this->assertSame(
+            ['configured' => $slow, 'fast' => $fast],
+            $multi->getEncryptedRowObjectForTable('records')->getCompoundIndexObjects()
+        );
+    }
 
     /**
      * @beforeClass
