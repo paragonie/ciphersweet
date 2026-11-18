@@ -1,14 +1,18 @@
 <?php
 namespace ParagonIE\CipherSweet\Tests;
 
+use JsonException;
+use ParagonIE\CipherSweet\Backend\BoringCrypto;
 use ParagonIE\CipherSweet\CipherSweet;
 use ParagonIE\CipherSweet\EncryptedJsonField;
+use ParagonIE\CipherSweet\EncryptedMultiRows;
 use ParagonIE\CipherSweet\Exception\ArrayKeyException;
 use ParagonIE\CipherSweet\Exception\CipherSweetException;
 use ParagonIE\CipherSweet\Exception\CryptoOperationException;
 use ParagonIE\CipherSweet\Exception\InvalidCiphertextException;
 use ParagonIE\CipherSweet\Exception\JsonMapException;
 use ParagonIE\CipherSweet\JsonFieldMap;
+use ParagonIE\CipherSweet\KeyProvider\StringProvider;
 use ParagonIE\ConstantTime\Hex;
 use PHPUnit\Framework\Attributes\BeforeClass;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -273,5 +277,40 @@ class EncryptedJsonFieldTest extends TestCase
             'latitude' => 37.2431,
             'longitude' => 115.7930
         ];
+    }
+
+    /**
+     * @throws ArrayKeyException
+     * @throws CipherSweetException
+     * @throws CryptoOperationException
+     * @throws InvalidCiphertextException
+     * @throws JsonException
+     * @throws JsonMapException
+     * @throws SodiumException
+     */
+    public function testAutomaticBinding(): void
+    {
+        $engine = new CipherSweet(new StringProvider(str_repeat('K', 32)), new BoringCrypto());
+        $rows = (new EncryptedMultiRows($engine, false, true))
+            ->setPrimaryKeyColumnName('records', 'id');
+        $rows->addJsonField('records', 'payload', (new JsonFieldMap())->addTextField(['secret']));
+        $plain = ['records' => ['id' => 1001, 'payload' => ['secret' => 'synthetic secret']]];
+        $encrypted = $rows->encryptManyRows($plain);
+        self::assertSame($plain, $rows->decryptManyRows($encrypted));
+        $mapped = json_decode($encrypted['records']['payload'], true, 512, JSON_THROW_ON_ERROR);
+        self::assertNotSame('synthetic secret', $mapped['secret']);
+        $changed = $encrypted;
+        $changed['records']['id'] = 1002;
+        self::assertSame($encrypted['records']['payload'], $changed['records']['payload']);
+        $restored = $changed;
+        $restored['records']['id'] = 1001;
+        self::assertSame($encrypted, $restored);
+        $this->expectException(InvalidCiphertextException::class);
+        try {
+            $rows->decryptManyRows($changed);
+        } catch (InvalidCiphertextException $exception) {
+            self::assertInstanceOf(\SodiumException::class, $exception->getPrevious());
+            throw $exception;
+        }
     }
 }
