@@ -85,7 +85,7 @@ class EncryptedMultiRows
     ): static {
         if ($this->autoBindContext) {
             // We automatically bind every field to the table and column name
-            if (empty($aadSource)) {
+            if ($aadSource === '') {
                 $aadSource = new AAD();
             }
             $aadSource = AAD::field($aadSource)
