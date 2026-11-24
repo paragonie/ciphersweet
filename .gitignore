@@ -6,3 +6,4 @@
 /tests/KeyProvider/files/
 !/tests/KeyProvider/files/.gitkeep
 /vendor
+.phpunit.result.cache
